@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { Home } from './pages/home/home';
 import { Departments } from './pages/departments/departments';
-import { SubDepartments } from './pages/sub-departments/sub-departments';
+import {  SubDepartmentsComponent } from './pages/sub-departments/sub-departments';
 import { Locations } from './pages/locations/locations';
 import { Shifts } from './pages/shifts/shifts';
 import { Schedules } from './pages/schedules/schedules';
@@ -16,7 +16,7 @@ import { NotFound } from './components/not-found/not-found';
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'departments', component: Departments },
-  { path: 'sub-departments', component: SubDepartments },
+  { path: 'sub-departments', component: SubDepartmentsComponent },
   { path: 'locations', component: Locations },
   { path: 'shifts', component: Shifts },
   { path: 'schedules', component: Schedules },

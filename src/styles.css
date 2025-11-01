@@ -39,6 +39,9 @@ p , span {
 .bg-pro-hover:hover{
     background-color: var(--primary-hover);
 }
+.bg-pro-hover1{
+    background-color: var(--primary-hover);
+}
 .bg-pro-max{
     background-color: var(--secondary-color);
 }
@@ -70,6 +73,76 @@ p , span {
 .text-green1{
     color:#016630
 }
+
+.custom-toastr-clean {
+  background: #ffffff !important;
+  color: #333 !important;
+  border-radius: 12px !important;
+  border-top: 5px solid var(--primary-color); 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 14px 18px !important;
+  font-family: 'Inter', sans-serif;
+  display: block;
+  align-items: center;
+  gap: 12px;
+}
+
+
+.custom-toastr-clean .toast-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+
+.custom-toastr-clean .toast-message {
+  font-size: 0.9rem;
+  color: #444;
+  opacity: 0.9;
+}
+
+.custom-toastr-clean .toast-close-button {
+  color:var(--primary-color) !important;
+  opacity: 0.8;
+  font-size: 18px;
+  transition: 0.3s ease;
+}
+
+.custom-toastr-clean .toast-close-button:hover {
+  transform: scale(1.3);
+  opacity: 1;
+}
+
+/* ✅ شريط التقدم */
+.toast-progress {
+  background-color:var(--primary-color) !important;
+  height: 4px !important;
+  border-radius: 0 0 10px 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @media (min-width:1020px){
     .md-hidden{

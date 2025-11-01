@@ -1,13 +1,14 @@
-import { Component, signal , HostListener  } from '@angular/core';
+import { Component, signal, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Sidebar } from "./components/sidebar/sidebar";
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Sidebar ,CommonModule],
+  standalone: true,
+  imports: [RouterOutlet, Sidebar, CommonModule],
   templateUrl: './app.html',
-  styleUrls: ['./app.css']  // صححت من styleUrl إلى styleUrls
+  styleUrls: ['./app.css']
 })
 export class App {
   protected readonly title = signal('SmartShift');
