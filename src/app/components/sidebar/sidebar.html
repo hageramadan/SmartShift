@@ -1,0 +1,67 @@
+<!-- Overlay للشاشات الصغيرة -->
+<div
+  class="fixed inset-0 bg-black/15 bg-opacity-30 z-40 transition-opacity duration-300 md:hidden"
+  *ngIf="isSidebarOpen && screenWidth < 1020"
+  (click)="closeOnMobile()"
+></div>
+
+<nav
+  class="fixed top-0 left-0 w-64 h-full bg-white 
+  flex flex-col 
+  shadow z-50 transform transition-transform duration-300"
+  [class.-translate-x-full]="!isSidebarOpen && screenWidth < 1020"
+>
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-6 p-4 border-b border-gray-200">
+    <div class="bg-pro text-white p-2 rounded-xl text-center">
+      <i class="fa-solid fa-hospital"></i>
+    </div>
+    <div>
+      <h2 class="text-pro font-semibold text-sm">HealthCare</h2>
+      <p class="text-gray-500 text-xs">Admin Portal</p>
+    </div>
+  </div>
+
+  <!-- User Info -->
+  <div class="flex items-center gap-3 mb-6 px-4">
+    <div class="w-10 h-10 bg-pro text-white rounded-full flex items-center justify-center">
+      D
+    </div>
+    <div>
+      <h4 class="text-sm font-semibold">Dr. Sarah Johnson</h4>
+      <p class="text-gray-500 text-xs">admin</p>
+    </div>
+  </div>
+
+  <!-- Links -->
+  <ul class="flex-1 px-2 overflow-y-auto ">
+    <li *ngFor="let link of links">
+      <a
+        [routerLink]="link.path"
+           routerLinkActive="bg-pro !text-white"
+     [routerLinkActiveOptions]="{ exact: true }"
+        (click)="closeOnMobile()"
+        class="flex items-center gap-0 p-2 rounded  transition-colors duration-50"
+        [ngClass]="{
+      'bg-pro-hover': !(isLinkActive(link.path)),
+      'bg-pro text-white': isLinkActive(link.path)
+    }"
+      >
+        <i [class]="link.icon"></i> {{ link.label }}
+      </a>
+    </li>
+  </ul>
+
+  <!-- Logout -->
+  <div class="mt-4 border-t border-gray-200 pt-2 px-2 w-full py-5  self-end cursor-pointer ">
+    <a
+      routerLink="/login"
+      (click)="closeOnMobile()"
+      class="flex items-center text-[0.9rem] gap-4 text-red-500 hover:text-red-600 
+      transition-colors border border-red-400 rounded-xl text-red1
+       p-2 mt-4 mx-2 bg-red-hover"
+    >
+      <i class="fa-solid fa-right-from-bracket ms-3"></i> Logout
+    </a>
+  </div>
+</nav>

@@ -1,1 +1,78 @@
+
+@import "tailwindcss";
+
 /* You can add global styles to this file, and also import other style files */
+
+:root{
+    --primary-color: #107c8c;
+    --primary-hover:#e8f4f5;
+    --secondary-color: #364153;
+    --third-color: #2d3f51;
+}
+a{
+    text-decoration: none;
+    color: var(--secondary-color);
+}
+body{
+    background-color: #f8f8f8 !important;
+    font-family: 'Roboto', sans-serif;
+}
+h1 , h2 , h3 , h4 , h5 , h6 {
+    color: var(--secondary-color);
+}
+p , span {
+    color: oklch(0.63 0.02 202.36);
+}
+.text-pro{
+    color: var(--primary-color);
+}
+.text-pro-hover{
+    color: var(--third-hover);
+}
+.text-pro-max{
+    color: var(--secondary-color);
+}
+
+.bg-pro{
+    background-color: var(--primary-color);
+}
+.bg-pro-hover:hover{
+    background-color: var(--primary-hover);
+}
+.bg-pro-max{
+    background-color: var(--secondary-color);
+}
+
+.text-red1{
+    color: #e74c3c;
+}
+.bg-red-hover:hover{
+    background-color: #f77d7128;
+}
+.text-blue1{
+    color:#193cb8;
+}
+.bg-blue1{
+    background-color: #dbeafe;
+}
+
+.bg-yellow1{
+    background-color: #fef9c2;
+}
+
+.bg-green1{
+    background-color: #dbfce7;
+}
+.text-yellow1{
+    color:#894b44
+}
+
+.text-green1{
+    color:#016630
+}
+
+@media (min-width:1020px){
+    .md-hidden{
+        display: none !important;
+    }
+}

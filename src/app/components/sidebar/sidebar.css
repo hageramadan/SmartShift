@@ -1,0 +1,108 @@
+
+/* === الأساسيات === */
+.sidebar {
+  width: 250px;
+  height: 100vh; 
+  color: #364153;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transition: 0.3s ease;
+  z-index: 1000;
+}
+
+
+
+
+.close-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 22px;
+  float: right;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  border-bottom: 1px solid #6b788a;
+}
+
+.avatar {
+ background: var(--primary-color);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-list li {
+  padding: 10px 0;
+  cursor: pointer;
+  transition: 0.2s;
+  color: var(--secondary-color);
+}
+
+.nav-list li:hover {
+  background: #107c8c;
+  border-radius: 8px;
+  padding-left: 10px;
+  color: #fff;
+}
+.nav-list li:hover a{
+  color: #fff;
+}
+.nav-list li.active {
+  background: #0ea5e9;
+  border-radius: 8px;
+  padding-left: 10px;
+}
+
+
+/* === للموبايل === */
+.menu-btn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 24px;
+  border: none;
+  border-radius: 6px;
+  width: 45px;
+  height: 45px;
+  z-index: 1100;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    left: -260px;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .menu-btn {
+    display: block;
+  }
+
+  .close-btn {
+    display: block;
+  }
+}
