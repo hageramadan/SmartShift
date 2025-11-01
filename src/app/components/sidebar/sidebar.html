@@ -41,7 +41,7 @@
            routerLinkActive="bg-pro !text-white"
      [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeOnMobile()"
-        class="flex items-center gap-0 p-2 rounded  transition-colors duration-50"
+        class="flex items-center gap-3 p-2 my-2 mx-2 rounded  transition-colors duration-50"
         [ngClass]="{
       'bg-pro-hover': !(isLinkActive(link.path)),
       'bg-pro text-white': isLinkActive(link.path)
