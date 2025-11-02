@@ -1,1 +1,38 @@
-<p>calendar-view works!</p>
+<div class="p-6 space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h2 class="text-2xl font-semibold">Schedule Calendar</h2>
+      <p class="text-gray-500">View schedules by user or department</p>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="flex items-center gap-3">
+    <label class="font-medium text-gray-700">View By:</label>
+    <select
+      [(ngModel)]="selectedDepartment"
+      (change)="onDepartmentChange()"
+      class="border border-gray-300 rounded-md px-4 py-2 focus:ring-1 focus:ring-pro focus:border-pro"
+    >
+      <option value="">All Departments</option>
+      <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+    </select>
+  </div>
+
+  <!-- Calendar -->
+  <div class="bg-white rounded-xl shadow p-4 border border-gray-200">
+    <full-calendar [options]="calendarOptions"></full-calendar>
+  </div>
+
+  <!-- Schedule Details -->
+  <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
+    <h3 class="text-xl font-semibold mb-4 text-gray-800">Schedule Details</h3>
+
+    <div *ngFor="let s of getFilteredShifts()" class="border-b border-gray-100 py-3">
+      <p class="font-semibold text-pro">{{ s.name }}</p>
+      <p class="text-gray-500">{{ s.department }}</p>
+      <p class="text-sm mt-1">{{ s.shiftName }} — {{ s.time }}</p>
+      <p class="text-xs text-gray-400">{{ s.date }}</p>
+    </div>
+  </div>
+</div>

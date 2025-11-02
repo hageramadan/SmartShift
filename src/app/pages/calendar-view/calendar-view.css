@@ -1,0 +1,18 @@
+:host ::ng-deep .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  color: #4a4a4a;
+  font-weight: 600;
+}
+
+:host ::ng-deep .fc-event {
+  border-radius: 8px !important;
+  padding: 2px 6px !important;
+  font-size: 0.85rem !important;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+:host ::ng-deep .fc-event:hover {
+  transform: scale(1.03);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
