@@ -18,6 +18,28 @@ body{
     font-family: 'Roboto', sans-serif;
 }
 
+  select option {
+    background-color: white;
+    color: #2d3f51; 
+    
+  }
+
+  select option:hover,
+  select option:focus,
+  select option:checked {
+    background-color: var(--primary-hover) !important; 
+    color: var(--primary-color) !important;
+  }
+ select option:hover {
+    background-color: var(--primary-hover) !important;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: var(--primary-color); 
+    box-shadow: 0 0 0 2px var(--primary-hover);
+  }
+
 .text-pro{
     color: var(--primary-color);
 }
