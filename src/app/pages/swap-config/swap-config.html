@@ -1,1 +1,141 @@
-<p>swap-config works!</p>
+<div class="p-6 bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">Swap Configuration</h1>
+      <p class="text-gray-600">Configure shift swap policies by department</p>
+    </div>
+
+    <button
+      (click)="openAddForm()"
+      class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+    >
+      + Add Configuration
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto bg-white rounded-xl shadow">
+    <table class="min-w-full text-left text-gray-700">
+      <thead class="bg-gray-100 text-gray-800 font-semibold">
+        <tr>
+          <th class="px-4 py-3">Department</th>
+          <th class="px-4 py-3">Swaps Enabled</th>
+          <th class="px-4 py-3">Requires Approval</th>
+          <th class="px-4 py-3">Min. Advance Notice</th>
+          <th class="px-4 py-3">Max Swaps/Month</th>
+          <th class="px-4 py-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let config of configs" class="border-t">
+          <td class="px-4 py-3 font-semibold">{{ config.department }}</td>
+          <td class="px-4 py-3">{{ config.swapsEnabled ? 'Yes' : 'No' }}</td>
+          <td class="px-4 py-3">{{ config.requiresApproval ? 'Yes' : 'No' }}</td>
+          <td class="px-4 py-3">{{ config.minAdvanceNotice }} days</td>
+          <td class="px-4 py-3">{{ config.maxSwapsPerMonth }}</td>
+          <td class="px-4 py-3 flex gap-2">
+            <button
+              (click)="editConfig(config)"
+              class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
+            >
+              Edit
+            </button>
+            <button
+              (click)="confirmDelete(config)"
+              class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Form Modal -->
+  <div
+    *ngIf="showForm"
+    class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
+  >
+    <div class="bg-white rounded-xl shadow-lg w-[90%] max-w-lg p-6">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+        {{ isEditing ? 'Edit Configuration' : 'Add Configuration' }}
+      </h2>
+
+      <form [formGroup]="form" class="space-y-4">
+        <input
+          type="text"
+          placeholder="Department"
+          formControlName="department"
+          class="border rounded-lg p-2 w-full"
+        />
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" formControlName="swapsEnabled" />
+            <span>Swaps Enabled</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" formControlName="requiresApproval" />
+            <span>Requires Approval</span>
+          </label>
+        </div>
+        <input
+          type="number"
+          placeholder="Min. Advance Notice (days)"
+          formControlName="minAdvanceNotice"
+          class="border rounded-lg p-2 w-full"
+        />
+        <input
+          type="number"
+          placeholder="Max Swaps/Month"
+          formControlName="maxSwapsPerMonth"
+          class="border rounded-lg p-2 w-full"
+        />
+      </form>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button
+          (click)="closeForm()"
+          class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="saveConfig()"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          {{ isEditing ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div
+    *ngIf="showConfirm"
+    class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
+  >
+    <div class="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md text-center">
+      <h3 class="text-xl font-semibold mb-4 text-gray-800">Confirm Delete</h3>
+      <p class="mb-6 text-gray-600">
+        Are you sure you want to delete configuration for
+        <strong>{{ configToDelete?.department }}</strong>?
+      </p>
+      <div class="flex justify-center gap-4">
+        <button
+          (click)="cancelDelete()"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="deleteConfirmed()"
+          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

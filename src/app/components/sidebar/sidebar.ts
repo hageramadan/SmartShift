@@ -23,7 +23,7 @@ export class Sidebar {
   }
 
   links = [
-    { path: '/home', label: 'Home', icon: 'fa-solid fa-house' },
+    { path: '/', label: 'Home', icon: 'fa-solid fa-house' },
     { path: '/departments', label: 'Departments', icon: 'fa-solid fa-hospital' },
     { path: '/sub-departments', label: 'Sub-Departments', icon: 'fa-solid fa-clipboard-list' },
     { path: '/locations', label: 'Locations', icon: 'fa-solid fa-map-marker-alt' },

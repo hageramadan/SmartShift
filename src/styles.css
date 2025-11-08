@@ -17,17 +17,12 @@ body{
     background-color: #f8f8f8 !important;
     font-family: 'Roboto', sans-serif;
 }
-h1 , h2 , h3 , h4 , h5 , h6 {
-    color: var(--secondary-color);
-}
-p  {
-    color: oklch(0.63 0.02 202.36);
-}
+
 .text-pro{
     color: var(--primary-color);
 }
-.text-pro-hover{
-    color: var(--third-hover);
+.text-pro-hover:hover{
+    color: var(--primary-color);
 }
 .text-pro-max{
     color: var(--secondary-color);

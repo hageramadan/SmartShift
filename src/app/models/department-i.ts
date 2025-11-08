@@ -4,4 +4,6 @@ export interface DepartmentI {
   description: string;
   manager: string;
   staffCount: number;
+  members?: number;
 }
+

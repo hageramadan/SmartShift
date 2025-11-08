@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { SubDepartmentI } from '../../models/sub-department-i';
 
 interface DepartmentSimple {
   id: number;
@@ -11,12 +12,7 @@ interface DepartmentSimple {
   staffCount?: number;
 }
 
-interface SubDepartmentI {
-  id: number;
-  name: string;
-  parentId: number | null;
-  description: string;
-}
+
 
 @Component({
   selector: 'app-subdepartments',

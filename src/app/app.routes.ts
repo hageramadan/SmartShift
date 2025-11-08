@@ -12,6 +12,7 @@ import { SwapConfig } from './pages/swap-config/swap-config';
 import { SwapRequests } from './pages/swap-requests/swap-requests';
 import { CalendarView } from './pages/calendar-view/calendar-view';
 import { NotFound } from './components/not-found/not-found';
+import { Login } from './components/login/login';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -25,5 +26,6 @@ export const routes: Routes = [
   { path: 'swap-config', component: SwapConfig },
   { path: 'swap-requests', component: SwapRequests },
   { path: 'calendar-view', component: CalendarView },
+  { path: 'login', component:Login },
   { path: '**', component: NotFound },
 ];
