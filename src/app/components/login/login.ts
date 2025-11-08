@@ -11,18 +11,18 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './login.css',
 })
 export class Login {
- email = '';
-  password = '';
+   email: string = '';
+  password: string = '';
 
   constructor(private router: Router, private toastr: ToastrService) {}
 
   login() {
-    if (this.email === 'admin@hospital.com' && this.password === 'password123') {
-      localStorage.setItem('isLoggedIn', 'true');
-      this.toastr.success('Login successful!');
-      this.router.navigate(['/dashboard']);
+    if (this.email === 'admin@hospital.com' && this.password === '123456') {
+      this.toastr.success('Login successful! ', 'Success');
+      localStorage.setItem('loggedIn', 'true');
+      this.router.navigate(['/']);
     } else {
-      this.toastr.error('Invalid email or password');
+      this.toastr.error('Invalid email or password ', 'Login Failed');
     }
   }
 }
