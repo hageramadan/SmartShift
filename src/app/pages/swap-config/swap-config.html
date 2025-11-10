@@ -1,51 +1,70 @@
-<div class="p-6 bg-gray-50 min-h-screen">
+<div class="p-8 bg-gray-50 min-h-screen">
   <!-- Header -->
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex justify-between items-center mb-8">
     <div>
       <h1 class="text-3xl font-bold text-gray-800">Swap Configuration</h1>
-      <p class="text-gray-600">Configure shift swap policies by department</p>
+      <p class="text-gray-600 mt-1">
+        Configure shift swap policies by department
+      </p>
     </div>
 
     <button
       (click)="openAddForm()"
-      class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
+      class="bg-[var(--primary-color)] cursor-pointer text-white px-5 py-2 rounded-lg transition shadow-md"
     >
       + Add Configuration
     </button>
   </div>
 
   <!-- Table -->
-  <div class="overflow-x-auto bg-white rounded-xl shadow">
-    <table class="min-w-full text-left text-gray-700">
-      <thead class="bg-gray-100 text-gray-800 font-semibold">
+  <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200">
+    <table class="min-w-full text-gray-700">
+      <thead class=" text-gray-700  text-sm capitalize">
         <tr>
-          <th class="px-4 py-3">Department</th>
-          <th class="px-4 py-3">Swaps Enabled</th>
-          <th class="px-4 py-3">Requires Approval</th>
-          <th class="px-4 py-3">Min. Advance Notice</th>
-          <th class="px-4 py-3">Max Swaps/Month</th>
-          <th class="px-4 py-3">Actions</th>
+          <th class="px-5 py-3 text-left">Department</th>
+          <th class="px-5 py-3 text-left">Swaps Enabled</th>
+          <th class="px-5 py-3 text-left">Requires Approval</th>
+          <th class="px-5 py-3 text-left">Min. Advance Notice</th>
+          <th class="px-5 py-3 text-left">Max Swaps/Month</th>
+          <th class="px-5 py-3 text-center">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let config of configs" class="border-t">
-          <td class="px-4 py-3 font-semibold">{{ config.department }}</td>
-          <td class="px-4 py-3">{{ config.swapsEnabled ? 'Yes' : 'No' }}</td>
-          <td class="px-4 py-3">{{ config.requiresApproval ? 'Yes' : 'No' }}</td>
-          <td class="px-4 py-3">{{ config.minAdvanceNotice }} days</td>
-          <td class="px-4 py-3">{{ config.maxSwapsPerMonth }}</td>
-          <td class="px-4 py-3 flex gap-2">
+        <tr
+          *ngFor="let config of configs"
+          class="border-t hover:bg-gray-50 transition border-gray-200"
+        >
+          <td class="px-5 py-3  text-gray-800">
+            {{ config.department }}
+          </td>
+          <td class="px-5 py-3">
+            <span
+              [class]="config.swapsEnabled ? 'text-green-600 font-medium' : 'text-red-500 font-medium'"
+            >
+              {{ config.swapsEnabled ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td class="px-5 py-3">
+            <span
+              [class]="config.requiresApproval ? 'text-green-600 font-medium' : 'text-red-500 font-medium'"
+            >
+              {{ config.requiresApproval ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td class="px-5 py-3">{{ config.minAdvanceNotice }} days</td>
+          <td class="px-5 py-3">{{ config.maxSwapsPerMonth }}</td>
+          <td class="px-5 py-3 text-center flex gap-2 justify-center">
             <button
               (click)="editConfig(config)"
-              class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500"
+              class="px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
             >
-              Edit
+              <i class="fa-solid fa-pencil text-gray-600"></i>
             </button>
             <button
               (click)="confirmDelete(config)"
-              class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+              class="text-red-500 px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
             >
-              Delete
+              <i class="fa-regular fa-trash-can"></i>
             </button>
           </td>
         </tr>
@@ -58,52 +77,95 @@
     *ngIf="showForm"
     class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
   >
-    <div class="bg-white rounded-xl shadow-lg w-[90%] max-w-lg p-6">
-      <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+    <div class="bg-white rounded-2xl shadow-xl w-[90%] max-w-lg p-8 relative">
+      <h2 class="text-2xl font-semibold mb-6 text-gray-800 text-center">
         {{ isEditing ? 'Edit Configuration' : 'Add Configuration' }}
       </h2>
 
-      <form [formGroup]="form" class="space-y-4">
-        <input
-          type="text"
-          placeholder="Department"
-          formControlName="department"
-          class="border rounded-lg p-2 w-full"
-        />
-        <div class="flex items-center gap-3">
-          <label class="flex items-center gap-2">
-            <input type="checkbox" formControlName="swapsEnabled" />
-            <span>Swaps Enabled</span>
-          </label>
-          <label class="flex items-center gap-2">
-            <input type="checkbox" formControlName="requiresApproval" />
-            <span>Requires Approval</span>
+      <form [formGroup]="form" class="space-y-5">
+        <!-- Department -->
+        <div class="relative">
+          <input
+            type="text"
+            id="department"
+            placeholder=" "
+            formControlName="department"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+          />
+          <label
+            for="department"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+          >
+            Department
           </label>
         </div>
-        <input
-          type="number"
-          placeholder="Min. Advance Notice (days)"
-          formControlName="minAdvanceNotice"
-          class="border rounded-lg p-2 w-full"
-        />
-        <input
-          type="number"
-          placeholder="Max Swaps/Month"
-          formControlName="maxSwapsPerMonth"
-          class="border rounded-lg p-2 w-full"
-        />
+
+        <!-- Toggles -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 text-gray-700">
+            <input
+              type="checkbox"
+              formControlName="swapsEnabled"
+              class="accent-[var(--primary-color)]"
+            />
+            Swaps Enabled
+          </label>
+
+          <label class="flex items-center gap-2 text-gray-700">
+            <input
+              type="checkbox"
+              formControlName="requiresApproval"
+              class="accent-[var(--primary-color)]"
+            />
+            Requires Approval
+          </label>
+        </div>
+
+        <!-- Numeric Inputs -->
+        <div class="relative">
+          <input
+            type="number"
+            id="minNotice"
+            placeholder=" "
+            formControlName="minAdvanceNotice"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+          />
+          <label
+            for="minNotice"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+          >
+            Min. Advance Notice (days)
+          </label>
+        </div>
+
+        <div class="relative">
+          <input
+            type="number"
+            id="maxSwaps"
+            placeholder=" "
+            formControlName="maxSwapsPerMonth"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+          />
+          <label
+            for="maxSwaps"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+          >
+            Max Swaps/Month
+          </label>
+        </div>
       </form>
 
+      <!-- Buttons -->
       <div class="flex justify-end gap-3 mt-6">
         <button
           (click)="closeForm()"
-          class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400"
+          class="px-4 py-2 rounded-lg border border-[var(--third-color)] text-[var(--third-color)] hover:bg-[var(--primary-hover)] transition"
         >
           Cancel
         </button>
         <button
           (click)="saveConfig()"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          class="px-4 py-2 rounded-lg bg-[var(--primary-color)] text-white hover:bg-[var(--third-color)] transition"
         >
           {{ isEditing ? 'Update' : 'Save' }}
         </button>
@@ -116,22 +178,27 @@
     *ngIf="showConfirm"
     class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
   >
-    <div class="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md text-center">
-      <h3 class="text-xl font-semibold mb-4 text-gray-800">Confirm Delete</h3>
-      <p class="mb-6 text-gray-600">
+    <div
+      class="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 text-center border-t-4 border-red-500"
+    >
+      <h3 class="text-xl font-semibold mb-4 text-gray-800">
+        Confirm Delete
+      </h3>
+      <p class="text-gray-600 mb-6">
         Are you sure you want to delete configuration for
         <strong>{{ configToDelete?.department }}</strong>?
       </p>
+
       <div class="flex justify-center gap-4">
         <button
           (click)="cancelDelete()"
-          class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
         >
           Cancel
         </button>
         <button
           (click)="deleteConfirmed()"
-          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
         >
           Delete
         </button>

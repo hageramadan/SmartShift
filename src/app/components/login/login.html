@@ -1,6 +1,44 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-100">
-  <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Admin Login</h2>
+<div
+  class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e8f4f5] via-white to-[#e8f4f5] px-4"
+>
+  <div class="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md border border-gray-100">
+    <!-- Logo + Header -->
+    <div class="text-center mb-8">
+      <div
+        class="mx-auto w-16 h-16 bg-[#e8f4f5] text-[#107c8c] rounded-full flex items-center justify-center text-3xl font-bold"
+      >
+        A
+      </div>
+      <h2 class="text-3xl font-extrabold text-[#2d3f51] mt-4">Admin Login</h2>
+      <p class="text-[#364153]/70 text-sm mt-1">Welcome back! Please log in to continue.</p>
+    </div>
+
+    <!-- Login Form -->
+    <form #loginForm="ngForm" (ngSubmit)="login()" novalidate class="space-y-6">
+      <!-- Email -->
+      <div class="relative">
+        <input
+          type="email"
+          name="email"
+          required
+          [(ngModel)]="email"
+          #emailField="ngModel"
+          placeholder=" "
+          class="peer w-full border rounded-lg p-3 pt-5 text-gray-800 focus:ring-2 focus:ring-[#107c8c] focus:border-[#107c8c] outline-none transition placeholder-transparent"
+          [ngClass]="{
+            'border-red-500 focus:ring-red-500 focus:border-red-500':
+              emailField.invalid && emailField.touched
+          }"
+        />
+        <label
+          class="absolute left-3 top-3 text-gray-500 text-sm transition-all duration-200 peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#107c8c]"
+        >
+          Email
+        </label>
+        <div *ngIf="emailField.invalid && emailField.touched" class="text-red-500 text-xs mt-1">
+          Please enter a valid email.
+        </div>
+      </div>
 
     <div class="space-y-4">
       <input
@@ -44,6 +82,14 @@
         </span>
         }
       </button>
+    </form>
+
+    <!-- Footer -->
+    <div class="text-center mt-6 text-sm text-[#364153]/80">
+      <p>
+        Forgot your password?
+        <a href="#" class="text-[#107c8c] hover:text-[#0e6d7b] hover:underline"> Reset it here </a>
+      </p>
     </div>
   </div>
 </div>

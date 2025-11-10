@@ -1,173 +1,207 @@
 <div class="p-8 bg-gray-50 min-h-screen">
-  <h2 class="text-2xl font-bold mb-6 text-gray-800">My Profile</h2>
-
-  <!-- Profile Header -->
-  <div class="bg-white shadow-md rounded-lg p-6 flex flex-col md:flex-row items-center gap-6">
-    <div class="w-20 h-20 flex items-center justify-center bg-pro text-white text-3xl font-bold rounded-full">
-      D
-    </div>
-    <div class="flex-1">
-      <h3 class="text-xl font-semibold text-gray-800">{{ admin.name }}</h3>
-      <p class="text-gray-500">{{ admin.position }}</p>
-      <p class="text-sm text-gray-400 mt-1">{{ admin.accessLevel }} (Head)</p>
-    </div>
-    <button
-      (click)="openEditForm()"
-      class="bg-pro cursor-pointer text-white px-4 py-2 rounded-lg"
-    >
-      Edit Profile
-    </button>
-  </div>
-
-  <!-- Info Section -->
-  <div class="grid md:grid-cols-2 gap-6 mt-8">
-    <div class="bg-white shadow-sm rounded-lg p-6">
-      <h4 class="font-semibold text-gray-700 mb-4">Account Details</h4>
-      <div class="space-y-3 text-sm text-gray-600">
-        <p><span class="font-semibold">Email:</span> {{ admin.email }}</p>
-        <p><span class="font-semibold">Department:</span> {{ admin.department }}</p>
-        <p><span class="font-semibold">Position:</span> {{ admin.position }}</p>
-        <p><span class="font-semibold">Access Level:</span> {{ admin.accessLevel }}</p>
+  <h2 class="text-2xl mb-1 text-gray-800">My Profile</h2>
+  <p class="text-gray-500 mb-4">View and manage your profile information</p>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <!-- Profile Header -->
+    <div class="bg-white col-span-1 border border-gray-200 rounded-lg p-6 flex flex-col items-center gap-6">
+      <div
+        class="w-20 h-20 flex items-center justify-center bg-pro text-white text-3xl font-bold rounded-full"
+      >
+        D
       </div>
-    </div>
+      <div class="flex-1 text-center ">
+        <h3 class="text-xl font-semibold text-gray-800">{{ admin.name }}</h3>
+        <p class="text-gray-500">{{ admin.position }}</p>
+        <p class="text-sm text-white w-fit px-2 py-1 bg-pro mx-auto rounded mt-1">
+          {{ admin.accessLevel }} (Head)
+        </p>
+      </div>
+      <div class="self-start mt-3 border-t border-gray-200 w-full">
+        <div class="bg-white py-6">
+          <div class="space-y-3 text-sm text-gray-600 flex flex-col gap-4">
+            <div class="flex items-center gap-4">
+              <i class="fa-regular fa-envelope text-pro text-xl"></i>
+              <p class="flex flex-col text-[16px]">
+                <span class="text-gray-500 text-md">Email:</span> {{ admin.email }}
+              </p>
+            </div>
+            <div class="flex items-center gap-4">
+              <i class="fa-regular fa-hospital text-pro text-xl"></i>
+              <p class="flex flex-col text-[16px]">
+                <span class="text-gray-500 text-md">Department:</span> {{ admin.department }}
+              </p>
+            </div>
 
-    <div class="bg-white shadow-sm rounded-lg p-6">
-      <h4 class="font-semibold text-gray-700 mb-4">Account Statistics</h4>
-      <div class="grid grid-cols-3 text-center text-gray-700">
-        <div>
-          <p class="text-lg font-bold">{{ admin.totalShifts }}</p>
-          <p class="text-sm text-gray-500">Total Shifts</p>
+            <div class="flex items-center gap-4">
+              <i class="fa-solid fa-suitcase text-pro text-xl"></i>
+              <p class="flex flex-col text-[16px]">
+                <span class="text-gray-500 text-md">Position:</span> {{ admin.position }}
+              </p>
+            </div>
+
+            <div class="flex items-center gap-4">
+              <i class="fa-solid fa-shield-heart text-pro text-xl"></i>
+              <p class="flex flex-col text-[16px]">
+                <span class="text-gray-500 text-md">Access Level:</span> {{ admin.accessLevel }}
+              </p>
+            </div>
+          </div>
         </div>
-        <div>
-          <p class="text-lg font-bold">{{ admin.upcoming }}</p>
-          <p class="text-sm text-gray-500">Upcoming</p>
+      </div>
+      <button
+        (click)="openEditForm()"
+        class="bg-pro w-full cursor-pointer text-white px-4 py-1 rounded-lg"
+      >
+        Edit Profile
+      </button>
+    </div>
+   
+    <div class="flex flex-col gap-4 lg:col-span-2 col-span-1">
+ <!-- count statistics -->
+    <div class="bg-white  border border-gray-200 rounded-lg p-6 ">
+      <h4 class=" text-gray-700 mb-7">Account Statistics</h4>
+      <div class="grid grid-cols-1 lg:grid-cols-3 text-gray-700 gap-3">
+        <div class="bg-gray-50 rounded-xl p-3 flex flex-col gap-2">
+          <i class="fa-regular fa-calendar text-pro text-[1.5rem]"></i>
+          <p class="text-sm text-gray-500 mt-2">Total Shifts</p>
+          <p class="text-md ">{{ admin.totalShifts }}</p>
+          
         </div>
-        <div>
-          <p class="text-lg font-bold">{{ admin.completed }}</p>
-          <p class="text-sm text-gray-500">Completed</p>
+        <div  class="bg-gray-50 rounded p-3 flex flex-col gap-2">
+          <i class="fa-regular fa-clock text-pro text-[1.5rem]"></i>
+          <p class="text-sm text-gray-500 mt-2">Upcoming</p>
+          <p class="text-md ">{{ admin.upcoming }}</p>
+          
+        </div>
+        <div  class="bg-gray-50 rounded p-3 flex flex-col gap-2">
+          <i class="fa-regular fa-calendar text-green-600 text-[1.5rem]"></i>
+          <p class="text-sm text-gray-500 mt-2">Completed</p>
+          <p class="text-md ">{{ admin.completed }}</p>
+          
         </div>
       </div>
 
-      <div class="mt-6 text-gray-500 text-sm italic text-center">
-        No upcoming shifts scheduled
-      </div>
     </div>
-  </div>
+    <div class="bg-white border border-gray-200 rounded-lg p-6">
+      <h6>Upcoming Shifts</h6>
+      <div class="mt-6 text-gray-500 text-md text-center pb-5">No upcoming shifts scheduled</div>
 
+    </div>
   <!-- Permissions -->
-  <div class="bg-white shadow-sm rounded-lg p-6 mt-8">
-    <h4 class="font-semibold text-gray-700 mb-4">Permissions & Access</h4>
-    <div class="space-y-3 text-sm text-gray-700">
-      <p>Full System Access: <span class="text-green-600 font-semibold">Granted</span></p>
-      <p>Manage All Departments: <span class="text-green-600 font-semibold">Granted</span></p>
-      <p>Approve/Reject Swaps: <span class="text-green-600 font-semibold">Granted</span></p>
+  <div class="bg-white border border-gray-200 rounded-lg p-6">
+    <h4 class=" text-gray-700 mb-5">Permissions & Access</h4>
+    <div class="space-y-3 text-md text-gray-700 flex flex-col gap-2 mt-6">
+      <p class="flex justify-between items-center bg-[#eefdf3] p-2 rounded-lg">Full System Access: <span 
+        class="bg-green-800 text-white px-2 rounded">Granted</span></p>
+      <p class="flex justify-between items-center bg-[#eefdf3] p-2 rounded-lg">Manage All Departments: <span 
+        class="bg-green-800 text-white px-2 rounded ">Granted</span></p>
+      <p class="flex justify-between items-center bg-[#eefdf3] p-2 rounded-lg">Approve/Reject Swaps: <span 
+        class="bg-green-800 text-white px-2 rounded ">Granted</span></p>
     </div>
   </div>
+    </div>
+
+    
+  </div>
+
+
+
 
   <!-- Edit Profile Modal -->
- <div
-  *ngIf="showEditForm"
-  class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
->
-  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md relative">
-    <h3 class="text-2xl font-semibold mb-6" style="color: var(--secondary-color)">
-      Edit Profile
-    </h3>
+  <div
+    *ngIf="showEditForm"
+    class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
+  >
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md relative">
+      <h3 class="text-2xl font-semibold mb-6" style="color: var(--secondary-color)">
+        Edit Profile
+      </h3>
 
-    <div class="grid grid-cols-1 gap-5">
-      <!-- Full Name -->
-      <div class="relative">
-        <input
-          [(ngModel)]="tempAdmin.name"
-          type="text"
-          id="name"
-          placeholder=" "
-          class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
-        />
-        <label
-          for="name"
-          class="absolute left-3 top-3 text-gray-400 text-sm transition-all 
-                 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
-                 peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
-        >
-          Full Name
-        </label>
+      <div class="grid grid-cols-1 gap-5">
+        <!-- Full Name -->
+        <div class="relative">
+          <input
+            [(ngModel)]="tempAdmin.name"
+            type="text"
+            id="name"
+            placeholder=" "
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+          />
+          <label
+            for="name"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+          >
+            Full Name
+          </label>
+        </div>
+
+        <!-- Email -->
+        <div class="relative">
+          <input
+            [(ngModel)]="tempAdmin.email"
+            type="email"
+            id="email"
+            placeholder=" "
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+          />
+          <label
+            for="email"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+          >
+            Email
+          </label>
+        </div>
+
+        <!-- Department -->
+        <div class="relative">
+          <input
+            [(ngModel)]="tempAdmin.department"
+            type="text"
+            id="department"
+            placeholder=" "
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+          />
+          <label
+            for="department"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+          >
+            Department
+          </label>
+        </div>
+
+        <!-- Position -->
+        <div class="relative">
+          <input
+            [(ngModel)]="tempAdmin.position"
+            type="text"
+            id="position"
+            placeholder=" "
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+          />
+          <label
+            for="position"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+          >
+            Position
+          </label>
+        </div>
       </div>
 
-      <!-- Email -->
-      <div class="relative">
-        <input
-          [(ngModel)]="tempAdmin.email"
-          type="email"
-          id="email"
-          placeholder=" "
-          class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
-        />
-        <label
-          for="email"
-          class="absolute left-3 top-3 text-gray-400 text-sm transition-all 
-                 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
-                 peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+      <!-- Buttons -->
+      <div class="flex justify-end gap-3 mt-6">
+        <button
+          (click)="closeForm()"
+          class="px-4 py-2 rounded-lg border border-[var(--third-color)] text-[var(--third-color)] hover:bg-[var(--primary-hover)] transition"
         >
-          Email
-        </label>
-      </div>
-
-      <!-- Department -->
-      <div class="relative">
-        <input
-          [(ngModel)]="tempAdmin.department"
-          type="text"
-          id="department"
-          placeholder=" "
-          class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
-        />
-        <label
-          for="department"
-          class="absolute left-3 top-3 text-gray-400 text-sm transition-all 
-                 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
-                 peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+          Cancel
+        </button>
+        <button
+          (click)="saveChanges()"
+          class="px-4 py-2 rounded-lg bg-[var(--primary-color)] text-white hover:bg-[var(--third-color)] transition"
         >
-          Department
-        </label>
+          Save
+        </button>
       </div>
-
-      <!-- Position -->
-      <div class="relative">
-        <input
-          [(ngModel)]="tempAdmin.position"
-          type="text"
-          id="position"
-          placeholder=" "
-          class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
-        />
-        <label
-          for="position"
-          class="absolute left-3 top-3 text-gray-400 text-sm transition-all 
-                 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
-                 peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
-        >
-          Position
-        </label>
-      </div>
-    </div>
-
-    <!-- Buttons -->
-    <div class="flex justify-end gap-3 mt-6">
-      <button
-        (click)="closeForm()"
-        class="px-4 py-2 rounded-lg border border-[var(--third-color)] text-[var(--third-color)] hover:bg-[var(--primary-hover)] transition"
-      >
-        Cancel
-      </button>
-      <button
-        (click)="saveChanges()"
-        class="px-4 py-2 rounded-lg bg-[var(--primary-color)] text-white hover:bg-[var(--third-color)] transition"
-      >
-        Save
-      </button>
     </div>
   </div>
-</div>
-
 </div>
