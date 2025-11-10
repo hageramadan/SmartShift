@@ -20,10 +20,16 @@ export class Departments implements OnInit {
   submitted = false; // ✅ نتحقق هل المستخدم ضغط حفظ
 
   formData: DepartmentI = {
-    id: 0,
+    _id: '',
     name: '',
-    description: '',
-    manager: '',
+    address: '',
+    locationId: '',
+    manager: {
+      _id: '',
+      employeeId: '',
+      fullName: '',
+      contactNumber: '',
+    },
     staffCount: 0,
   };
 
@@ -46,27 +52,27 @@ export class Departments implements OnInit {
       this.departments = JSON.parse(saved);
     } else {
       this.departments = [
-        {
-          id: 1,
-          name: 'Emergency Department',
-          description: 'Handles all emergency and urgent care patients',
-          manager: 'Dr. Michael Chen',
-          staffCount: 4,
-        },
-        {
-          id: 2,
-          name: 'Intensive Care Unit',
-          description: 'Critical care for severely ill patients',
-          manager: 'Dr. James Wilson',
-          staffCount: 2,
-        },
-        {
-          id: 3,
-          name: 'Surgery Department',
-          description: 'Surgical procedures and post-operative care',
-          manager: 'Dr. Sarah Johnson',
-          staffCount: 0,
-        },
+        // {
+        //   id: 1,
+        //   name: 'Emergency Department',
+        //   description: 'Handles all emergency and urgent care patients',
+        //   manager: 'Dr. Michael Chen',
+        //   staffCount: 4,
+        // },
+        // {
+        //   id: 2,
+        //   name: 'Intensive Care Unit',
+        //   description: 'Critical care for severely ill patients',
+        //   manager: 'Dr. James Wilson',
+        //   staffCount: 2,
+        // },
+        // {
+        //   id: 3,
+        //   name: 'Surgery Department',
+        //   description: 'Surgical procedures and post-operative care',
+        //   manager: 'Dr. Sarah Johnson',
+        //   staffCount: 0,
+        // },
       ];
       this.saveToLocalStorage();
     }
@@ -79,7 +85,7 @@ export class Departments implements OnInit {
   addDepartment() {
     this.showForm = true;
     this.selectedDepartment = null;
-    this.formData = { id: 0, name: '', description: '', manager: '', staffCount: 0 };
+    this.formData = { _id: '0', name: '', address: '', locationId: '', managerId: '', staffCount: 0 };
     this.submitted = false;
   }
 
@@ -92,9 +98,9 @@ export class Departments implements OnInit {
 
   saveDepartment() {
     this.submitted = true;
-    const { name, description, manager } = this.formData;
+    const { name, address, manager } = this.formData;
 
-    if (!name.trim() || !description.trim() || !manager.trim()) {
+    if (!name.trim() || !address.trim() || !manager) {
       this.toastr.warning('Please fill in all required fields.', 'Missing Data');
       return;
     }
@@ -106,18 +112,18 @@ export class Departments implements OnInit {
       this.departments[index] = { ...this.formData };
       this.toastr.success('Department updated successfully!', 'Updated');
     } else {
-      const newDep = { ...this.formData, id: Date.now() };
-      this.departments.push(newDep);
-      this.toastr.success('Department created successfully!', 'Created');
+      // const newDep = { ...this.formData, id: Date.now() };
+      // this.departments.push(newDep);
+      // this.toastr.success('Department created successfully!', 'Created');
     }
 
     this.saveToLocalStorage();
     this.showForm = false;
   }
 
-  confirmDelete(id: number) {
+  confirmDelete(id: string) {
     this.showConfirm = true;
-    this.deleteId = id;
+    // this.deleteId = _id;
   }
 
   cancelDelete() {
@@ -127,7 +133,7 @@ export class Departments implements OnInit {
 
   deleteDepartmentConfirmed() {
     if (this.deleteId !== null) {
-      this.departments = this.departments.filter((d) => d.id !== this.deleteId);
+      // this.departments = this.departments.filter((d) => d.id !== this.deleteId);
       this.saveToLocalStorage();
       this.toastr.info('Department deleted successfully.', 'Deleted');
     }

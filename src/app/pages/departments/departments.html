@@ -33,7 +33,7 @@
           class="border-b hover:bg-gray-50 transition border-gray-200"
         >
           <td class="py-3 px-4">{{ dep.name }}</td>
-          <td class="py-3 px-4">{{ dep.description }}</td>
+          <td class="py-3 px-4">{{ dep.address }}</td>
           <td class="py-3 px-4">{{ dep.manager }}</td>
           <td class="py-3 px-4">{{ dep.staffCount }}</td>
           <td class="py-3 px-4 flex justify-center gap-2">
@@ -44,7 +44,7 @@
               <i class="fa-regular fa-pen-to-square"></i>
             </button>
             <button
-              (click)="confirmDelete(dep.id)"
+              (click)="confirmDelete(dep._id)"
               class="text-red1 hover:text-red-600 transition px-3 py-1 rounded text-sm cursor-pointer"
             >
               <i class="fa-regular fa-trash-can"></i>
@@ -118,11 +118,11 @@
       <!-- Description -->
       <div class="relative col-span-2">
         <textarea
-          [(ngModel)]="formData.description"
+          [(ngModel)]="formData.address"
           id="deptDesc"
           rows="3"
           [ngClass]="{
-            'border-red-500': submitted && !formData.description
+            'border-red-500': submitted && !formData.address
           }"
           class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent resize-none"
           placeholder=" "

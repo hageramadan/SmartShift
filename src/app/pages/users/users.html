@@ -15,12 +15,16 @@
 
   <!-- Table -->
   <div class="overflow-x-auto">
-    <table class="min-w-full text-[0.9rem] bg-white rounded-xl shadow border border-gray-200 overflow-hidden text-gray-700 ">
+    <table
+      class="min-w-full text-[0.9rem] bg-white rounded-xl shadow border border-gray-200 overflow-hidden text-gray-700"
+    >
       <thead class="bg-gray-50 text-left border-b border-gray-200">
         <tr>
+          <th class="py-3 px-4">ID</th>
           <th class="py-3 px-4">Name</th>
           <th class="py-3 px-4">Email</th>
           <th class="py-3 px-4">Position</th>
+          <th class="py-3 px-4">Level</th>
           <th class="py-3 px-4">Role</th>
           <th class="py-3 px-4">Department</th>
           <th class="py-3 px-4 text-center">Actions</th>
@@ -28,18 +32,22 @@
       </thead>
       <tbody>
         <tr
-          *ngFor="let user of users"
+          *ngFor="let user of users; trackBy: trackByUserId"
           class="border-b hover:bg-gray-50 transition rounded-xl border-gray-200"
         >
-          <td class="py-3 px-4"> <i class="fa-regular fa-circle-user text-pro me-2"></i> {{ user.name }}</td>
-          <td class="py-3 px-4">{{ user.email }}</td>
-          <td class="py-3 px-4">{{ user.position }}</td>
+          <td class="py-3 px-4">{{ user?.employeeId }}</td>
           <td class="py-3 px-4">
-            <span  [ngClass]="getRoleClass(user.role)">
-                    {{ user.role }}
+            <i class="fa-regular fa-circle-user text-pro me-2"></i> {{ user?.fullName }}
+          </td>
+          <td class="py-3 px-4">{{ user?.email }}</td>
+          <td class="py-3 px-4">{{ user?.position?.name || 'N/A' }}</td>
+          <td class="py-3 px-4">{{ user?.level?.name || 'N/A' }}</td>
+          <td class="py-3 px-4">
+            <span [ngClass]="getRoleClass(user.role)">
+              {{ user?.role }}
             </span>
-            </td>
-          <td class="py-3 px-4">{{ user.department }}</td>
+          </td>
+          <td class="py-3 px-4">{{ user?.department?.name || 'N/A' }}</td>
           <td class="py-3 px-4 flex justify-center gap-2">
             <button
               (click)="editUser(user)"
@@ -48,7 +56,7 @@
               <i class="fa-regular fa-pen-to-square"></i>
             </button>
             <button
-              (click)="confirmDelete(user.id)"
+              (click)="confirmDelete(user._id)"
               class="text-red-500 hover:text-red-700 transition px-3 py-1 rounded text-sm"
             >
               <i class="fa-regular fa-trash-can"></i>
@@ -59,7 +67,7 @@
     </table>
   </div>
 
-  <!-- ✅ Form Modal -->
+  <!-- Form Modal -->
   <div
     *ngIf="showForm"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
@@ -70,21 +78,73 @@
       </h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Name -->
+        <!-- First Name -->
         <div class="relative">
           <input
-            [(ngModel)]="formData.name"
-            id="name"
+            [(ngModel)]="formData.firstName"
+            id="firstName"
             type="text"
-            [ngClass]="{ 'border-red-500': submitted && !formData.name }"
+            [ngClass]="{ 'border-red-500': submitted && !formData.firstName }"
             class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
-            placeholder="Name"
+            placeholder=" "
           />
           <label
-            for="name"
+            for="firstName"
             class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
           >
-            Name
+            First Name *
+          </label>
+        </div>
+
+        <!-- Last Name -->
+        <div class="relative">
+          <input
+            [(ngModel)]="formData.lastName"
+            id="lastName"
+            type="text"
+            [ngClass]="{ 'border-red-500': submitted && !formData.lastName }"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
+            placeholder="First Name"
+          />
+          <label
+            for="LastName"
+            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+          >
+            last Name *
+          </label>
+        </div>
+
+        <!-- Nickname -->
+        <div class="relative">
+          <input
+            [(ngModel)]="formData.nickname"
+            id="nickname"
+            type="text"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
+            placeholder="Nickname"
+          />
+          <label
+            for="nickname"
+            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+          >
+            Nickname
+          </label>
+        </div>
+
+        <!-- Contact Number -->
+        <div class="relative">
+          <input
+            [(ngModel)]="formData.contactNumber"
+            id="contactNumber"
+            type="tel"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
+            placeholder="Contact Number"
+          />
+          <label
+            for="contactNumber"
+            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+          >
+            Contact Number
           </label>
         </div>
 
@@ -102,26 +162,32 @@
             for="email"
             class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
           >
-            Email
+            Email *
           </label>
         </div>
 
         <!-- Position -->
-        <div class="relative col-span-2">
-          <input
-            [(ngModel)]="formData.position"
-            id="position"
-            type="text"
-            [ngClass]="{ 'border-red-500': submitted && !formData.position }"
-            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
-            placeholder="Position"
-          />
-          <label
-            for="position"
-            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+        <div>
+          <select
+            [(ngModel)]="formData.positionId"
+            [ngClass]="{ 'border-red-500': submitted && !formData.positionId }"
+            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition"
           >
-            Position
-          </label>
+            <option value="" disabled>Select Position *</option>
+            <option *ngFor="let p of positions" [value]="p._id">{{ p.name }}</option>
+          </select>
+        </div>
+
+        <!-- Level -->
+        <div>
+          <select
+            [(ngModel)]="formData.levelId"
+            [ngClass]="{ 'border-red-500': submitted && !formData.levelId }"
+            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition"
+          >
+            <option value="" disabled>Select Level *</option>
+            <option *ngFor="let l of levels" [value]="l._id">{{ l.name }}</option>
+          </select>
         </div>
 
         <!-- Role -->
@@ -139,13 +205,13 @@
         <!-- Department -->
         <div>
           <select
-            [(ngModel)]="formData.department"
-            [ngClass]="{ 'border-red-500': submitted && !formData.department }"
+            [(ngModel)]="formData.departmentId"
+            [ngClass]="{ 'border-red-500': submitted && !formData.departmentId }"
             class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition"
           >
-            <option value="" disabled selected>Select Department</option>
-            <option *ngFor="let dept of departments" [value]="dept">
-              {{ dept }}
+            <option value="" disabled selected>Select Department *</option>
+            <option *ngFor="let dept of departments" [value]="dept._id">
+              {{ dept.name }}
             </option>
           </select>
         </div>
@@ -169,7 +235,7 @@
     </div>
   </div>
 
-  <!-- ✅ Confirm Delete Modal -->
+  <!-- Confirm Delete Modal -->
   <div
     *ngIf="showConfirm"
     class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn"

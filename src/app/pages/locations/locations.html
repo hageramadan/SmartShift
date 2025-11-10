@@ -36,14 +36,14 @@
             (click)="confirmDelete(loc.id)"
             class="text-red-500 px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
           >
-            
+
             <i class="fa-regular fa-trash-can"></i>
           </button>
         </div>
       </div>
       <h3 class="text-lg  text-gray-600 mt-4">{{ loc.name }}</h3>
       <p class="text-gray-500 my-8">{{ loc.address }}</p>
-      <p class="bg-pro-hover1 text-pro w-fit px-3 rounded-full py-1 text-[13px]  mb-3">{{ loc.department }}</p>
+      <p class="bg-pro-hover1 text-pro w-fit px-3 rounded-full py-1 text-[13px]  mb-3">{{ 'loc.department '}}</p>
     </div>
   </div>
 
@@ -63,16 +63,15 @@
         <input
           type="text"
           id="location"
-          [(ngModel)]="newLocation.name"
           class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
           required
         />
         <label
           for="location"
-          class="absolute left-3 top-3 text-gray-400 text-sm 
+          class="absolute left-3 top-3 text-gray-400 text-sm
           transition-all peer-placeholder-shown:top-3
            peer-placeholder-shown:text-gray-400
-            peer-placeholder-shown:text-sm peer-focus:-top-2 
+            peer-placeholder-shown:text-sm peer-focus:-top-2
             peer-focus:text-pro peer-focus:text-xs bg-white px-1"
         >
           Location Name
@@ -84,7 +83,6 @@
         <input
           type="text"
           id="address"
-          [(ngModel)]="newLocation.address"
           class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
           required
         />
@@ -102,7 +100,6 @@
       <div class="relative">
         <select
           id="department"
-          [(ngModel)]="newLocation.department"
           class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none bg-white"
           required
         >
@@ -111,8 +108,8 @@
         </select>
         <label
           for="department"
-          class="absolute left-3 top-3 text-gray-400 text-sm transition-all 
-          peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 
+          class="absolute left-3 top-3 text-gray-400 text-sm transition-all
+          peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400
           peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
         >
           Department

@@ -2,15 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  position: string;
-  role: string;
-  department: string;
-}
+import { UserService } from '../../services/user.service';
+import { SharedService } from '../../services/shared.service';
+import { UserI } from '../../models/user-i';
+import { DepartmentI } from '../../models/department-i';
+import { PositionI } from '../../models/position-i';
+import { LevelI } from '../../models/level-i';
+import { forkJoin, generate } from 'rxjs';
 
 @Component({
   selector: 'app-users',
@@ -20,138 +18,127 @@ interface User {
   styleUrls: ['./users.css'],
 })
 export class Users implements OnInit {
-  users: User[] = [];
-  departments = ['Emergency Department', 'Intensive Care Unit', 'Surgery Department'];
-  roles = ['admin (Head)', 'manager', 'staff'];
+  users: UserI[] = [];
+  departments: DepartmentI[] = [];
+  positions: PositionI[] = [];
+  levels: LevelI[] = [];
+  roles = ['admin', 'manager', 'user'];
 
-  formData: User = {
-    id: 0,
-    name: '',
-    email: '',
-    position: '',
-    role: '',
-    department: '',
-  };
+  formData: Partial<UserI> = {};
 
-  selectedUser: User | null = null;
+  selectedUser: UserI | null = null;
   showForm = false;
   showConfirm = false;
-  deleteId: number | null = null;
+  deleteId: string | null = null;
   submitted = false;
 
-  constructor(private toastr: ToastrService) {}
+  constructor(
+    private toastr: ToastrService,
+    private sharedSrv: SharedService,
+    private userService: UserService,
+  ) { }
 
   ngOnInit() {
-    this.loadUsers();
+    this.loadAllSharedData();
   }
 
-  loadUsers() {
-    const saved = localStorage.getItem('users');
-    if (saved) {
-      this.users = JSON.parse(saved);
-    } else {
-      this.users = [
-        {
-          id: 1,
-          name: 'Dr. Sarah Johnson',
-          email: 'sarah.johnson@hospital.com',
-          position: 'Chief Administrator',
-          role: 'admin (Head)',
-          department: 'Emergency Department',
-        },
-        {
-          id: 2,
-          name: 'Dr. Michael Chen',
-          email: 'michael.chen@hospital.com',
-          position: 'Emergency Department Manager',
-          role: 'manager',
-          department: 'Emergency Department',
-        },
-        {
-          id: 3,
-          name: 'Nurse Emily Rodriguez',
-          email: 'emily.rodriguez@hospital.com',
-          position: 'Registered Nurse',
-          role: 'staff',
-          department: 'Emergency Department',
-        },
-        {
-          id: 4,
-          name: 'Dr. James Wilson',
-          email: 'james.wilson@hospital.com',
-          position: 'ICU Manager',
-          role: 'manager',
-          department: 'Intensive Care Unit',
-        },
-        {
-          id: 5,
-          name: 'Nurse Lisa Taylor',
-          email: 'lisa.taylor@hospital.com',
-          position: 'ICU Nurse',
-          role: 'staff',
-          department: 'Intensive Care Unit',
-        },
-        {
-          id: 6,
-          name: 'Dr. Robert Brown',
-          email: 'robert.brown@hospital.com',
-          position: 'Attending Physician',
-          role: 'staff',
-          department: 'Emergency Department',
-        },
-      ];
-      this.saveToLocalStorage();
-    }
-  }
+  loadAllSharedData() {
+    this.sharedSrv.loadAll();
 
-  saveToLocalStorage() {
-    localStorage.setItem('users', JSON.stringify(this.users));
+    this.sharedSrv.getUsers().subscribe(users => (this.users = users));
+    this.sharedSrv.getDepartments().subscribe(depts => (this.departments = depts));
+    this.sharedSrv.getPositions().subscribe(poss => (this.positions = poss));
+    this.sharedSrv.getLevels().subscribe(lvls => (this.levels = lvls));
   }
 
   addUser() {
     this.showForm = true;
     this.selectedUser = null;
     this.submitted = false;
+    const idCounter = this.users.length + 1;
+    const pass = 'Passw0rd' + idCounter;
     this.formData = {
-      id: 0,
-      name: '',
+      employeeId: idCounter.toString(),
+      nickname: '',
+      firstName: '',
+      lastName: '',
       email: '',
-      position: '',
-      role: '',
-      department: '',
+      password: pass,
+      contactNumber: '',
+      departmentId: '',
+      positionId: '',
+      levelId: '',
+      role: 'user'
     };
   }
 
-  editUser(user: User) {
+  editUser(user: UserI) {
     this.selectedUser = user;
-    this.formData = { ...user };
+    this.formData = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nickname: user.nickname,
+      email: user.email,
+      contactNumber: user.contactNumber,
+      role: user.role,
+      positionId: user.position?._id,
+      levelId: user.level?._id,
+      departmentId: user.department?._id
+    };
     this.showForm = true;
   }
 
   saveUser() {
     this.submitted = true;
-    const { name, email, position, role, department } = this.formData;
-
-    if (!name.trim() || !email.trim() || !position.trim() || !role.trim() || !department.trim()) {
-      this.toastr.warning('Please fill in all required fields.', 'Missing Data');
-      return;
-    }
-
+    let payload: any = {};
     if (this.selectedUser) {
-      const index = this.users.findIndex((u) => u.id === this.selectedUser?.id);
-      this.users[index] = { ...this.formData };
-      this.toastr.success('User updated successfully!', 'Updated');
+      // Only include fields that actually changed
+      Object.keys(this.formData).forEach(key => {
+        const newValue = (this.formData as any)[key];
+        const oldValue = (this.selectedUser as any)[key];
+
+        // Include if newValue is different from oldValue
+        if (newValue !== oldValue) {
+          payload[key] = newValue;
+        }
+      });
     } else {
-      const newUser = { ...this.formData, id: Date.now() };
-      this.users.push(newUser);
-      this.toastr.success('User created successfully!', 'Created');
+      // For new user, send everything
+      payload = { ...this.formData };
     }
 
-    this.saveToLocalStorage();
-    this.showForm = false;
+  delete payload.position;
+  delete payload.level;
+  delete payload.department;
+
+  const obs$ = this.selectedUser
+    ? this.userService.updateUser(this.selectedUser._id, payload)
+    : this.userService.createUser(payload);
+
+  obs$.subscribe({
+    next: (res: any) => {
+      const savedUser = res;
+
+      if (this.selectedUser) {
+        const idx = this.users.findIndex(u => u._id === savedUser._id);
+        if (idx !== -1) this.users[idx] = savedUser;
+        this.toastr.success(res.message || 'User updated');
+      } else {
+        this.users = [savedUser, ...this.users];
+        this.toastr.success(res.message || 'User created');
+      }
+      this.formData = {};
+      this.selectedUser = null;
+      this.showForm = false;
+      this.submitted = false;
+    },
+    error: (err) => {
+        this.toastr.error(err?.error?.details || 'Save failed');
+      }
+    });
   }
 
-  confirmDelete(id: number) {
+  confirmDelete(id: string) {
     this.showConfirm = true;
     this.deleteId = id;
   }
@@ -162,13 +149,17 @@ export class Users implements OnInit {
   }
 
   deleteUserConfirmed() {
-    if (this.deleteId !== null) {
-      this.users = this.users.filter((u) => u.id !== this.deleteId);
-      this.saveToLocalStorage();
-      this.toastr.info('User deleted successfully.', 'Deleted');
-    }
-    this.showConfirm = false;
-    this.deleteId = null;
+    if (!this.deleteId) return;
+
+    this.userService.deleteUser(this.deleteId).subscribe({
+      next: (res: any) => {
+        this.users = this.users.filter(u => u._id !== this.deleteId);
+        this.toastr.info(res.message ||'User deleted');
+        this.showConfirm = false;
+        this.deleteId = null;
+      },
+      error: (err) => this.toastr.error(err?.error?.details || 'Delete failed')
+    });
   }
 
   getRoleClass(role: string): string {
@@ -183,4 +174,8 @@ export class Users implements OnInit {
         return '';
     }
   }
+
+  trackByUserId(index: number, user: UserI) {
+  return user._id;
+}
 }

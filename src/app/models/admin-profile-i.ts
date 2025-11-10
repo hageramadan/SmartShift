@@ -1,5 +1,5 @@
 export interface AdminProfileI {
-      name: string;
+  name: string;
   position: string;
   email: string;
   department: string;

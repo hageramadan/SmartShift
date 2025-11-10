@@ -13,19 +13,19 @@ import { CommonModule } from '@angular/common';
 })
 export class Home {
 users: UserI[] = [
-{ id: 1, name: 'Emily Rodriguez', role: 'Nurse' },
-{ id: 2, name: 'Lisa Taylor', role: 'Nurse' },
-{ id: 3, name: 'Robert Brown', role: 'Doctor' },
-{ id: 4, name: 'Michael Chen', role: 'Doctor' },
-{ id: 5, name: 'James Wilson', role: 'Doctor' },
-{ id: 6, name: 'Sarah Johnson', role: 'Doctor' }
+// { id: '1', nickname: 'Emily Rodriguez', role: 'Nurse' },
+// { id: '2', nickname: 'Lisa Taylor', role: 'Nurse' },
+// { id: '3', nickname: 'Robert Brown', role: 'Doctor' },
+// { id: 4, nickname: 'Michael Chen', role: 'Doctor' },
+// { id: 5, nickname: 'James Wilson', role: 'Doctor' },
+// { id: 6, nickname: 'Sarah Johnson', role: 'Doctor' }
 ];
 
 
 departments: DepartmentI[] = [
-{ id: 1, name: 'Emergency Department', manager: 'Dr. Michael Chen', members: 4 , staffCount: 4 , description: 'Handles all emergency and urgent care patients' },
-{ id: 2, name: 'Intensive Care Unit', manager: 'Dr. James Wilson', members: 2 , staffCount: 8 , description: 'Handles all emergency and urgent care patients'},
-{ id: 3, name: 'Surgery Department', manager: 'Dr. Sarah Johnson', members: 0 , staffCount: 3 , description: 'Handles all emergency and urgent care patients'}
+// { id: '1', name: 'Emergency Department', managerId: 'Dr. Michael Chen', members: 4 , staffCount: 4},
+// { id: '2', name: 'Intensive Care Unit', managerId: 'Dr. James Wilson', members: 2 , staffCount: 8 },
+// { id: '3', name: 'Surgery Department', managerId: 'Dr. Sarah Johnson', members: 0 , staffCount: 3 }
 ];
 
 
