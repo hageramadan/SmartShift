@@ -1,9 +1,17 @@
 export interface DepartmentI {
-  id: number;
+  _id: string;
+  id?: string;
   name: string;
-  description: string;
-  manager: string;
-  staffCount: number;
+  manager?: {
+    _id: string;
+    employeeId: string;
+    fullName: string;
+    contactNumber: string;
+  };
+  managerId?: string;
+  address: string;
+  locationId: string;
+  staffCount?: number;
   members?: number;
 }
 

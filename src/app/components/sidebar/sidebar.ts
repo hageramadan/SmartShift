@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component  ,Input, HostListener} from '@angular/core';
 import { Router, RouterModule , ActivatedRoute  } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 
 @Component({
@@ -12,7 +13,7 @@ import { Router, RouterModule , ActivatedRoute  } from '@angular/router';
 
 
 export class Sidebar {
-    constructor(private router: Router) {}
+    constructor(private router: Router, private authService: AuthService) {}
  @Input() isSidebarOpen!: boolean;
   @Input() screenWidth!: number;
 
@@ -37,10 +38,15 @@ export class Sidebar {
   ];
   isLinkActive(path: string): boolean {
   return this.router.isActive(path, {
-    paths: 'exact',        
+    paths: 'exact',
     queryParams: 'ignored',
     fragment: 'ignored',
     matrixParams: 'ignored',
   });
-}
+  }
+  logout() {
+    this.authService.logout();
+    this.closeOnMobile();
+    this.router.navigate(['/login']);
+  }
 }

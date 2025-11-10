@@ -1,6 +1,10 @@
 export interface LocationI {
-      id: number;
+  id: number;
   name: string;
-  address: string;
-  department: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode?: string;
+  address?: string;
 }

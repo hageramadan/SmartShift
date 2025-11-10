@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -11,18 +12,36 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './login.css',
 })
 export class Login {
-   email: string = '';
-  password: string = '';
+  identifier = '';
+  email = '';
+  nickname = '';
+  password = '';
+  loading = false;
 
-  constructor(private router: Router, private toastr: ToastrService) {}
+  constructor(private router: Router, private toastr: ToastrService, private authService: AuthService) {}
 
   login() {
-    if (this.email === 'admin@hospital.com' && this.password === '123456') {
-      this.toastr.success('Login successful! ', 'Success');
-      localStorage.setItem('loggedIn', 'true');
-      this.router.navigate(['/']);
+    if(this.identifier.includes('@')) {
+      this.email = this.identifier;
     } else {
-      this.toastr.error('Invalid email or password ', 'Login Failed');
+      this.nickname = this.identifier;
     }
-  }
+
+  this.loading = true;
+
+  this.authService
+    .login(this.password, this.email, this.nickname)
+    .subscribe({
+      next: (res) => {
+        this.toastr.success(res.message || 'Login successful!');
+        this.router.navigate(['/dashboard']);
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.toastr.error(err?.error?.message || 'Login failed');
+        this.loading = false;
+      },
+    });
+}
 }
