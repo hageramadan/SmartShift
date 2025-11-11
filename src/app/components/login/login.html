@@ -18,12 +18,12 @@
       <!-- Email -->
       <div class="relative">
         <input
-          type="email"
-          name="email"
+          type="text"
+          name="EmailOrNickname"
           required
-          [(ngModel)]="email"
+          [(ngModel)]="identifier"
           #emailField="ngModel"
-          placeholder=" "
+          placeholder="Email or Nickname"
           class="peer w-full border rounded-lg p-3 pt-5 text-gray-800 focus:ring-2 focus:ring-[#107c8c] focus:border-[#107c8c] outline-none transition placeholder-transparent"
           [ngClass]="{
             'border-red-500 focus:ring-red-500 focus:border-red-500':
@@ -33,55 +33,51 @@
         <label
           class="absolute left-3 top-3 text-gray-500 text-sm transition-all duration-200 peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#107c8c]"
         >
-          Email
+          Email or Nickname
         </label>
         <div *ngIf="emailField.invalid && emailField.touched" class="text-red-500 text-xs mt-1">
-          Please enter a valid email.
+          Please enter a valid email or username.
         </div>
       </div>
 
-    <div class="space-y-4">
-      <input
-        type="email"
-        placeholder="Email or Nickname"
-        [(ngModel)]="identifier"
-        class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-600 placeholder-gray-400 outline-none"
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        [(ngModel)]="password"
-        class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-600 placeholder-gray-400 outline-none"
-      />
-      <button
-        (click)="login()"
-        [disabled]="loading"
-        class="w-full bg-teal-800 hover:bg-teal-700 text-white py-3 rounded-lg"
-      >
-        @if(!loading){
-        <span>Login</span>
-        } @if(loading){
-        <span class="flex justify-center items-center space-x-2">
-          <svg
-            class="animate-spin h-5 w-5 text-white"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-            ></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-          </svg>
-          <span>Logging in...</span>
-        </span>
-        }
-      </button>
+      <div class="space-y-4">
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          [(ngModel)]="password"
+          class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-teal-600 placeholder-gray-400 outline-none"
+        />
+        <button
+          (click)="login()"
+          [disabled]="loading"
+          class="w-full bg-teal-800 hover:bg-teal-700 text-white py-3 rounded-lg"
+        >
+          @if(!loading){
+          <span>Login</span>
+          } @if(loading){
+          <span class="flex justify-center items-center space-x-2">
+            <svg
+              class="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span>Logging in...</span>
+          </span>
+          }
+        </button>
+      </div>
     </form>
 
     <!-- Footer -->
