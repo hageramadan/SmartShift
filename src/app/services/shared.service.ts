@@ -2,10 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, forkJoin } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
-import { UserService } from './user.service';
-import { DepartmentService } from './department.service';
-import { PositionService } from './position.service';
-import { LevelService } from './level.service';
+import { CrudService } from './crud.service';
 import { UserI } from '../models/user-i';
 import { DepartmentI } from '../models/department-i';
 import { PositionI } from '../models/position-i';
@@ -38,20 +35,18 @@ export class SharedService {
 
   constructor(
     private toastr: ToastrService,
-    private userService: UserService,
-    private departmentService: DepartmentService,
-    private positionService: PositionService,
-    private levelService: LevelService
+    private crud: CrudService,
+
   ) { }
 
   loadAll(): void {
     if (this.isLoaded) return;
 
     forkJoin({
-      users: this.userService.getUsers(),
-      depts: this.departmentService.getDepartments(),
-      poss: this.positionService.getPositions(),
-      lvls: this.levelService.getLevels(),
+      users: this.crud.getAll<UserI>('users'),
+      depts: this.crud.getAll<DepartmentI>('departments'),
+      poss: this.crud.getAll<PositionI>('positions'),
+      lvls: this.crud.getAll<LevelI>('levels'),
     }).subscribe({
       next: ({ users, depts, poss, lvls }) => {
         this.users$.next(users?.data ?? []);
