@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { UserService } from '../../services/user.service';
+import { CrudService } from '../../services/crud.service';
 import { SharedService } from '../../services/shared.service';
 import { UserI } from '../../models/user-i';
 import { DepartmentI } from '../../models/department-i';
@@ -35,7 +35,7 @@ export class Users implements OnInit {
   constructor(
     private toastr: ToastrService,
     private sharedSrv: SharedService,
-    private userService: UserService,
+    private crud: CrudService,
   ) { }
 
   ngOnInit() {
@@ -112,8 +112,8 @@ export class Users implements OnInit {
   delete payload.department;
 
   const obs$ = this.selectedUser
-    ? this.userService.updateUser(this.selectedUser._id, payload)
-    : this.userService.createUser(payload);
+    ? this.crud.update<UserI>('users', this.selectedUser._id, payload)
+    : this.crud.create<UserI>('users', payload);
 
   obs$.subscribe({
     next: (res: any) => {
@@ -151,7 +151,7 @@ export class Users implements OnInit {
   deleteUserConfirmed() {
     if (!this.deleteId) return;
 
-    this.userService.deleteUser(this.deleteId).subscribe({
+    this.crud.delete<UserI>('users', this.deleteId).subscribe({
       next: (res: any) => {
         this.users = this.users.filter(u => u._id !== this.deleteId);
         this.toastr.info(res.message ||'User deleted');
