@@ -14,127 +14,215 @@
     </button>
   </div>
 
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading && locations.length === 0" class="text-center py-12">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pro"></div>
+    <p class="text-gray-500 mt-3">Loading locations...</p>
+  </div>
+
   <!-- Locations List -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div *ngIf="!isLoading || locations.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div
       *ngFor="let loc of locations"
       class="bg-white p-5 rounded-xl border border-gray-200 hover:shadow-lg transition"
     >
       <div class="flex items-center justify-between pb-5">
         <div class="bg-pro-hover1 rounded-full w-12 h-12 flex items-center justify-center text-pro">
-          <i class="fa-solid fa-location-dot text-xl "></i>
+          <i class="fa-solid fa-location-dot text-xl"></i>
         </div>
 
         <div class="flex gap-2">
           <button
             (click)="openModal(loc)"
-            class=" px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
+            class="px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
+            [disabled]="isLoading"
           >
             <i class="fa-solid fa-pencil text-gray-600"></i>
           </button>
           <button
             (click)="confirmDelete(loc.id)"
             class="text-red-500 px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
+            [disabled]="isLoading"
           >
-
             <i class="fa-regular fa-trash-can"></i>
           </button>
         </div>
       </div>
-      <h3 class="text-lg  text-gray-600 mt-4">{{ loc.name }}</h3>
-      <p class="text-gray-500 my-8">{{ loc.address }}</p>
-      <p class="bg-pro-hover1 text-pro w-fit px-3 rounded-full py-1 text-[13px]  mb-3">{{ 'loc.department '}}</p>
+      <h3 class="text-lg text-gray-600 mt-4">{{ loc.name }}</h3>
+      <p class="text-gray-500 my-8">{{ getFullAddress(loc) }}</p>
+      <div class="flex flex-wrap gap-2">
+        <p class="bg-pro-hover1 text-pro w-fit px-3 rounded-full py-1 text-[13px] mb-3">{{ loc.city }}</p>
+        <p class="bg-blue-100 text-blue-600 w-fit px-3 rounded-full py-1 text-[13px] mb-3">{{ loc.country }}</p>
+      </div>
     </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && locations.length === 0" class="text-center py-12">
+    <i class="fa-solid fa-map-marker-alt text-4xl text-gray-300 mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-600 mb-2">No Locations Found</h3>
+    <p class="text-gray-500 mb-6">Get started by adding your first location</p>
+    <button
+      (click)="openModal()"
+      class="bg-pro text-white px-6 py-2 rounded-lg cursor-pointer transition"
+    >
+      + Add Your First Location
+    </button>
   </div>
 
   <!-- Add/Edit Modal -->
   <div
-  *ngIf="isModalOpen"
-  class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
->
-  <div class="bg-white rounded-2xl shadow-xl w-[90%] max-w-lg p-6 relative">
-    <h2 class="text-2xl font-semibold mb-6" style="color: var(--secondary-color)">
-      {{ isEditing ? 'Edit Location' : 'Add New Location' }}
-    </h2>
+    *ngIf="isModalOpen"
+    class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
+  >
+    <div class="bg-white rounded-2xl shadow-xl w-[90%] max-w-lg p-6 relative">
+      <h2 class="text-2xl font-semibold mb-6" style="color: var(--secondary-color)">
+        {{ isEditing ? 'Edit Location' : 'Add New Location' }}
+      </h2>
 
-    <div class="grid grid-cols-1 gap-6">
-      <!-- Location Name -->
-      <div class="relative">
-        <input
-          type="text"
-          id="location"
-          class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
-          required
-        />
-        <label
-          for="location"
-          class="absolute left-3 top-3 text-gray-400 text-sm
-          transition-all peer-placeholder-shown:top-3
-           peer-placeholder-shown:text-gray-400
-            peer-placeholder-shown:text-sm peer-focus:-top-2
-            peer-focus:text-pro peer-focus:text-xs bg-white px-1"
-        >
-          Location Name
-        </label>
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Location Name -->
+        <div class="relative">
+          <input
+            type="text"
+            id="location"
+            [(ngModel)]="newLocation.name"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
+            required
+          />
+          <label
+            for="location"
+            class="absolute left-3 top-3 text-gray-400 text-sm
+            transition-all peer-placeholder-shown:top-3
+             peer-placeholder-shown:text-gray-400
+              peer-placeholder-shown:text-sm peer-focus:-top-2
+              peer-focus:text-pro peer-focus:text-xs bg-white px-1"
+          >
+            Location Name *
+          </label>
+        </div>
+
+        <!-- Street Address -->
+        <div class="relative">
+          <input
+            type="text"
+            id="street"
+            [(ngModel)]="newLocation.street"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
+            required
+          />
+          <label
+            for="street"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3
+             peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2
+              peer-focus:text-pro peer-focus:text-xs bg-white px-1"
+          >
+            Street Address *
+          </label>
+        </div>
+
+        <!-- City -->
+        <div class="relative">
+          <input
+            type="text"
+            id="city"
+            [(ngModel)]="newLocation.city"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
+            required
+          />
+          <label
+            for="city"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3
+             peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2
+              peer-focus:text-pro peer-focus:text-xs bg-white px-1"
+          >
+            City *
+          </label>
+        </div>
+
+        <!-- State -->
+        <div class="relative">
+          <input
+            type="text"
+            id="state"
+            [(ngModel)]="newLocation.state"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
+            required
+          />
+          <label
+            for="state"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3
+             peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2
+              peer-focus:text-pro peer-focus:text-xs bg-white px-1"
+          >
+            State/Province *
+          </label>
+        </div>
+
+        <!-- Postal Code -->
+        <div class="relative">
+          <input
+            type="text"
+            id="postalCode"
+            [(ngModel)]="newLocation.postalCode"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
+          />
+          <label
+            for="postalCode"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3
+             peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2
+              peer-focus:text-pro peer-focus:text-xs bg-white px-1"
+          >
+            Postal Code
+          </label>
+        </div>
+
+        <!-- Country -->
+        <div class="relative">
+          <select
+            id="country"
+            [(ngModel)]="newLocation.country"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none bg-white"
+            required
+          >
+            <option value="Egypt">Egypt</option>
+            <option value="Saudi Arabia">Saudi Arabia</option>
+            <option value="UAE">United Arab Emirates</option>
+            <option value="Qatar">Qatar</option>
+            <option value="Kuwait">Kuwait</option>
+            <option value="Other">Other</option>
+          </select>
+          <label
+            for="country"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all
+            peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400
+            peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
+          >
+            Country *
+          </label>
+        </div>
       </div>
 
-      <!-- Address -->
-      <div class="relative">
-        <input
-          type="text"
-          id="address"
-          class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none"
-          required
-        />
-        <label
-          for="address"
-          class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3
-           peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2
-            peer-focus:text-pro peer-focus:text-xs bg-white px-1"
+      <!-- Buttons -->
+      <div class="flex justify-end gap-3 mt-6">
+        <button
+          (click)="closeModal()"
+          class="px-4 py-2 rounded-lg hover:bg-gray-200 bg-gray-100 transition"
+          [disabled]="isLoading"
         >
-          Address
-        </label>
+          Cancel
+        </button>
+        <button
+          (click)="saveLocation()"
+          class="bg-pro text-white px-4 py-2 rounded-lg hover:bg-pro-hover1 transition flex items-center gap-2"
+          [disabled]="isLoading"
+        >
+          <span *ngIf="isLoading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+          {{ isEditing ? 'Update' : 'Save' }}
+        </button>
       </div>
-
-      <!-- Department Select -->
-      <div class="relative">
-        <select
-          id="department"
-          class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none bg-white"
-          required
-        >
-          <option value="" disabled selected></option>
-          <option *ngFor="let dept of departments" [value]="dept.name">{{ dept.name }}</option>
-        </select>
-        <label
-          for="department"
-          class="absolute left-3 top-3 text-gray-400 text-sm transition-all
-          peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400
-          peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
-        >
-          Department
-        </label>
-      </div>
-    </div>
-
-    <!-- Buttons -->
-    <div class="flex justify-end gap-3 mt-6">
-      <button
-        (click)="closeModal()"
-        class=" px-4 py-2 rounded-lg hover:bg-gray-200 bg-gray-100 transition"
-      >
-        Cancel
-      </button>
-      <button
-        (click)="saveLocation()"
-        class="bg-pro text-white px-4 py-2 rounded-lg hover:bg-pro-hover1 transition"
-      >
-        {{ isEditing ? 'Update' : 'Save' }}
-      </button>
     </div>
   </div>
-</div>
-
 
   <!-- Delete Confirmation Modal -->
   <div
@@ -149,13 +237,16 @@
         <button
           (click)="cancelDelete()"
           class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
+          [disabled]="isLoading"
         >
           Cancel
         </button>
         <button
           (click)="deleteLocation()"
-          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2"
+          [disabled]="isLoading"
         >
+          <span *ngIf="isLoading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
           Delete
         </button>
       </div>
