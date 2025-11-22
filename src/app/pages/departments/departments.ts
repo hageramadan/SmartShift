@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { SharedService } from '../../services/shared.service';
 import { CrudService } from '../../services/crud.service';
 import { UserI } from '../../models/user-i';
+import { DepartmentsServiceTs } from '../../services/departments.service.ts';
 
 @Component({
   selector: 'app-departments',
@@ -18,6 +19,7 @@ export class Departments implements OnInit {
 
   departments: DepartmentI[] = [];
   users: UserI[] = [];
+loading: boolean = true;
 
   selectedDepartment: DepartmentI | null = null;
   showForm = false;
@@ -38,150 +40,162 @@ export class Departments implements OnInit {
     private toastr: ToastrService,
     private sharedSrv: SharedService,
     private crud: CrudService,
+    private departmentsService: DepartmentsServiceTs
   ) {}
 
   ngOnInit() {
-    this.loadAllSharedData();
-  }
-
-  loadAllSharedData() {
-    this.sharedSrv.loadAll();
-
-    // Users
-   this.sharedSrv.getUsers().subscribe(res => {
-  this.users = res || [];
-});
-
-
-    // Departments (API returns object with .data)
-    this.sharedSrv.getDepartments().subscribe(res => {
-     this.departments = res || [];
-
+    this.departmentsService.getDepartments().subscribe({
+      next: (res) => {
+        this.departments = res.data; // حسب الـ structure في API
+        this.loading = false;
+      },
+      error: (err) => {
+        console.log('Error loading departments', err);
+        this.loading = false;
+      }
     });
+  
+    // this.loadAllSharedData();
   }
+
+//   loadAllSharedData() {
+//     this.sharedSrv.loadAll();
+
+//     // Users
+//    this.sharedSrv.getUsers().subscribe(res => {
+//   this.users = res || [];
+// });
+
+
+//     // Departments (API returns object with .data)
+//     this.sharedSrv.getDepartments().subscribe(res => {
+//      this.departments = res || [];
+
+//     });
+//   }
 
   // dynamic managers list
-  get managers() {
-    return this.users.filter(u => u.role === 'manager');
-  }
+  // get managers() {
+  //   return this.users.filter(u => u.role === 'manager');
+  // }
 
   // =============================
   // ADD
   // =============================
 
-  addDepartment() {
-    this.selectedDepartment = null;
-    this.showForm = true;
-    this.submitted = false;
+  // addDepartment() {
+  //   this.selectedDepartment = null;
+  //   this.showForm = true;
+  //   this.submitted = false;
 
-    this.formData = {
-      name: '',
-      address: '',
-      locationId: '',
-      managerId: '',
-      staffCount: 0
-    };
-  }
+  //   this.formData = {
+  //     name: '',
+  //     address: '',
+  //     locationId: '',
+  //     managerId: '',
+  //     staffCount: 0
+  //   };
+  // }
 
   // =============================
   // EDIT
   // =============================
 
-  editDepartment(dep: DepartmentI) {
-    this.selectedDepartment = dep;
+  // editDepartment(dep: DepartmentI) {
+  //   this.selectedDepartment = dep;
 
-    this.formData = {
-      name: dep.name,
-      address: dep.address,
-      locationId: dep.locationId,
-      managerId: dep.managerId || '',
-      staffCount: dep.staffCount
-    };
+  //   this.formData = {
+  //     name: dep.name,
+  //     address: dep.address,
+  //     locationId: dep.locationId,
+  //     managerId: dep.managerId || '',
+  //     staffCount: dep.staffCount
+  //   };
 
-    this.showForm = true;
-  }
+  //   this.showForm = true;
+  // }
 
   // =============================
   // SAVE
   // =============================
 
-  saveDepartment() {
-    this.submitted = true;
+  // saveDepartment() {
+  //   this.submitted = true;
 
-    let payload: any = {};
+  //   let payload: any = {};
 
-    if (this.selectedDepartment) {
-      // send only changed fields
-      Object.keys(this.formData).forEach(key => {
-        const newValue = (this.formData as any)[key];
-        const oldValue = (this.selectedDepartment as any)[key];
+  //   if (this.selectedDepartment) {
+  //     // send only changed fields
+  //     Object.keys(this.formData).forEach(key => {
+  //       const newValue = (this.formData as any)[key];
+  //       const oldValue = (this.selectedDepartment as any)[key];
 
-        if (newValue !== oldValue) {
-          payload[key] = newValue;
-        }
-      });
-    } else {
-      // new department
-      payload = { ...this.formData };
-    }
+  //       if (newValue !== oldValue) {
+  //         payload[key] = newValue;
+  //       }
+  //     });
+  //   } else {
+  //     // new department
+  //     payload = { ...this.formData };
+  //   }
 
-    const obs$ = this.selectedDepartment
-      ? this.crud.update('departments', this.selectedDepartment._id, payload)
-      : this.crud.create('departments', payload);
+  //   const obs$ = this.selectedDepartment
+  //     ? this.crud.update('departments', this.selectedDepartment._id, payload)
+  //     : this.crud.create('departments', payload);
 
-    obs$.subscribe({
-      next: (res: any) => {
+  //   obs$.subscribe({
+  //     next: (res: any) => {
 
-        const savedDep = res.data || res;
+  //       const savedDep = res.data || res;
 
-        if (this.selectedDepartment) {
-          const idx = this.departments.findIndex(d => d._id === savedDep._id);
-          if (idx !== -1) this.departments[idx] = savedDep;
+  //       if (this.selectedDepartment) {
+  //         const idx = this.departments.findIndex(d => d._id === savedDep._id);
+  //         if (idx !== -1) this.departments[idx] = savedDep;
 
-          this.toastr.success(res.message || 'Department updated');
-        } else {
-          this.departments = [savedDep, ...this.departments];
-          this.toastr.success(res.message || 'Department created');
-        }
+  //         this.toastr.success(res.message || 'Department updated');
+  //       } else {
+  //         this.departments = [savedDep, ...this.departments];
+  //         this.toastr.success(res.message || 'Department created');
+  //       }
 
-        this.showForm = false;
-        this.submitted = false;
-        this.selectedDepartment = null;
-        this.formData = {};
-      },
+  //       this.showForm = false;
+  //       this.submitted = false;
+  //       this.selectedDepartment = null;
+  //       this.formData = {};
+  //     },
 
-      error: (err) => {
-        this.toastr.error(err?.error?.details || 'Save failed');
-      }
-    });
-  }
+  //     error: (err) => {
+  //       this.toastr.error(err?.error?.details || 'Save failed');
+  //     }
+  //   });
+  // }
 
   // =============================
   // DELETE
   // =============================
 
-  confirmDelete(id: string) {
-    this.showConfirm = true;
-    this.deleteId = id;
-  }
+  // confirmDelete(id: string) {
+  //   this.showConfirm = true;
+  //   this.deleteId = id;
+  // }
 
-  cancelDelete() {
-    this.showConfirm = false;
-    this.deleteId = null;
-  }
+  // cancelDelete() {
+  //   this.showConfirm = false;
+  //   this.deleteId = null;
+  // }
 
-  deleteDepartmentConfirmed() {
-    if (!this.deleteId) return;
+  // deleteDepartmentConfirmed() {
+  //   if (!this.deleteId) return;
 
-    this.crud.delete('departments', this.deleteId).subscribe({
-      next: (res: any) => {
-        this.departments = this.departments.filter(d => d._id !== this.deleteId);
-        this.toastr.info(res.message || 'Department deleted');
+  //   this.crud.delete('departments', this.deleteId).subscribe({
+  //     next: (res: any) => {
+  //       this.departments = this.departments.filter(d => d._id !== this.deleteId);
+  //       this.toastr.info(res.message || 'Department deleted');
 
-        this.showConfirm = false;
-        this.deleteId = null;
-      },
-      error: err => this.toastr.error(err?.error?.details || 'Delete failed')
-    });
-  }
+  //       this.showConfirm = false;
+  //       this.deleteId = null;
+  //     },
+  //     error: err => this.toastr.error(err?.error?.details || 'Delete failed')
+  //   });
+  // }
 }

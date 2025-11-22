@@ -34,7 +34,7 @@ export class Login {
     .subscribe({
       next: (res) => {
         this.toastr.success(res.message || 'Login successful!');
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/']);
         this.loading = false;
       },
       error: (err) => {
