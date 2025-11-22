@@ -2,17 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { CrudService } from '../../services/crud.service';
+import { SharedService } from '../../services/shared.service';
 import { SubDepartmentI } from '../../models/sub-department-i';
-
-interface DepartmentSimple {
-  id: number;
-  name: string;
-  description?: string;
-  manager?: string;
-  staffCount?: number;
-}
-
-
+import { UserI } from '../../models/user-i';
+import { DepartmentI } from '../../models/department-i';
 
 @Component({
   selector: 'app-subdepartments',
@@ -22,163 +16,136 @@ interface DepartmentSimple {
   styleUrls: ['./sub-departments.css'],
 })
 export class SubDepartmentsComponent implements OnInit {
-  departments: DepartmentSimple[] = [];
-  subdepartments: SubDepartmentI[] = [];
+  subDepartments: SubDepartmentI[] = [];
+  users: UserI[] = [];
+  departments: DepartmentI[] = [];
 
-  // form / state
+  formData: Partial<SubDepartmentI> = {};
+  selectedSub: SubDepartmentI | null = null;
+
   showForm = false;
-  submitted = false;
-  editingSub: SubDepartmentI | null = null;
-
-  form: Partial<SubDepartmentI> = {
-    id: 0,
-    name: '',
-    parentId: null,
-    description: ''
-  };
-
-  // delete confirm
   showConfirm = false;
-  deleteId: number | null = null;
+  deleteId: string | null = null;
+  submitted = false;
 
-  constructor(private toastr: ToastrService) {}
+  constructor(
+    private toastr: ToastrService,
+    private sharedSrv: SharedService,
+    private crud: CrudService
+  ) {}
 
-  ngOnInit(): void {
-    this.loadDepartments();
-    this.loadSubdepartments();
+  ngOnInit() {
+    this.sharedSrv.loadAll();
+
+    this.sharedSrv.getUsers().subscribe((users) => (this.users = users));
+    this.sharedSrv.getDepartments().subscribe((deps) => (this.departments = deps));
+    this.sharedSrv.getSubDepartments().subscribe((sdeps) => (this.subDepartments = sdeps));
+  }
+getDepartmentName(deptId: string | undefined): string {
+  if (!deptId) return '-';
+  const dept = this.departments.find(d => d._id === deptId);
+  return dept ? dept.name : 'Unknown';
+}
+
+getManagerName(managerId: string | undefined): string {
+  if (!managerId) return '-';
+  const mgr = this.users.find(m => m._id === managerId);
+  return mgr ? mgr.fullName : 'Unknown';
+}
+
+  
+
+  get managers() {
+    return this.users.filter((u) => u.role === 'manager');
   }
 
-  // Departments come from localStorage 'departments' (the Departments component saves there)
-  loadDepartments() {
-    const raw = localStorage.getItem('departments');
-    if (raw) {
-      try {
-        this.departments = JSON.parse(raw);
-      } catch {
-        this.departments = [];
-      }
-    } else {
-      this.departments = [];
-    }
-  }
-
-  loadSubdepartments() {
-    const raw = localStorage.getItem('subdepartments');
-    if (raw) {
-      try {
-        this.subdepartments = JSON.parse(raw);
-      } catch {
-        this.subdepartments = [];
-      }
-    } else {
-      // initial example data
-      this.subdepartments = [
-        { id: 1, name: 'Trauma Unit', parentId: this.findDepartmentIdByName('Emergency Department'), description: 'Specializes in trauma and severe injuries' },
-        { id: 2, name: 'Pediatric Emergency', parentId: this.findDepartmentIdByName('Emergency Department'), description: 'Emergency care for children' },
-        { id: 3, name: 'Cardiac ICU', parentId: this.findDepartmentIdByName('Intensive Care Unit'), description: 'Intensive care for cardiac patients' },
-        { id: 4, name: 'Neuro ICU', parentId: this.findDepartmentIdByName('Intensive Care Unit'), description: 'Intensive care for neurological patients' },
-      ].filter(s => s.parentId !== null); // drop those with no parent found
-      this.saveSubToStorage();
-    }
-  }
-
-  saveSubToStorage() {
-    localStorage.setItem('subdepartments', JSON.stringify(this.subdepartments));
-  }
-
-  // utility to get department name
-  getDepartmentName(id: number | null): string {
-    if (!id) return '-';
-    const d = this.departments.find(x => x.id === id);
-    return d ? d.name : 'Unknown';
-  }
-
-  // helper to attempt finding department id by name (used for sample seed)
-  private findDepartmentIdByName(name: string): number | null {
-    const d = this.departments.find(x => x.name?.toLowerCase() === name.toLowerCase());
-    return d ? d.id : null;
-  }
-
-  // ---- form actions ----
-  addSub() {
-    this.loadDepartments(); // refresh parents
+  addSubDepartment() {
     this.showForm = true;
-    this.editingSub = null;
+    this.selectedSub = null;
     this.submitted = false;
-    this.form = { id: 0, name: '', parentId: null, description: '' };
+    this.formData = {
+      name: '',
+      departmentId: '',
+      subManagerId: '',
+    };
   }
 
-  editSub(s: SubDepartmentI) {
-    this.loadDepartments();
-    this.editingSub = s;
-    this.form = { ...s };
+  editSubDepartment(sub: SubDepartmentI) {
+    this.selectedSub = sub;
     this.showForm = true;
     this.submitted = false;
+
+    this.formData = {
+      name: sub.name || '',
+      departmentId: sub.departmentId || '',
+      subManagerId: sub.subManagerId || '',
+    };
   }
 
-  closeForm() {
-    this.showForm = false;
-    this.editingSub = null;
-    this.submitted = false;
-  }
-
-  saveSub() {
+  saveSubDepartment() {
     this.submitted = true;
 
-    // validation: name, parentId, description required. staff count not relevant here.
-    if (!this.form.name || !this.form.name.toString().trim() || !this.form.parentId || !this.form.description || !this.form.description.toString().trim()) {
-      this.toastr.warning('Please fill in all required fields.', 'Missing Data');
+    if (!this.formData.name || !this.formData.departmentId || !this.formData.subManagerId) {
+      this.toastr.error('Please fill all required fields');
       return;
     }
 
-    if (this.editingSub) {
-      // update
-      const idx = this.subdepartments.findIndex(s => s.id === this.editingSub!.id);
-      if (idx !== -1) {
-        this.subdepartments[idx] = {
-          id: this.editingSub.id,
-          name: this.form.name!.toString(),
-          parentId: Number(this.form.parentId),
-          description: this.form.description!.toString()
-        };
-        this.toastr.success('Sub-department updated.', 'Updated');
-      }
-    } else {
-      // create
-      const newSub: SubDepartmentI = {
-        id: Date.now(),
-        name: this.form.name!.toString(),
-        parentId: Number(this.form.parentId),
-        description: this.form.description!.toString()
-      };
-      this.subdepartments.push(newSub);
-      this.toastr.success('Sub-department created.', 'Created');
-    }
+    const payload = {
+      name: this.formData.name,
+      departmentId: this.formData.departmentId,
+      subManagerId: this.formData.subManagerId,
+    };
 
-    this.saveSubToStorage();
-    this.closeForm();
+    const obs$ = this.selectedSub
+      ? this.crud.update('subdepartments', this.selectedSub._id || '', payload)
+      : this.crud.create('subdepartments', payload);
+
+    obs$.subscribe({
+      next: (res: any) => {
+        const saved = res.data || res;
+
+        if (this.selectedSub) {
+          const i = this.subDepartments.findIndex((d) => d._id === saved._id);
+          if (i !== -1) this.subDepartments[i] = saved;
+          this.toastr.success('SubDepartment Updated');
+        } else {
+          this.subDepartments = [saved, ...this.subDepartments];
+          this.toastr.success('SubDepartment Created');
+        }
+
+        this.resetForm();
+      },
+      error: (err) => this.toastr.error(err?.error?.details || 'Save failed'),
+    });
   }
 
-  // ---- delete flow with confirm modal ----
-  confirmDeleteSub(id: number) {
-    this.deleteId = id;
+  resetForm() {
+    this.showForm = false;
+    this.submitted = false;
+    this.selectedSub = null;
+    this.formData = {};
+  }
+
+  confirmDelete(id: string) {
     this.showConfirm = true;
+    this.deleteId = id;
   }
 
   cancelDelete() {
-    this.deleteId = null;
     this.showConfirm = false;
+    this.deleteId = null;
   }
 
   deleteSubConfirmed() {
-    if (this.deleteId === null) {
-      this.showConfirm = false;
-      return;
-    }
-    this.subdepartments = this.subdepartments.filter(s => s.id !== this.deleteId);
-    this.saveSubToStorage();
-    this.toastr.info('Sub-department deleted.', 'Deleted');
-    this.deleteId = null;
-    this.showConfirm = false;
+    if (!this.deleteId) return;
+
+    this.crud.delete('subdepartments', this.deleteId).subscribe({
+      next: (res: any) => {
+        this.subDepartments = this.subDepartments.filter((d) => d._id !== this.deleteId);
+        this.toastr.info(res.message || 'SubDepartment deleted');
+        this.cancelDelete();
+      },
+      error: (err) => this.toastr.error(err?.error?.details || 'Delete failed'),
+    });
   }
 }

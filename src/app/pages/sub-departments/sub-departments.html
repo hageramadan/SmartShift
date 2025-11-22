@@ -6,7 +6,7 @@
       <p class="text-gray-500">Manage sub-departments and specialties</p>
     </div>
     <button
-      (click)="addSub()"
+      (click)="addSubDepartment()"
       class="bg-pro cursor-pointer text-white px-4 py-2 rounded-lg transition hover:bg-pro-hover"
     >
       + Add Sub-Department
@@ -20,32 +20,32 @@
         <tr>
           <th class="py-3 px-4">Sub-Department Name</th>
           <th class="py-3 px-4">Parent Department</th>
-          <th class="py-3 px-4">Description</th>
+          <th class="py-3 px-4">Manager</th>
           <th class="py-3 px-4 text-center">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let s of subdepartments" class="border-b hover:bg-gray-50 transition border-gray-200">
+        <tr *ngFor="let s of subDepartments" class="border-b hover:bg-gray-50 transition border-gray-200">
           <td class="py-3 px-4">{{ s.name }}</td>
           <td class="py-3 px-4 ">
             <span class="text-pro bg-pro-hover1 rounded-lg p-2">
-
-            {{ getDepartmentName(s.parentId) }}
-
+              {{ getDepartmentName(s.departmentId) }}
             </span>
-        </td>
-          <td class="py-3 px-4">{{ s.description }}</td>
+          </td>
+          <td class="py-3 px-4">
+            {{ getManagerName(s.subManagerId) }}
+          </td>
           <td class="py-3 px-4 flex justify-center gap-2">
-            <button (click)="editSub(s)" class="text-gray-600 hover:text-pro transition px-3 py-1 rounded text-sm cursor-pointer">
+            <button (click)="editSubDepartment(s)" class="text-gray-600 hover:text-pro transition px-3 py-1 rounded text-sm cursor-pointer">
               <i class="fa-regular fa-pen-to-square"></i>
             </button>
-            <button (click)="confirmDeleteSub(s.id)" class="text-red1 hover:text-red-600 transition px-3 py-1 rounded text-sm cursor-pointer">
+            <button (click)="confirmDelete(s._id||'')" class="text-red1 hover:text-red-600 transition px-3 py-1 rounded text-sm cursor-pointer">
               <i class="fa-regular fa-trash-can"></i>
             </button>
           </td>
         </tr>
 
-        <tr *ngIf="subdepartments.length === 0">
+        <tr *ngIf="subDepartments.length === 0">
           <td colspan="4" class="text-center py-6 text-gray-500">No sub-departments yet.</td>
         </tr>
       </tbody>
@@ -56,73 +56,70 @@
   <div *ngIf="showForm" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm">
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl transform transition-all scale-100 animate-fadeIn">
       <h3 class="text-2xl font-semibold mb-6 text-gray-800">
-        {{ editingSub ? 'Edit Sub-Department' : 'Add Sub-Department' }}
+        {{ selectedSub ? 'Edit Sub-Department' : 'Add Sub-Department' }}
       </h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Sub-Dept Name -->
         <div class="relative">
           <input
-            [(ngModel)]="form.name"
+            [(ngModel)]="formData.name"
             id="subName"
             name="subName"
             type="text"
             placeholder=" "
-            [ngClass]="{ 'border-red-500': submitted && !form.name }"
+            [ngClass]="{ 'border-red-500': submitted && !formData.name }"
             class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
           />
-          <label
-            for="subName"
-            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
+          <label for="subName" class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
                    peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro cursor-text">
             Sub-Department Name
           </label>
         </div>
 
-        <!-- Parent Department (select) -->
+        <!-- Parent Department -->
         <div class="relative">
           <select
-            [(ngModel)]="form.parentId"
+            [(ngModel)]="formData.departmentId"
             id="parentDept"
             name="parentDept"
-            [ngClass]="{ 'border-red-500': submitted && !form.parentId }"
-            class="peer border border-gray-300  focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition bg-white appearance-none"
+            [ngClass]="{ 'border-red-500': submitted && !formData.departmentId }"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition bg-white appearance-none"
           >
             <option value="" disabled selected hidden></option>
-            <option *ngFor="let d of departments" [value]="d.id" >{{ d.name }}</option>
+            <option *ngFor="let d of departments" [value]="d._id">{{ d.name }}</option>
           </select>
-          <label
-            for="parentDept"
-            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
+          <label for="parentDept" class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
                    peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro cursor-text">
             Parent Department
           </label>
         </div>
 
-        <!-- Description -->
-        <div class="relative col-span-2">
-          <textarea
-            [(ngModel)]="form.description"
-            id="subDesc"
-            name="subDesc"
-            rows="3"
-            placeholder=" "
-            [ngClass]="{ 'border-red-500': submitted && !form.description }"
-            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent resize-none"
-          ></textarea>
-          <label
-            for="subDesc"
-            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
-                   peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro cursor-text">
-            Description
+        <!-- Manager -->
+        <div class="relative">
+          <select
+            [(ngModel)]="formData.subManagerId"
+            id="manager"
+            name="manager"
+            [ngClass]="{ 'border-red-500': submitted && !formData.subManagerId }"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition bg-white appearance-none"
+          >
+            <option value="" disabled selected hidden></option>
+            <option *ngFor="let m of managers" [value]="m._id">{{ m.fullName }}</option>
+          </select>
+          <label for="manager" class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
+                   peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro cursor-text">
+            Manager
           </label>
         </div>
+
+       
       </div>
 
       <div class="flex justify-end gap-3 mt-8">
-        <button (click)="closeForm()" class="bg-white hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-md border border-gray-300 transition font-medium">Cancel</button>
-        <button (click)="saveSub()" class="bg-pro hover:bg-pro-hover text-white cursor-pointer px-5 py-2 rounded-md transition font-medium shadow-sm">
-          {{ editingSub ? 'Update' : 'Create' }}
+        <button (click)="resetForm()" class="bg-white hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-md border border-gray-300 transition font-medium">Cancel</button>
+        <button (click)="saveSubDepartment()" class="bg-pro hover:bg-pro-hover text-white cursor-pointer px-5 py-2 rounded-md transition font-medium shadow-sm">
+          {{ selectedSub ? 'Update' : 'Create' }}
         </button>
       </div>
     </div>
