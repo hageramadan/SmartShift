@@ -3,6 +3,9 @@ import { DepartmentI } from '../../models/department-i';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { SharedService } from '../../services/shared.service';
+import { CrudService } from '../../services/crud.service';
+import { UserI } from '../../models/user-i';
 
 @Component({
   selector: 'app-departments',
@@ -12,118 +15,154 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./departments.css'],
 })
 export class Departments implements OnInit {
+
   departments: DepartmentI[] = [];
+  users: UserI[] = [];
+
   selectedDepartment: DepartmentI | null = null;
   showForm = false;
   showConfirm = false;
-  deleteId: number | null = null;
-  submitted = false; // ✅ نتحقق هل المستخدم ضغط حفظ
 
-  formData: DepartmentI = {
-    _id: '',
+  submitted = false;
+  deleteId: string | null = null;
+
+  formData: Partial<DepartmentI> = {
     name: '',
     address: '',
     locationId: '',
-    manager: {
-      _id: '',
-      employeeId: '',
-      fullName: '',
-      contactNumber: '',
-    },
-    staffCount: 0,
+    managerId: '',
+    staffCount: 0
   };
 
-  managers = [
-    'Dr. Michael Chen',
-    'Dr. James Wilson',
-    'Dr. Sarah Johnson',
-    'Dr. Emily Davis',
-  ];
-
-  constructor(private toastr: ToastrService) {}
+  constructor(
+    private toastr: ToastrService,
+    private sharedSrv: SharedService,
+    private crud: CrudService,
+  ) {}
 
   ngOnInit() {
-    this.loadDepartments();
+    this.loadAllSharedData();
   }
 
-  loadDepartments() {
-    const saved = localStorage.getItem('departments');
-    if (saved) {
-      this.departments = JSON.parse(saved);
-    } else {
-      this.departments = [
-        // {
-        //   id: 1,
-        //   name: 'Emergency Department',
-        //   description: 'Handles all emergency and urgent care patients',
-        //   manager: 'Dr. Michael Chen',
-        //   staffCount: 4,
-        // },
-        // {
-        //   id: 2,
-        //   name: 'Intensive Care Unit',
-        //   description: 'Critical care for severely ill patients',
-        //   manager: 'Dr. James Wilson',
-        //   staffCount: 2,
-        // },
-        // {
-        //   id: 3,
-        //   name: 'Surgery Department',
-        //   description: 'Surgical procedures and post-operative care',
-        //   manager: 'Dr. Sarah Johnson',
-        //   staffCount: 0,
-        // },
-      ];
-      this.saveToLocalStorage();
-    }
+  loadAllSharedData() {
+    this.sharedSrv.loadAll();
+
+    // Users
+   this.sharedSrv.getUsers().subscribe(res => {
+  this.users = res || [];
+});
+
+
+    // Departments (API returns object with .data)
+    this.sharedSrv.getDepartments().subscribe(res => {
+     this.departments = res || [];
+
+    });
   }
 
-  saveToLocalStorage() {
-    localStorage.setItem('departments', JSON.stringify(this.departments));
+  // dynamic managers list
+  get managers() {
+    return this.users.filter(u => u.role === 'manager');
   }
+
+  // =============================
+  // ADD
+  // =============================
 
   addDepartment() {
-    this.showForm = true;
     this.selectedDepartment = null;
-    this.formData = { _id: '0', name: '', address: '', locationId: '', managerId: '', staffCount: 0 };
+    this.showForm = true;
     this.submitted = false;
+
+    this.formData = {
+      name: '',
+      address: '',
+      locationId: '',
+      managerId: '',
+      staffCount: 0
+    };
   }
+
+  // =============================
+  // EDIT
+  // =============================
 
   editDepartment(dep: DepartmentI) {
     this.selectedDepartment = dep;
-    this.formData = { ...dep };
+
+    this.formData = {
+      name: dep.name,
+      address: dep.address,
+      locationId: dep.locationId,
+      managerId: dep.managerId || '',
+      staffCount: dep.staffCount
+    };
+
     this.showForm = true;
-    this.submitted = false;
   }
+
+  // =============================
+  // SAVE
+  // =============================
 
   saveDepartment() {
     this.submitted = true;
-    const { name, address, manager } = this.formData;
 
-    if (!name.trim() || !address.trim() || !manager) {
-      this.toastr.warning('Please fill in all required fields.', 'Missing Data');
-      return;
-    }
+    let payload: any = {};
 
     if (this.selectedDepartment) {
-      const index = this.departments.findIndex(
-        (d) => d.id === this.selectedDepartment?.id
-      );
-      this.departments[index] = { ...this.formData };
-      this.toastr.success('Department updated successfully!', 'Updated');
+      // send only changed fields
+      Object.keys(this.formData).forEach(key => {
+        const newValue = (this.formData as any)[key];
+        const oldValue = (this.selectedDepartment as any)[key];
+
+        if (newValue !== oldValue) {
+          payload[key] = newValue;
+        }
+      });
     } else {
-      // const newDep = { ...this.formData, id: Date.now() };
-      // this.departments.push(newDep);
-      // this.toastr.success('Department created successfully!', 'Created');
+      // new department
+      payload = { ...this.formData };
     }
 
-    this.saveToLocalStorage();
-    this.showForm = false;
+    const obs$ = this.selectedDepartment
+      ? this.crud.update('departments', this.selectedDepartment._id, payload)
+      : this.crud.create('departments', payload);
+
+    obs$.subscribe({
+      next: (res: any) => {
+
+        const savedDep = res.data || res;
+
+        if (this.selectedDepartment) {
+          const idx = this.departments.findIndex(d => d._id === savedDep._id);
+          if (idx !== -1) this.departments[idx] = savedDep;
+
+          this.toastr.success(res.message || 'Department updated');
+        } else {
+          this.departments = [savedDep, ...this.departments];
+          this.toastr.success(res.message || 'Department created');
+        }
+
+        this.showForm = false;
+        this.submitted = false;
+        this.selectedDepartment = null;
+        this.formData = {};
+      },
+
+      error: (err) => {
+        this.toastr.error(err?.error?.details || 'Save failed');
+      }
+    });
   }
+
+  // =============================
+  // DELETE
+  // =============================
 
   confirmDelete(id: string) {
     this.showConfirm = true;
-    // this.deleteId = _id;
+    this.deleteId = id;
   }
 
   cancelDelete() {
@@ -132,12 +171,17 @@ export class Departments implements OnInit {
   }
 
   deleteDepartmentConfirmed() {
-    if (this.deleteId !== null) {
-      // this.departments = this.departments.filter((d) => d.id !== this.deleteId);
-      this.saveToLocalStorage();
-      this.toastr.info('Department deleted successfully.', 'Deleted');
-    }
-    this.showConfirm = false;
-    this.deleteId = null;
+    if (!this.deleteId) return;
+
+    this.crud.delete('departments', this.deleteId).subscribe({
+      next: (res: any) => {
+        this.departments = this.departments.filter(d => d._id !== this.deleteId);
+        this.toastr.info(res.message || 'Department deleted');
+
+        this.showConfirm = false;
+        this.deleteId = null;
+      },
+      error: err => this.toastr.error(err?.error?.details || 'Delete failed')
+    });
   }
 }
