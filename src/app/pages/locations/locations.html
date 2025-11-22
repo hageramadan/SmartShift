@@ -33,7 +33,7 @@
             <i class="fa-solid fa-pencil text-gray-600"></i>
           </button>
           <button
-            (click)="confirmDelete(loc.id)"
+            (click)="confirmDelete(loc.id||'')"
             class="text-red-500 px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
           >
 
@@ -42,7 +42,7 @@
         </div>
       </div>
       <h3 class="text-lg  text-gray-600 mt-4">{{ loc.name }}</h3>
-      <p class="text-gray-500 my-8">{{ loc.address }}</p>
+      <p class="text-gray-500 my-8">{{ loc.Address }}</p>
       <p class="bg-pro-hover1 text-pro w-fit px-3 rounded-full py-1 text-[13px]  mb-3">{{ 'loc.department '}}</p>
     </div>
   </div>

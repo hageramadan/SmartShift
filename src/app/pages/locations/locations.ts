@@ -59,9 +59,9 @@ export class Locations {
   // newLocation: LocationI = { id: 0, name: '', address: '', department: '' };
   isModalOpen = false;
   isEditing = false;
-  editId: number | null = null;
+  editId: string ='';
   showDeleteConfirm = false;
-  locationToDelete: number | null = null;
+  locationToDelete: string | null = null;
 
   constructor(private toastr: ToastrService) {}
 
@@ -70,7 +70,7 @@ export class Locations {
     if (editLocation) {
       // this.newLocation = { ...editLocation };
       this.isEditing = true;
-      this.editId = editLocation.id;
+      this.editId = editLocation.id||'';
     } else {
       this.isEditing = false;
       // this.newLocation = { id: 0, name: '', address: '', department: '' };
@@ -80,7 +80,7 @@ export class Locations {
   closeModal() {
     this.isModalOpen = false;
     this.isEditing = false;
-    this.editId = null;
+    this.editId = '';
     // this.newLocation = { id: 0, name: '', address: '', department: '' };
   }
 
@@ -109,7 +109,7 @@ export class Locations {
     this.closeModal();
   }
 
-  confirmDelete(id: number) {
+  confirmDelete(id: string) {
     this.locationToDelete = id;
     this.showDeleteConfirm = true;
   }

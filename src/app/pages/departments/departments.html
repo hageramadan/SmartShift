@@ -22,8 +22,7 @@
         <tr>
           <th class="py-3 px-4">Department Name</th>
           <th class="py-3 px-4">Manager</th>
-          <th class="py-3 px-4">Location Name</th>
-          <th class="py-3 px-4">Location Address</th>
+          <th class="py-3 px-4">Location</th>
           <th class="py-3 px-4 text-center">Actions</th>
         </tr>
       </thead>
@@ -33,29 +32,15 @@
           class="border-b hover:bg-gray-50 transition border-gray-200"
         >
           <td class="py-3 px-4">{{ dep.name }}</td>
-
-          <td class="py-3 px-4">
-            {{ dep.manager?.fullName || '—' }}
-          </td>
-
-          <td class="py-3 px-4">
-            {{ dep.location?.name || '—' }}
-          </td>
-
-          <td class="py-3 px-4">
-            {{ dep.location?.Address || '—' }}
-          </td>
-
+          <td class="py-3 px-4">{{ dep.manager?.fullName }}</td>
+          <td class="py-3 px-4">{{ dep.location?.Address }}</td>
           <td class="py-3 px-4 flex justify-center gap-2">
-            <button
-              (click)="editDepartment(dep)"
+            <button (click)="editDepartment(dep)"
               class="text-gray-600 hover:text-pro transition px-3 py-1 rounded text-sm cursor-pointer"
             >
               <i class="fa-regular fa-pen-to-square"></i>
             </button>
-
-            <button
-              (click)="confirmDelete(dep._id)"
+            <button (click)="confirmDelete(dep._id)"
               class="text-red1 hover:text-red-600 transition px-3 py-1 rounded text-sm cursor-pointer"
             >
               <i class="fa-regular fa-trash-can"></i>
@@ -71,105 +56,109 @@
     *ngIf="showForm"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
   >
-    <div
-      class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl"
-    >
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl transform transition-all scale-100 animate-fadeIn">
       <h3 class="text-2xl font-semibold mb-6 text-gray-800">
         {{ selectedDepartment ? 'Edit Department' : 'Add Department' }}
       </h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Department Name -->
-        <div class="relative">
+        <div class="relative col-span-2">
           <input
             [(ngModel)]="formData.name"
             type="text"
             id="deptName"
-            [ngClass]="{ 'border-red-500': submitted && !formData.name }"
-            class="peer border border-gray-300 p-3 w-full rounded-md outline-none transition placeholder-transparent"
+            [ngClass]="{'border-red-500': submitted && !formData.name}"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
             placeholder=" "
           />
           <label
             for="deptName"
-            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
+                   peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
+                   peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium
+                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium cursor-text"
           >
             Department Name
           </label>
         </div>
 
-        <!-- Staff Count -->
-        <div class="relative">
-          <input
-            [(ngModel)]="formData.staffCount"
-            type="number"
-            id="staffCount"
-            min="0"
-            [ngClass]="{ 'border-red-500': submitted && !formData.staffCount }"
-            class="peer border border-gray-300 p-3 w-full rounded-md outline-none transition placeholder-transparent"
-            placeholder=" "
-          />
-          <label
-            for="staffCount"
-            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all"
-          >
-            Staff Count
-          </label>
-        </div>
+       
 
-        <!-- Description -->
+        <!-- Address / Description -->
         <div class="relative col-span-2">
           <textarea
             [(ngModel)]="formData.address"
             id="deptDesc"
             rows="3"
-            [ngClass]="{ 'border-red-500': submitted && !formData.address }"
-            class="peer border border-gray-300 p-3 w-full rounded-md outline-none transition placeholder-transparent resize-none"
+            [ngClass]="{'border-red-500': submitted && !formData.address}"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent resize-none"
             placeholder=" "
           ></textarea>
           <label
             for="deptDesc"
-            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
+                   peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
+                   peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium
+                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium cursor-text"
           >
-            Description
+            Address
           </label>
         </div>
 
         <!-- Manager -->
-        <div class="relative">
+        <div class="relative col-span-2 md:col-span-1">
           <select
             [(ngModel)]="formData.managerId"
             id="deptManager"
-            [ngClass]="{ 'border-red-500': submitted && !formData.managerId }"
-            class="peer border border-gray-300 p-3 w-full rounded-md outline-none bg-white"
+            [ngClass]="{'border-red-500': submitted && !formData.managerId}"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition bg-white appearance-none"
           >
             <option value="" disabled selected hidden>Select Manager</option>
-
             <option *ngFor="let manager of managers" [value]="manager._id">
               {{ manager.fullName }}
             </option>
           </select>
-
           <label
             for="deptManager"
-            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
+                   peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium
+                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium cursor-text"
           >
             Manager
+          </label>
+        </div>
+
+        <!-- Location -->
+        <div class="relative col-span-2 md:col-span-1">
+          <select
+            [(ngModel)]="formData.locationId"
+            (change)="onLocationChange()"
+            id="deptLocation"
+            [ngClass]="{'border-red-500': submitted && !formData.locationId}"
+            class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition bg-white appearance-none"
+          >
+            <option value="" disabled selected hidden>Select Location</option>
+            <option *ngFor="let loc of locations" [value]="loc._id">
+              {{ loc.name }}
+            </option>
+          </select>
+          <label
+            for="deptLocation"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300
+                   peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium
+                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium cursor-text"
+          >
+            Location
           </label>
         </div>
       </div>
 
       <div class="flex justify-end gap-3 mt-8">
-        <button
-          (click)="showForm = false"
-          class="bg-gray-100 px-5 py-2 rounded-md"
-        >
+        <button (click)="showForm = false" class="bg-white hover:bg-gray-100 text-gray-800 px-5 py-2 rounded-md border border-gray-300 transition font-medium">
           Cancel
         </button>
-
-        <button
-          (click)="saveDepartment()"
-          class="bg-pro text-white px-5 py-2 rounded-md cursor-pointer"
-        >
+        <button (click)="saveDepartment()" class="bg-pro hover:bg-pro-hover text-white cursor-pointer px-5 py-2 rounded-md transition font-medium shadow-sm">
           {{ selectedDepartment ? 'Update' : 'Create' }}
         </button>
       </div>
@@ -179,26 +168,20 @@
   <!-- Confirm Delete Modal -->
   <div
     *ngIf="showConfirm"
-    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn"
   >
     <div class="bg-white p-8 rounded-2xl shadow-xl w-[90%] max-w-md text-center">
-      <h3 class="text-xl font-semibold mb-3">Confirm Deletion</h3>
+      <h3 class="text-xl font-semibold text-gray-800 mb-3">
+        Confirm Deletion
+      </h3>
       <p class="text-gray-500 mb-6">
         Are you sure you want to delete this department?
       </p>
-
       <div class="flex justify-center gap-4">
-        <button
-          (click)="deleteDepartmentConfirmed()"
-          class="bg-red-600 text-white px-5 py-2 rounded-md"
-        >
+        <button (click)="deleteDepartmentConfirmed()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-md font-medium transition">
           Yes, Delete
         </button>
-
-        <button
-          (click)="cancelDelete()"
-          class="bg-gray-100 px-5 py-2 rounded-md"
-        >
+        <button (click)="cancelDelete()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-md font-medium transition">
           Cancel
         </button>
       </div>

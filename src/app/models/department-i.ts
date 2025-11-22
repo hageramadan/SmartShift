@@ -1,3 +1,5 @@
+import { LocationI } from "./location-i";
+
 export interface DepartmentI {
   _id: string;
   id?: string;
@@ -9,13 +11,9 @@ export interface DepartmentI {
     contactNumber: string;
   };
   managerId?: string;
-  address: string;
-  locationId: string;
+  address?: string;
+  locationId?: string;
   staffCount?: number;
   members?: number;
-  location?: {
-    name: string;
-    Address: string;
-    id?: string ;
-  };
+  location?:LocationI
 }
