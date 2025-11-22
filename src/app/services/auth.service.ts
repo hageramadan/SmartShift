@@ -20,13 +20,14 @@ export class AuthService {
   constructor(private api: Api) { }
 
   login(password: string, email?: string, nickname?: string) {
-    return this.api.post<AuthResponse>('users/login', { email, nickname, password }).pipe(
-      tap(res => {
-        this.userSubject.next(res.data);
-        sessionStorage.setItem('user', JSON.stringify(res.data)); // optional
-      })
-    );
-  }
+  return this.api.post<AuthResponse>('users/login', { email, nickname, password }).pipe(
+    tap(res => {
+      this.userSubject.next(res.data);
+      sessionStorage.setItem('user', JSON.stringify(res.data));
+    })
+  );
+}
+
 
   getCurrentUser(): UserI | null {
   return this.userSubject.value;

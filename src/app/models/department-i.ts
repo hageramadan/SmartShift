@@ -13,5 +13,9 @@ export interface DepartmentI {
   locationId: string;
   staffCount?: number;
   members?: number;
+  location?: {
+    name: string;
+    Address: string;
+    id?: string ;
+  };
 }
-

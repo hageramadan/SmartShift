@@ -44,7 +44,6 @@ export class Users implements OnInit {
 
   loadAllSharedData() {
     this.sharedSrv.loadAll();
-
     this.sharedSrv.getUsers().subscribe(users => (this.users = users));
     this.sharedSrv.getDepartments().subscribe(depts => (this.departments = depts));
     this.sharedSrv.getPositions().subscribe(poss => (this.positions = poss));
@@ -142,6 +141,7 @@ export class Users implements OnInit {
     this.showConfirm = true;
     this.deleteId = id;
   }
+
 
   cancelDelete() {
     this.showConfirm = false;

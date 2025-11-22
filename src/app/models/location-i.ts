@@ -1,10 +1,13 @@
 export interface LocationI {
-  id: number;
+  id: number ;
+  _id: string;
   name: string;
   street: string;
   city: string;
   state: string;
   country: string;
   postalCode?: string;
-  address?: string;
+  Address?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

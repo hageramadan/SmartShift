@@ -19,7 +19,7 @@ export class CrudService {
   }
 
   create<T>(endpoint: string, data: Partial<T>): Observable<ApiResponse<T>> {
-    return this.api.post<ApiResponse<T>>(endpoint, data);
+    return this.api.post<ApiResponse<T>>(endpoint, data );
   }
 
   update<T>(endpoint: string, id: string, data: Partial<T>): Observable<ApiResponse<T>> {
