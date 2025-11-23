@@ -7,7 +7,7 @@
     </div>
 
     <button
-      (click)="openModal()"
+      (click)="addShift()"
       class="bg-pro cursor-pointer text-white px-5 py-2 rounded-lg  transition"
     >
       + Add Shift
@@ -31,27 +31,27 @@
         <tr *ngFor="let shift of shifts" class="border-b border-gray-200 hover:bg-gray-50 transition">
           <td class="px-4 py-4 text-sm  text-gray-800">
             <i class="fa-regular fa-clock text-pro me-1.5"></i>
-            {{ shift.name }}
+            {{ shift.shiftName }}
           </td>
-          <td class="px-4 py-1 text-sm ">{{ shift.startTime }} - {{ shift.endTime }}</td>
+          <td class="px-4 py-1 text-sm ">{{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }}</td>
           <td class="px-4 py-1 text-sm ">
-          <span class="bg-pro-hover1 text-pro rounded-xl p-1 px-3"> {{ shift.department }}</span> 
+          <span class="bg-pro-hover1 text-pro rounded-xl p-1 px-3"> {{ shift.department?.name }}</span> 
           </td>
           <td class="px-4 py-1 text-sm ">{{ shift.location }}</td>
           <td class="px-4 py-1 text-sm ">
             <span class="border border-gray-200 rounded-2xl p-1 px-3">
-            {{ shift.registerConfig }}
+            {{ shift.department?.name }}
             </span>
           </td>
           <td class="px-4 py-1 text-sm  text-center flex gap-2 justify-center">
             <button
-              (click)="openModal(shift)"
+              (click)="editShift(shift)"
               class=" px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
             >
                <i class="fa-solid fa-pencil text-gray-600"></i>
             </button>
             <button
-              (click)="confirmDelete(shift.id)"
+              (click)="confirmDelete(shift.id||'')"
               class="text-red-500 px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
             >
                <i class="fa-regular fa-trash-can"></i>
@@ -79,7 +79,7 @@
             type="text"
             id="shiftName"
             placeholder=" "
-            [(ngModel)]="newShift.name"
+            [(ngModel)]="newShift.shiftName"
             class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
           />
           <label
@@ -150,7 +150,7 @@
             <input
               type="time"
               id="startTime"
-              [(ngModel)]="newShift.startTime"
+              [(ngModel)]="newShift.startTimeFormatted"
               class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
             />
             <label
@@ -164,7 +164,7 @@
             <input
               type="time"
               id="endTime"
-              [(ngModel)]="newShift.endTime"
+              [(ngModel)]="newShift.endTimeFormatted"
               class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
             />
             <label
@@ -229,7 +229,7 @@
           Cancel
         </button>
         <button
-          (click)="deleteShift()"
+           (click)="deleteShiftConfirmed()"
           class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
         >
           Delete

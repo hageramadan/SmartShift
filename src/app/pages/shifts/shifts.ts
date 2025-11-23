@@ -1,245 +1,171 @@
-import { Component } from '@angular/core';
-import { ShiftI } from '../../models/shift-i';
-import { ToastrService } from 'ngx-toastr';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DepartmentI } from '../../models/department-i';
-import { LocationI } from '../../models/location-i';
-import { SubDepartmentI } from '../../models/sub-department-i';
+import { ToastrService } from 'ngx-toastr';
+import { CrudService } from '../../services/crud.service';
+
+interface Department {
+  _id: string;
+  name: string;
+}
+
+interface SubDepartment {
+  _id: string;
+  name: string;
+}
+
+interface Location {
+  _id?: string;
+  name: string;
+}
+
+interface Shift {
+  id?: string;
+  shiftName?: string;
+  shiftType?: string;
+  startTimeFormatted?: string;
+  endTimeFormatted?: string;
+  department?: Department | null;
+  subDepartment?: SubDepartment | null;
+  location?: Location | null;
+  checkInStart?: boolean;
+  checkOutEnd?: boolean;
+  earlyCheckIn?: boolean;
+}
 
 @Component({
   selector: 'app-shifts',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './shifts.html',
   styleUrls: ['./shifts.css'],
 })
-export class Shifts {
-  // ====== Data ======
-  departments: DepartmentI[] = [
-    // {
-    //   id: 1,
-    //   name: 'Emergency Department',
-    //   description: 'Handles all emergency and urgent care patients',
-    //   manager: 'Dr. Michael Chen',
-    //   staffCount: 4,
-    // },
-    // {
-    //   id: 2,
-    //   name: 'Intensive Care Unit',
-    //   description: 'Critical care for severely ill patients',
-    //   manager: 'Dr. James Wilson',
-    //   staffCount: 2,
-    // },
-    // {
-    //   id: 3,
-    //   name: 'Surgery Department',
-    //   description: 'Surgical procedures and post-operative care',
-    //   manager: 'Dr. Sarah Johnson',
-    //   staffCount: 0,
-    // },
-  ];
-
-  locations: LocationI[] = [
-    // {
-    //   id: 1,
-    //   name: 'Main Hospital Building - Wing A',
-    //   address: '123 Medical Center Drive, Floor 1',
-    //   department: 'Emergency Department',
-    // },
-    // {
-    //   id: 2,
-    //   name: 'Main Hospital Building - Wing B',
-    //   address: '123 Medical Center Drive, Floor 3',
-    //   department: 'Intensive Care Unit',
-    // },
-    // {
-    //   id: 3,
-    //   name: 'Surgery Center',
-    //   address: '456 Healthcare Blvd',
-    //   department: 'Surgery Department',
-    // },
-  ];
-
-  subDepartments: SubDepartmentI[] = [
-    // {
-    //   id: 1,
-    //   name: 'Trauma Unit',
-    //   parentId: this.findDepartmentIdByName('Emergency Department'),
-    //   description: 'Specializes in trauma and severe injuries',
-    // },
-    // {
-    //   id: 2,
-    //   name: 'Pediatric Emergency',
-    //   parentId: this.findDepartmentIdByName('Emergency Department'),
-    //   description: 'Emergency care for children',
-    // },
-    // {
-    //   id: 3,
-    //   name: 'Cardiac ICU',
-    //   parentId: this.findDepartmentIdByName('Intensive Care Unit'),
-    //   description: 'Intensive care for cardiac patients',
-    // },
-    // {
-    //   id: 4,
-    //   name: 'Neuro ICU',
-    //   parentId: this.findDepartmentIdByName('Intensive Care Unit'),
-    //   description: 'Intensive care for neurological patients',
-    // },
-  ];
-
-  shifts: ShiftI[] = [
-    // {
-    //   id: 1,
-    //   name: 'Morning Shift',
-    //   time: '07:00 - 15:00',
-    //   startTime: '07:00',
-    //   endTime: '15:00',
-    //   department: 'Emergency Department',
-    //   subDepartment: 'Trauma Unit',
-    //   location: 'Main Hospital Building - Wing A',
-    //   registerConfig: 'Check-In / Check-Out (Early: 15m)',
-    // },
-    // {
-    //   id: 2,
-    //   name: 'Afternoon Shift',
-    //    time: '07:00 - 15:00',
-    //   startTime: '15:00',
-    //   endTime: '23:00',
-    //   department: 'Emergency Department',
-    //   subDepartment: 'Trauma Unit',
-    //   location: 'Main Hospital Building - Wing A',
-    //   registerConfig: 'Check-In / Check-Out (Early: 15m)',
-    // },
-  ];
-
-  newShift: ShiftI = {
-    id: 0,
-    name: '',
-    startTime: '',
-     time: '',
-    endTime: '',
-    department: '',
-    subDepartment: '',
-    location: '',
-    registerConfig: '',
-    checkInStart: false,
-    checkOutEnd: false,
-    earlyCheckIn: false,
-  };
+export class Shifts implements OnInit {
+  shifts: Shift[] = [];
+  departments: Department[] = [];
+  subDepartments: SubDepartment[] = [];
+  locations: Location[] = [];
 
   isModalOpen = false;
   isEditing = false;
-  editId: number | null = null;
   showDeleteConfirm = false;
-  shiftToDelete: number | null = null;
+  shiftToDeleteId: string | null = null;
 
-  constructor(private toastr: ToastrService) {}
+  newShift: Partial<Shift> = {};
 
-  // ====== Methods ======
-  findDepartmentIdByName(departmentName: string): string | null {
-    const department = this.departments.find((d) => d.name === departmentName);
-    return department ? department._id : null;
+  constructor(
+    private toastr: ToastrService,
+    private crud: CrudService
+  ) {}
+
+  ngOnInit() {
+    this.fetchSharedData();
+    this.fetchShifts();
   }
 
-  openModal(editShift?: ShiftI) {
+  fetchSharedData() {
+    // جلب الـ departments, subDepartments, locations مباشرة
+    this.crud.getAll<Department>('departments').subscribe({
+      next: res => this.departments = res.data ?? [],
+      error: () => this.toastr.error('Failed to fetch departments')
+    });
+
+    this.crud.getAll<SubDepartment>('subdepartments').subscribe({
+      next: res => this.subDepartments = res.data ?? [],
+      error: () => this.toastr.error('Failed to fetch subDepartments')
+    });
+
+    this.crud.getAll<Location>('locations').subscribe({
+      next: res => this.locations = res.data ?? [],
+      error: () => this.toastr.error('Failed to fetch locations')
+    });
+  }
+
+  fetchShifts() {
+    this.crud.getAll<Shift>('shifts').subscribe({
+      next: res => this.shifts = res.data ?? [],
+      error: () => this.toastr.error('Failed to fetch shifts')
+    });
+  }
+
+  addShift() {
     this.isModalOpen = true;
-    if (editShift) {
-      this.newShift = { ...editShift };
-      this.isEditing = true;
-      this.editId = editShift.id;
+    this.isEditing = false;
+    this.newShift = {
+      shiftName: '',
+      shiftType: '',
+      department: null,
+      subDepartment: null,
+      location: null,
+      checkInStart: false,
+      checkOutEnd: false,
+      earlyCheckIn: false
+    };
+  }
+
+  editShift(shift: Shift) {
+    this.isModalOpen = true;
+    this.isEditing = true;
+    this.newShift = { ...shift };
+  }
+
+  saveShift() {
+    const payload: any = { ...this.newShift };
+
+    if (this.isEditing && this.newShift.id) {
+      this.crud.update<Shift>('shifts', this.newShift.id, payload).subscribe({
+        next: res => {
+          const idx = this.shifts.findIndex(s => s.id === res.data.id);
+          if (idx !== -1) this.shifts[idx] = res.data;
+          this.toastr.success('Shift updated');
+          this.closeModal();
+        },
+        error: () => this.toastr.error('Update failed')
+      });
     } else {
-      this.isEditing = false;
-      this.newShift = {
-        id: 0,
-        name: '',
-        startTime: '',
-        endTime: '',
-        department: '',
-        subDepartment: '',
-        location: '',
-        registerConfig: '',
-        checkInStart: false,
-        checkOutEnd: false,
-        earlyCheckIn: false,
-      };
+      this.crud.create<Shift>('shifts', payload).subscribe({
+        next: res => {
+          this.shifts = [res.data, ...this.shifts];
+          this.toastr.success('Shift created');
+          this.closeModal();
+        },
+        error: () => this.toastr.error('Create failed')
+      });
     }
   }
 
   closeModal() {
     this.isModalOpen = false;
+    this.newShift = {};
     this.isEditing = false;
-    this.editId = null;
-    this.newShift = {
-      id: 0,
-      name: '',
-       time: '',
-      startTime: '',
-      endTime: '',
-      department: '',
-      subDepartment: '',
-      location: '',
-      registerConfig: '',
-      checkInStart: false,
-      checkOutEnd: false,
-      earlyCheckIn: false,
-    };
   }
 
-  validateForm(): boolean {
-    if (
-      !this.newShift.name ||
-      !this.newShift.department ||
-      !this.newShift.subDepartment ||
-      !this.newShift.location ||
-      !this.newShift.startTime ||
-      !this.newShift.endTime
-    ) {
-      this.toastr.warning('Please fill in all required fields!', 'Validation');
-      return false;
-    }
-    return true;
-  }
-
-  saveShift() {
-    if (!this.validateForm()) return;
-
-    // تحويل checkboxes إلى نص
-    const registerArr = [];
-    if (this.newShift.checkInStart) registerArr.push('Check in at shift start');
-    if (this.newShift.checkOutEnd) registerArr.push('Check out at shift end');
-    if (this.newShift.earlyCheckIn) registerArr.push('Early check in allowed');
-    this.newShift.registerConfig = registerArr.join(' / ');
-
-    if (this.isEditing) {
-      const index = this.shifts.findIndex((s) => s.id === this.editId);
-      if (index > -1) {
-        this.shifts[index] = { ...this.newShift };
-        this.toastr.info('Shift updated successfully!', 'Updated');
-      }
-    } else {
-      this.newShift.id = Date.now();
-      this.shifts.push({ ...this.newShift });
-      this.toastr.success('New shift added!', 'Created');
-    }
-    this.closeModal();
-  }
-
-  confirmDelete(id: number) {
-    this.shiftToDelete = id;
-    this.showDeleteConfirm = true;
-  }
-
-  deleteShift() {
-    if (this.shiftToDelete != null) {
-      this.shifts = this.shifts.filter((s) => s.id !== this.shiftToDelete);
-      this.toastr.error('Shift deleted successfully!', 'Deleted');
-      this.showDeleteConfirm = false;
-      this.shiftToDelete = null;
-    }
-  }
+  // confirmDelete(id: string) {
+  //   this.showDeleteConfirm = true;
+  //   this.shiftToDeleteId = id;
+  // }
 
   cancelDelete() {
     this.showDeleteConfirm = false;
-    this.shiftToDelete = null;
+    this.shiftToDeleteId = null;
   }
+
+  deleteShiftConfirmed() {
+    if (!this.shiftToDeleteId) return;
+
+    this.crud.delete<Shift>('shifts', this.shiftToDeleteId).subscribe({
+      next: () => {
+        this.shifts = this.shifts.filter(s => s.id !== this.shiftToDeleteId);
+        this.toastr.info('Shift deleted');
+        this.cancelDelete();
+      },
+      error: () => this.toastr.error('Delete failed')
+    });
+  }
+  confirmDelete(id?: string) {
+  if (!id) return; 
+  this.showDeleteConfirm = true;
+  this.shiftToDeleteId = id;
+}
+
 }
