@@ -1,13 +1,17 @@
+
 export interface ShiftI {
-      id?: number;
-  name?: string;
-  department?: string;
-  subDepartment?: string;
-  location?: string;
-  startTime?: string;
-  endTime?: string;
-  checkInStart?: boolean;
-  checkOutEnd?: boolean;
-  earlyCheckIn?: boolean;
-  registerConfig?: string;
+  _id: string;
+  shiftName: string;
+  shiftType?: string;
+  startTime: number;
+  endTime: number;
+  durationMinutes: number;
+  isOvernight: boolean;
+  startTimeFormatted: string;
+  endTimeFormatted: string;
+  durationFormatted: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  id?: string;
 }
