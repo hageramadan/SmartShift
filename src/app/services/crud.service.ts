@@ -29,4 +29,7 @@ export class CrudService {
   delete<T>(endpoint: string, id: string): Observable<ApiResponse<null>> {
     return this.api.delete<ApiResponse<null>>(endpoint, id);
   }
+    customPatch<T>(endpoint: string, data: Partial<T>): Observable<ApiResponse<T>> {
+    return this.api.patch<ApiResponse<T>>(endpoint, '', data);
+  }
 }
