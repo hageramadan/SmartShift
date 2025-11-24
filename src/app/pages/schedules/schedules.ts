@@ -52,6 +52,34 @@ export class Schedules implements OnInit {
   error = '';
   showCreateModal = false;
   
+  // إضافة متغيرات للتحقق من الصحة
+  formErrors = {
+    date: '',
+    departmentId: '',
+    userId: '',
+    shiftId: '',
+    subDepartmentId: ''
+  };
+  
+  validationMessages = {
+    date: {
+      required: 'Date is required',
+      future: 'Date cannot be in the past'
+    },
+    departmentId: {
+      required: 'Department is required'
+    },
+    userId: {
+      required: 'User is required'
+    },
+    shiftId: {
+      required: 'Shift is required'
+    },
+    subDepartmentId: {
+      required: 'Sub Department is required'
+    }
+  };
+
   pagination = {
     total: 0,
     totalFiltered: 0,
@@ -87,7 +115,7 @@ export class Schedules implements OnInit {
       },
       error: (err) => {
         console.error('❌ Error loading departments:', err);
-        this.error = 'Failed to load departments';
+        this.handleError('Failed to load departments', err);
         this.dataLoading = false;
       }
     });
@@ -101,7 +129,7 @@ export class Schedules implements OnInit {
       },
       error: (err) => {
         console.error('❌ Error loading subdepartments:', err);
-        this.error = 'Failed to load subdepartments';
+        this.handleError('Failed to load subdepartments', err);
         this.dataLoading = false;
       }
     });
@@ -115,7 +143,7 @@ export class Schedules implements OnInit {
       },
       error: (err) => {
         console.error('❌ Error loading users:', err);
-        this.error = 'Failed to load users';
+        this.handleError('Failed to load users', err);
         this.dataLoading = false;
       }
     });
@@ -125,38 +153,23 @@ export class Schedules implements OnInit {
   }
 
   // دالة للتحقق من اكتمال تحميل البيانات
-  private checkDataStatus(): void {
-    console.log('📋 Data Status Check:');
-    console.log('   Departments:', this.departments.length);
-    console.log('   SubDepartments:', this.subDepartments.length);
-    console.log('   Users:', this.users.length);
-    
-    // إذا اكتمل تحميل جميع البيانات
-    if (this.departments.length > 0 && this.subDepartments.length > 0 && this.users.length > 0) {
+  checkDataStatus(): void {
+    if (
+      this.departments.length > 0 &&
+      this.subDepartments.length > 0 &&
+      this.users.length > 0
+    ) {
       this.dataLoading = false;
-      console.log('✅ All data loaded successfully');
-    }
-    
-    if (this.departments.length === 0) {
-      console.warn('⚠️ No departments loaded!');
-    }
-    if (this.subDepartments.length === 0) {
-      console.warn('⚠️ No subdepartments loaded!');
-    }
-    if (this.users.length === 0) {
-      console.warn('⚠️ No users loaded!');
     }
   }
 
   loadShifts(): void {
     this.schedulesService.getShifts().subscribe({
       next: (response) => {
-        console.log('⏰ Shifts loaded:', response.data);
         this.shifts = response.data;
       },
       error: (err) => {
-        console.error('❌ Error loading shifts:', err);
-        this.error = 'Failed to load shifts';
+        this.handleError('Failed to load shifts', err);
       }
     });
   }
@@ -165,11 +178,8 @@ export class Schedules implements OnInit {
     this.loading = true;
     this.error = '';
 
-    console.log('📅 Loading schedules with filters:', this.filters);
-
     this.schedulesService.getSchedules(this.filters).subscribe({
       next: (response) => {
-        console.log('📅 Schedules response:', response);
         this.schedules = response.data || [];
         this.pagination = {
           total: response.total || 0,
@@ -183,7 +193,7 @@ export class Schedules implements OnInit {
       },
       error: (err) => {
         console.error('❌ Error loading schedules:', err);
-        this.error = 'Failed to load schedules';
+        this.handleError('Failed to load schedules', err);
         this.loading = false;
       }
     });
@@ -198,8 +208,6 @@ export class Schedules implements OnInit {
 
   // دالة خاصة بفلترة الـ departments في الفلاتر
   onDepartmentFilterChange(): void {
-    console.log('🔄 Filter Department changed to:', this.filters.departmentId);
-    
     if (this.filters.departmentId) {
       this.filteredSubDepartments = this.subDepartments.filter(
         sub => {
@@ -218,9 +226,6 @@ export class Schedules implements OnInit {
       this.filteredUsers = [...this.users];
     }
     
-    console.log('📁 Filtered subdepartments:', this.filteredSubDepartments.length);
-    console.log('👥 Filtered users:', this.filteredUsers.length);
-    
     // إعادة تعيين القيم المختارة
     this.filters.subDepartmentId = '';
     this.filters.userId = '';
@@ -231,8 +236,6 @@ export class Schedules implements OnInit {
 
   // دالة خاصة للـ modal
   onModalDepartmentChange(): void {
-    console.log('🔄 Modal Department changed to:', this.newSchedule.departmentId);
-    
     if (this.newSchedule.departmentId) {
       // تصفية الـ sub-departments للـ modal
       this.filteredSubDepartments = this.subDepartments.filter(
@@ -259,6 +262,9 @@ export class Schedules implements OnInit {
     // إعادة تعيين القيم المختارة في الـ modal
     this.newSchedule.subDepartmentId = '';
     this.newSchedule.userId = '';
+    
+    // تنظيف أخطاء التحقق
+    this.clearFormErrors();
   }
 
   applyFilters(): void {
@@ -282,9 +288,56 @@ export class Schedules implements OnInit {
     this.loadSchedules();
   }
 
+  // التحقق من صحة البيانات قبل الإرسال
+  validateSchedule(schedule: CreateScheduleRequest): boolean {
+    this.clearFormErrors();
+    let isValid = true;
+
+    // التحقق من التاريخ
+    if (!schedule.date) {
+      this.formErrors.date = this.validationMessages.date.required;
+      isValid = false;
+    } else {
+      const selectedDate = new Date(schedule.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        this.formErrors.date = this.validationMessages.date.future;
+        isValid = false;
+      }
+    }
+
+    // التحقق من القسم
+    if (!schedule.departmentId) {
+      this.formErrors.departmentId = this.validationMessages.departmentId.required;
+      isValid = false;
+    }
+
+    // التحقق من المستخدم
+    if (!schedule.userId) {
+      this.formErrors.userId = this.validationMessages.userId.required;
+      isValid = false;
+    }
+
+    // التحقق من الوردية
+    if (!schedule.shiftId) {
+      this.formErrors.shiftId = this.validationMessages.shiftId.required;
+      isValid = false;
+    }
+
+    // التحقق من القسم الفرعي
+    if (!schedule.subDepartmentId) {
+      this.formErrors.subDepartmentId = this.validationMessages.subDepartmentId.required;
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
   createSchedule(): void {
-    if (!this.isValidSchedule(this.newSchedule)) {
-      this.error = 'Please fill all required fields';
+    if (!this.validateSchedule(this.newSchedule)) {
+      this.error = 'Please fix the validation errors before submitting';
       return;
     }
 
@@ -293,7 +346,6 @@ export class Schedules implements OnInit {
 
     this.schedulesService.createSchedule(this.newSchedule).subscribe({
       next: (response) => {
-        console.log('✅ Schedule created:', response);
         this.schedules.unshift(response.data);
         this.showCreateModal = false;
         this.resetNewScheduleForm();
@@ -301,20 +353,19 @@ export class Schedules implements OnInit {
         this.loadSchedules();
       },
       error: (err) => {
-        console.error('❌ Error creating schedule:', err);
-        this.error = 'Failed to create schedule';
+        this.handleError('Failed to create schedule', err);
         this.loading = false;
       }
     });
   }
 
   updateSchedule(schedule: ScheduleI): void {
-    if (!schedule._id) return;
+    if (!schedule._id) {
+      this.error = 'Invalid schedule data';
+      return;
+    }
     
-    // هنا يمكنك فتح modal للتعديل أو استخدام أي طريقة أخرى
-    console.log('✏️ Editing schedule:', schedule);
-    
-    // مثال: نسخ البيانات إلى نموذج التعديل
+    // نسخ البيانات إلى نموذج التعديل
     this.newSchedule = {
       date: schedule.date,
       departmentId: schedule.departmentId || '',
@@ -323,18 +374,28 @@ export class Schedules implements OnInit {
       subDepartmentId: schedule.subDepartmentId || ''
     };
     
+    // تصفية البيانات بناءً على القسم المختار
+    this.onModalDepartmentChange();
     this.showCreateModal = true;
   }
 
   deleteSchedule(id: string): void {
+    if (!id) {
+      this.error = 'Invalid schedule ID';
+      return;
+    }
+
     if (confirm('Are you sure you want to delete this schedule?')) {
+      this.loading = true;
       this.schedulesService.deleteSchedule(id).subscribe({
         next: () => {
           this.schedules = this.schedules.filter(s => s._id !== id);
+          this.loading = false;
+          this.loadSchedules(); // إعادة تحميل البيانات للتأكد من التزامن
         },
         error: (err) => {
-          this.error = 'Failed to delete schedule';
-          console.error('❌ Error deleting schedule:', err);
+          this.handleError('Failed to delete schedule', err);
+          this.loading = false;
         }
       });
     }
@@ -355,7 +416,45 @@ export class Schedules implements OnInit {
            !!schedule.subDepartmentId;
   }
 
-  private resetNewScheduleForm(): void {
+  // معالجة الأخطاء من الباك إند
+  private handleError(defaultMessage: string, error: any): void {
+    console.error('❌ Error:', error);
+    
+    if (error.error && error.error.message) {
+      // إذا كان الباك إند يرسل رسالة خطأ محددة
+      this.error = error.error.message;
+    } else if (error.status === 0) {
+      this.error = 'Network error: Please check your internet connection';
+    } else if (error.status === 400) {
+      this.error = 'Bad request: Please check your input data';
+    } else if (error.status === 401) {
+      this.error = 'Unauthorized: Please login again';
+    } else if (error.status === 403) {
+      this.error = 'Forbidden: You do not have permission to perform this action';
+    } else if (error.status === 404) {
+      this.error = 'Resource not found';
+    } else if (error.status === 409) {
+      this.error = 'Conflict: Schedule already exists for this user and date';
+    } else if (error.status === 500) {
+      this.error = 'Server error: Please try again later';
+    } else {
+      this.error = defaultMessage;
+    }
+  }
+
+  // تنظيف أخطاء التحقق
+  private clearFormErrors(): void {
+    this.formErrors = {
+      date: '',
+      departmentId: '',
+      userId: '',
+      shiftId: '',
+      subDepartmentId: ''
+    };
+  }
+
+  // تغيير من private إلى public لأنها تُستدعى من القالب
+  resetNewScheduleForm(): void {
     this.newSchedule = {
       date: '',
       departmentId: '',
@@ -364,14 +463,19 @@ export class Schedules implements OnInit {
       subDepartmentId: ''
     };
     this.error = '';
+    this.clearFormErrors();
   }
 
   formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Invalid Date';
+    }
   }
 
   getDepartmentName(departmentId: string | undefined): string {
@@ -404,6 +508,10 @@ export class Schedules implements OnInit {
     if (!shift) return '';
     return `${shift.startTimeFormatted ?? ''} - ${shift.endTimeFormatted ?? ''}`;
   }
+  closeModal(): void {
+  this.showCreateModal = false;
+  this.resetNewScheduleForm();
+}
 
   getPageNumbers(): number[] {
     const totalPages = this.pagination.totalPages;

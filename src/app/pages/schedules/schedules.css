@@ -59,6 +59,15 @@
   opacity: 0.5;
 }
 
+/* تنسيقات التحقق من الصحة */
+.border-red-500 {
+  border-color: #ef4444 !important;
+}
+
+.text-red-500 {
+  color: #ef4444;
+}
+
 /* تحسينات للاستجابة */
 @media (max-width: 768px) {
   .page-header {
@@ -112,4 +121,33 @@
 .pagination .page-item.active .page-link {
   background-color: #0d6efd;
   border-color: #0d6efd;
+}
+
+/* تنسيقات للأخطاء */
+.error-message {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* تنسيقات للتحميل */
+.loading-overlay {
+  position: relative;
+}
+
+.loading-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

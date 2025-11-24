@@ -1,0 +1,107 @@
+/* locations.css */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* تنسيقات التحقق من الصحة */
+.border-red-500 {
+  border-color: #ef4444 !important;
+}
+
+.text-red-500 {
+  color: #ef4444;
+}
+
+/* تنسيقات لأخطاء الباك إند */
+.api-error {
+  animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* تحسين scroll للمودال */
+.modal-scroll {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+/* تنسيقات للأخطاء */
+.error-message {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* تنسيقات للتحميل */
+.loading-overlay {
+  position: relative;
+}
+
+.loading-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* تحسين الـ z-index للمودال */
+.modal-overlay {
+  z-index: 100;
+}
+
+.modal-content {
+  z-index: 110;
+}
+
+.error-overlay {
+  z-index: 120;
+}
+
+/* تخصيص scrollbar */
+.modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

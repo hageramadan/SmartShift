@@ -34,6 +34,16 @@ export class Levels implements OnInit {
   levelName = '';
   formSelectedPositionId = '';
 
+  // Validation states
+  formErrors = {
+    levelName: '',
+    position: ''
+  };
+
+  // Loading states
+  formSubmitting = false;
+  deleteSubmitting = false;
+
   constructor(
     private crud: CrudService,
     private shared: SharedService,
@@ -115,12 +125,74 @@ export class Levels implements OnInit {
     }, 1000);
   }
 
+  // Form Validation
+  validateForm(): boolean {
+    this.clearFormErrors();
+
+    let isValid = true;
+
+    // Level Name validation
+    if (!this.levelName.trim()) {
+      this.formErrors.levelName = 'Level name is required';
+      isValid = false;
+    } else if (this.levelName.trim().length < 2) {
+      this.formErrors.levelName = 'Level name must be at least 2 characters';
+      isValid = false;
+    } else if (this.levelName.trim().length > 50) {
+      this.formErrors.levelName = 'Level name cannot exceed 50 characters';
+      isValid = false;
+    }
+
+    // Position validation
+    if (!this.formSelectedPositionId) {
+      this.formErrors.position = 'Please select a position';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  clearFormErrors(): void {
+    this.formErrors = {
+      levelName: '',
+      position: ''
+    };
+  }
+
+  // Field-specific validation
+  validateField(fieldName: string, value: string): void {
+    switch (fieldName) {
+    case 'levelName':
+  if (!value.trim()) {
+    this.formErrors.levelName = 'Level name is required';
+  } else if (!/^[a-zA-Z\u0600-\u06FF\s]+$/.test(value.trim())) {
+    this.formErrors.levelName = 'Level name must contain letters only';
+  } else if (value.trim().length < 2) {
+    this.formErrors.levelName = 'Level name must be at least 2 characters';
+  } else if (value.trim().length > 50) {
+    this.formErrors.levelName = 'Level name cannot exceed 50 characters';
+  } else {
+    this.formErrors.levelName = '';
+  }
+  break;  
+      
+      case 'position':
+        if (!value) {
+          this.formErrors.position = 'Please select a position';
+        } else {
+          this.formErrors.position = '';
+        }
+        break;
+    }
+  }
+
   // Original CRUD functions
   openAddForm(): void {
     this.showForm = true;
     this.editingLevel = null;
     this.levelName = '';
     this.formSelectedPositionId = '';
+    this.clearFormErrors();
   }
 
   openEditForm(level: LevelI): void {
@@ -128,6 +200,7 @@ export class Levels implements OnInit {
     this.editingLevel = level;
     this.levelName = level.name;
     this.formSelectedPositionId = level.positionId;
+    this.clearFormErrors();
   }
 
   closeForm(): void {
@@ -135,18 +208,17 @@ export class Levels implements OnInit {
     this.editingLevel = null;
     this.levelName = '';
     this.formSelectedPositionId = '';
+    this.clearFormErrors();
+    this.formSubmitting = false;
   }
 
   submitForm(): void {
-    if (!this.levelName.trim()) {
-      this.toastr.warning('Please enter level name');
+    if (!this.validateForm()) {
+      this.toastr.warning('Please fix the form errors before submitting');
       return;
     }
 
-    if (!this.formSelectedPositionId) {
-      this.toastr.warning('Please select a position');
-      return;
-    }
+    this.formSubmitting = true;
 
     const levelData = { 
       name: this.levelName.trim(),
@@ -160,9 +232,11 @@ export class Levels implements OnInit {
             this.toastr.success('Level updated successfully');
             this.closeForm();
             this.loadLevels();
+            this.formSubmitting = false;
           },
           error: (error) => {
-            this.toastr.error('Failed to update level');
+            this.formSubmitting = false;
+            this.handleError(error, 'Failed to update level');
           }
         });
     } else {
@@ -172,9 +246,11 @@ export class Levels implements OnInit {
             this.toastr.success('Level created successfully');
             this.closeForm();
             this.loadLevels();
+            this.formSubmitting = false;
           },
           error: (error) => {
-            this.toastr.error('Failed to create level');
+            this.formSubmitting = false;
+            this.handleError(error, 'Failed to create level');
           }
         });
     }
@@ -190,10 +266,13 @@ export class Levels implements OnInit {
     this.showDeleteConfirm = false;
     this.deleteLevelId = null;
     this.deleteLevelName = '';
+    this.deleteSubmitting = false;
   }
 
   confirmDelete(): void {
     if (!this.deleteLevelId) return;
+
+    this.deleteSubmitting = true;
 
     this.crud.delete('levels', this.deleteLevelId)
       .subscribe({
@@ -203,13 +282,53 @@ export class Levels implements OnInit {
           this.cancelDelete();
         },
         error: (error) => {
-          this.toastr.error('Failed to delete level');
+          this.deleteSubmitting = false;
+          this.handleError(error, 'Failed to delete level');
         }
       });
+  }
+
+  // Enhanced error handling
+  private handleError(error: any, defaultMessage: string): void {
+    console.error('API Error:', error);
+
+    if (error?.error?.message) {
+      // Handle specific backend error messages
+      const backendMessage = error.error.message;
+      
+      if (backendMessage.includes('duplicate') || backendMessage.includes('already exists')) {
+        this.toastr.error('A level with this name already exists for the selected position');
+      } else if (backendMessage.includes('required')) {
+        this.toastr.error('Please fill all required fields');
+      } else if (backendMessage.includes('validation')) {
+        this.toastr.error('Invalid data provided. Please check your input');
+      } else if (backendMessage.includes('not found')) {
+        this.toastr.error('The requested resource was not found');
+      } else if (error.status === 401) {
+        this.toastr.error('Session expired. Please login again');
+      } else if (error.status === 403) {
+        this.toastr.error('You do not have permission to perform this action');
+      } else if (error.status === 409) {
+        this.toastr.error('This level cannot be deleted because it is associated with other records');
+      } else if (error.status >= 500) {
+        this.toastr.error('Server error. Please try again later');
+      } else {
+        this.toastr.error(backendMessage || defaultMessage);
+      }
+    } else if (error.status === 0) {
+      this.toastr.error('Network error. Please check your connection');
+    } else {
+      this.toastr.error(defaultMessage);
+    }
   }
 
   getPositionName(positionId: string): string {
     const position = this.positions.find(p => p._id === positionId);
     return position ? position.name : 'Unknown Position';
+  }
+
+  // Check if form has errors
+  hasFormErrors(): boolean {
+    return !!this.formErrors.levelName || !!this.formErrors.position;
   }
 }

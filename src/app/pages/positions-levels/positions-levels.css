@@ -31,6 +31,41 @@
   overflow: hidden;
 }
 
+/* Tab Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Tab Styles */
+.tab-active {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+}
+
+.tab-inactive {
+  background: white;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.tab-inactive:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+/* Responsive Design */
 @media (min-width: 1200px) {
   .components-grid {
     grid-template-columns: 1fr 1fr;
@@ -41,4 +76,57 @@
   .components-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .positions-levels-page {
+    padding: 10px;
+  }
+  
+  .tab-button {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+  }
+  
+  .tab-button span:last-child {
+    font-size: 10px;
+  }
+}
+
+/* Smooth transitions */
+.tab-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glass morphism effect for active tab */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Hover effects */
+.hover-lift:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s ease;
+}
+
+/* Custom scrollbar for tab content */
+.tab-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tab-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.tab-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.tab-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

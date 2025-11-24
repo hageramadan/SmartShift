@@ -34,6 +34,50 @@ export class Locations implements OnInit, OnDestroy {
   isLoading = false;
   deleteError = '';
 
+  // إضافة متغيرات للتحقق من الصحة
+  formErrors = {
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    country: '',
+    postalCode: ''
+  };
+
+  // إضافة متغير لأخطاء الباك إند
+  apiError = '';
+
+  validationMessages = {
+    name: {
+      required: 'Location name is required',
+      minlength: 'Location name must be at least 2 characters',
+      maxlength: 'Location name cannot exceed 100 characters'
+    },
+    street: {
+      required: 'Street address is required',
+      minlength: 'Street address must be at least 5 characters',
+      maxlength: 'Street address cannot exceed 200 characters'
+    },
+    city: {
+      required: 'City is required',
+      minlength: 'City name must be at least 2 characters',
+      maxlength: 'City name cannot exceed 50 characters'
+    },
+    state: {
+      required: 'State/Province is required',
+      minlength: 'State/Province must be at least 2 characters',
+      maxlength: 'State/Province cannot exceed 50 characters'
+    },
+    country: {
+      required: 'Country is required'
+    },
+    postalCode: {
+      required: 'Postal code is required',
+      pattern: 'Postal code must be alphanumeric',
+      maxlength: 'Postal code cannot exceed 20 characters'
+    }
+  };
+
   private subscriptions: Subscription = new Subscription();
 
   constructor(
@@ -66,8 +110,7 @@ export class Locations implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isLoading = false;
-          this.toastr.error('Failed to load locations', 'Error');
-          console.error('Error loading locations:', error);
+          this.handleError('Failed to load locations', error);
         }
       })
     );
@@ -75,6 +118,9 @@ export class Locations implements OnInit, OnDestroy {
 
   openModal(editLocation?: LocationI) {
     this.isModalOpen = true;
+    this.clearFormErrors();
+    this.apiError = ''; // تنظيف أخطاء الباك إند عند فتح المودال
+    
     if (editLocation) {
       this.newLocation = { 
         name: editLocation.name || '',
@@ -112,23 +158,89 @@ export class Locations implements OnInit, OnDestroy {
       country: 'Egypt',
       postalCode: ''
     };
+    this.clearFormErrors();
+    this.apiError = ''; // تنظيف أخطاء الباك إند عند إغلاق المودال
   }
 
+  // التحقق من صحة البيانات
   validateForm(): boolean {
-    const requiredFields = ['name', 'street', 'city', 'state', 'country', 'postalCode'];
-    const missingFields = requiredFields.filter(field => !this.newLocation[field]);
-    
-    if (missingFields.length > 0) {
-      this.toastr.warning('Please fill in all fields!', 'Validation');
-      return false;
+    this.clearFormErrors();
+    let isValid = true;
+
+    // التحقق من الاسم
+    if (!this.newLocation.name || this.newLocation.name.trim().length === 0) {
+      this.formErrors.name = this.validationMessages.name.required;
+      isValid = false;
+    } else if (this.newLocation.name.trim().length < 2) {
+      this.formErrors.name = this.validationMessages.name.minlength;
+      isValid = false;
+    } else if (this.newLocation.name.trim().length > 100) {
+      this.formErrors.name = this.validationMessages.name.maxlength;
+      isValid = false;
     }
-    return true;
+
+    // التحقق من الشارع
+    if (!this.newLocation.street || this.newLocation.street.trim().length === 0) {
+      this.formErrors.street = this.validationMessages.street.required;
+      isValid = false;
+    } else if (this.newLocation.street.trim().length < 5) {
+      this.formErrors.street = this.validationMessages.street.minlength;
+      isValid = false;
+    } else if (this.newLocation.street.trim().length > 200) {
+      this.formErrors.street = this.validationMessages.street.maxlength;
+      isValid = false;
+    }
+
+    // التحقق من المدينة
+    if (!this.newLocation.city || this.newLocation.city.trim().length === 0) {
+      this.formErrors.city = this.validationMessages.city.required;
+      isValid = false;
+    } else if (this.newLocation.city.trim().length < 2) {
+      this.formErrors.city = this.validationMessages.city.minlength;
+      isValid = false;
+    } else if (this.newLocation.city.trim().length > 50) {
+      this.formErrors.city = this.validationMessages.city.maxlength;
+      isValid = false;
+    }
+
+    // التحقق من المحافظة
+    if (!this.newLocation.state || this.newLocation.state.trim().length === 0) {
+      this.formErrors.state = this.validationMessages.state.required;
+      isValid = false;
+    } else if (this.newLocation.state.trim().length < 2) {
+      this.formErrors.state = this.validationMessages.state.minlength;
+      isValid = false;
+    } else if (this.newLocation.state.trim().length > 50) {
+      this.formErrors.state = this.validationMessages.state.maxlength;
+      isValid = false;
+    }
+
+    // التحقق من الدولة
+    if (!this.newLocation.country || this.newLocation.country.trim().length === 0) {
+      this.formErrors.country = this.validationMessages.country.required;
+      isValid = false;
+    }
+
+    // التحقق من الرمز البريدي
+    if (!this.newLocation.postalCode || this.newLocation.postalCode.trim().length === 0) {
+      this.formErrors.postalCode = this.validationMessages.postalCode.required;
+      isValid = false;
+    } else if (this.newLocation.postalCode.trim().length > 20) {
+      this.formErrors.postalCode = this.validationMessages.postalCode.maxlength;
+      isValid = false;
+    } else if (!/^[a-zA-Z0-9\s\-]*$/.test(this.newLocation.postalCode)) {
+      this.formErrors.postalCode = this.validationMessages.postalCode.pattern;
+      isValid = false;
+    }
+
+    return isValid;
   }
 
   saveLocation() {
     if (!this.validateForm()) return;
 
     this.isLoading = true;
+    this.apiError = ''; // تنظيف أخطاء الباك إند قبل المحاولة
     
     const locationData = {
       name: this.newLocation.name.trim(),
@@ -150,7 +262,7 @@ export class Locations implements OnInit, OnDestroy {
           },
           error: (error) => {
             this.isLoading = false;
-            this.toastr.error('Failed to update location', 'Error');
+            this.handleApiError('Failed to update location', error);
           }
         })
       );
@@ -165,7 +277,7 @@ export class Locations implements OnInit, OnDestroy {
           },
           error: (error) => {
             this.isLoading = false;
-            this.toastr.error('Failed to create location', 'Error');
+            this.handleApiError('Failed to create location', error);
           }
         })
       );
@@ -194,20 +306,7 @@ export class Locations implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isLoading = false;
-          
-          // معالجة الخطأ بناءً على الرسالة من الـ API
-          if (error.error && error.error.message) {
-            if (error.error.message.includes('assigned departments')) {
-              // عرض modal خاص بالأخطاء بدل toastr عادي
-              this.deleteError = error.error.message;
-              this.showDeleteErrorModal = true;
-            } else {
-              this.toastr.error(error.error.message, 'Delete Failed');
-            }
-          } else {
-            this.toastr.error('Failed to delete location', 'Error');
-          }
-          
+          this.handleDeleteError(error);
           this.showDeleteConfirm = false;
           this.locationToDelete = null;
         }
@@ -235,20 +334,99 @@ export class Locations implements OnInit, OnDestroy {
     const parts = [location.street, location.city, location.state, location.country];
     return parts.filter(part => part && part.trim() !== '').join(', ');
   }
-// Add these methods to your Locations class:
 
-getUniqueCities(): string[] {
-  const cities = this.locations.map(loc => loc.city).filter((city): city is string => !!city);
-  return [...new Set(cities)];
-}
+  getUniqueCities(): string[] {
+    const cities = this.locations.map(loc => loc.city).filter((city): city is string => !!city);
+    return [...new Set(cities)];
+  }
 
-getUniqueCountries(): string[] {
-  const countries = this.locations.map(loc => loc.country).filter((country): country is string => !!country);
-  return [...new Set(countries)];
-}
+  getUniqueCountries(): string[] {
+    const countries = this.locations.map(loc => loc.country).filter((country): country is string => !!country);
+    return [...new Set(countries)];
+  }
+
   // Get display address (includes postal code)
   getDisplayAddress(location: LocationI): string {
     const baseAddress = this.getFullAddress(location);
     return location.postalCode ? `${baseAddress}, ${location.postalCode}` : baseAddress;
+  }
+
+  // معالجة الأخطاء من الباك إند للعمليات العامة
+  private handleError(defaultMessage: string, error: any): void {
+    console.error('❌ Error:', error);
+    
+    if (error.error && error.error.message) {
+      this.toastr.error(error.error.message, 'Error');
+    } else if (error.status === 0) {
+      this.toastr.error('Network error: Please check your internet connection', 'Connection Error');
+    } else if (error.status === 400) {
+      this.toastr.error('Bad request: Please check your input data', 'Validation Error');
+    } else if (error.status === 401) {
+      this.toastr.error('Unauthorized: Please login again', 'Authentication Error');
+    } else if (error.status === 403) {
+      this.toastr.error('Forbidden: You do not have permission to perform this action', 'Permission Error');
+    } else if (error.status === 404) {
+      this.toastr.error('Resource not found', 'Not Found');
+    } else if (error.status === 409) {
+      this.toastr.error('Conflict: Location already exists', 'Duplicate Error');
+    } else if (error.status === 500) {
+      this.toastr.error('Server error: Please try again later', 'Server Error');
+    } else {
+      this.toastr.error(defaultMessage, 'Error');
+    }
+  }
+
+  // معالجة أخطاء الباك إند للعمليات في المودال
+  private handleApiError(defaultMessage: string, error: any): void {
+    console.error('❌ API Error:', error);
+    
+    if (error.error && error.error.message) {
+      // عرض الخطأ في المودال بدلاً من الـ toastr
+      this.apiError = error.error.message;
+    } else if (error.status === 0) {
+      this.apiError = 'Network error: Please check your internet connection';
+    } else if (error.status === 400) {
+      this.apiError = 'Bad request: Please check your input data';
+    } else if (error.status === 401) {
+      this.apiError = 'Unauthorized: Please login again';
+    } else if (error.status === 403) {
+      this.apiError = 'Forbidden: You do not have permission to perform this action';
+    } else if (error.status === 404) {
+      this.apiError = 'Resource not found';
+    } else if (error.status === 409) {
+      this.apiError = 'Conflict: Location with this name already exists';
+    } else if (error.status === 500) {
+      this.apiError = 'Server error: Please try again later';
+    } else {
+      this.apiError = defaultMessage;
+    }
+  }
+
+  // معالجة أخطاء الحذف بشكل خاص
+  private handleDeleteError(error: any): void {
+    if (error.error && error.error.message) {
+      if (error.error.message.includes('assigned departments') || 
+          error.error.message.includes('associated') ||
+          error.error.message.includes('reference')) {
+        this.deleteError = error.error.message;
+        this.showDeleteErrorModal = true;
+      } else {
+        this.toastr.error(error.error.message, 'Delete Failed');
+      }
+    } else {
+      this.handleError('Failed to delete location', error);
+    }
+  }
+
+  // تنظيف أخطاء التحقق
+  private clearFormErrors(): void {
+    this.formErrors = {
+      name: '',
+      street: '',
+      city: '',
+      state: '',
+      country: '',
+      postalCode: ''
+    };
   }
 }

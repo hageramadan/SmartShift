@@ -153,7 +153,7 @@
     *ngIf="isModalOpen"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
   >
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl transform transition-all scale-100 animate-fadeIn border border-gray-200">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl transform transition-all scale-100 animate-fadeIn border border-gray-200 max-h-[90vh] overflow-y-auto">
       <h3 class="text-2xl font-semibold mb-6 text-gray-800">
         {{ isEditing ? 'Edit Location' : 'Add New Location' }}
       </h3>
@@ -164,6 +164,7 @@
           <label class="block text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <i class="fa-solid fa-signature text-pro text-sm"></i>
             Location Name
+            <span class="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -171,8 +172,14 @@
             name="name"
             placeholder="e.g., Cairo Downtown Branch"
             class="w-full px-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-base placeholder-gray-400"
+            [class.border-red-500]="formErrors.name"
             required
+            maxlength="100"
           />
+          <p *ngIf="formErrors.name" class="text-red-500 text-xs mt-2 flex items-center gap-1">
+            <i class="fa-solid fa-exclamation-circle"></i>
+            {{ formErrors.name }}
+          </p>
         </div>
 
         <!-- Street Address -->
@@ -180,6 +187,7 @@
           <label class="block text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <i class="fa-solid fa-road text-pro text-sm"></i>
             Street Address
+            <span class="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -187,8 +195,14 @@
             name="street"
             placeholder="e.g., 26th of July St"
             class="w-full px-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-base placeholder-gray-400"
+            [class.border-red-500]="formErrors.street"
             required
+            maxlength="200"
           />
+          <p *ngIf="formErrors.street" class="text-red-500 text-xs mt-2 flex items-center gap-1">
+            <i class="fa-solid fa-exclamation-circle"></i>
+            {{ formErrors.street }}
+          </p>
         </div>
 
         <!-- City & State Row -->
@@ -197,6 +211,7 @@
             <label class="block text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <i class="fa-solid fa-city text-pro text-sm"></i>
               City
+              <span class="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -204,14 +219,21 @@
               name="city"
               placeholder="e.g., Cairo"
               class="w-full px-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-base placeholder-gray-400"
+              [class.border-red-500]="formErrors.city"
               required
+              maxlength="50"
             />
+            <p *ngIf="formErrors.city" class="text-red-500 text-xs mt-2 flex items-center gap-1">
+              <i class="fa-solid fa-exclamation-circle"></i>
+              {{ formErrors.city }}
+            </p>
           </div>
 
           <div>
             <label class="block text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <i class="fa-solid fa-landmark text-pro text-sm"></i>
               State/Province
+              <span class="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -219,8 +241,14 @@
               name="state"
               placeholder="e.g., Cairo Governorate"
               class="w-full px-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-base placeholder-gray-400"
+              [class.border-red-500]="formErrors.state"
               required
+              maxlength="50"
             />
+            <p *ngIf="formErrors.state" class="text-red-500 text-xs mt-2 flex items-center gap-1">
+              <i class="fa-solid fa-exclamation-circle"></i>
+              {{ formErrors.state }}
+            </p>
           </div>
         </div>
 
@@ -230,11 +258,13 @@
             <label class="block text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <i class="fa-solid fa-flag text-pro text-sm"></i>
               Country
+              <span class="text-red-500">*</span>
             </label>
             <select
               [(ngModel)]="newLocation.country"
               name="country"
               class="w-full px-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-base appearance-none cursor-pointer"
+              [class.border-red-500]="formErrors.country"
               required
             >
               <option value="">Select a country</option>
@@ -269,12 +299,17 @@
               <option value="Nigeria">Nigeria</option>
               <option value="Kenya">Kenya</option>
             </select>
+            <p *ngIf="formErrors.country" class="text-red-500 text-xs mt-2 flex items-center gap-1">
+              <i class="fa-solid fa-exclamation-circle"></i>
+              {{ formErrors.country }}
+            </p>
           </div>
 
           <div>
             <label class="block text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <i class="fa-solid fa-envelope text-pro text-sm"></i>
               Postal Code
+              <span class="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -282,8 +317,15 @@
               name="postalCode"
               placeholder="e.g., 11511"
               class="w-full px-4 py-3.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none transition-all duration-200 bg-gray-50 focus:bg-white text-base placeholder-gray-400"
+              [class.border-red-500]="formErrors.postalCode"
               required
+              maxlength="20"
+              pattern="[a-zA-Z0-9\s\-]*"
             />
+            <p *ngIf="formErrors.postalCode" class="text-red-500 text-xs mt-2 flex items-center gap-1">
+              <i class="fa-solid fa-exclamation-circle"></i>
+              {{ formErrors.postalCode }}
+            </p>
           </div>
         </div>
 
@@ -332,12 +374,18 @@
         <button 
           (click)="deleteLocation()" 
           class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-md font-medium transition"
+          [disabled]="isLoading"
         >
-          Yes, Delete
+          <span *ngIf="isLoading" class="flex items-center gap-2">
+            <i class="fa-solid fa-spinner animate-spin"></i>
+            Deleting...
+          </span>
+          <span *ngIf="!isLoading">Yes, Delete</span>
         </button>
         <button 
           (click)="cancelDelete()" 
           class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-md font-medium transition"
+          [disabled]="isLoading"
         >
           Cancel
         </button>
