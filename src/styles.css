@@ -8,6 +8,7 @@
     --primary-hover:#e8f4f5;
     --secondary-color: #364153;
     --third-color: #2d3f51;
+     --primary-color2: #107b8c22;
 }
 a{
     text-decoration: none;
@@ -52,6 +53,9 @@ body{
 
 .bg-pro{
     background-color: var(--primary-color);
+}
+.bg-pro2{
+    background-color: var(--primary-color2);
 }
 .bg-pro-hover:hover{
     background-color: var(--primary-hover);

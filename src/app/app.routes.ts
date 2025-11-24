@@ -13,6 +13,7 @@ import { SwapRequests } from './pages/swap-requests/swap-requests';
 import { CalendarView } from './pages/calendar-view/calendar-view';
 import { NotFound } from './components/not-found/not-found';
 import { Login } from './components/login/login';
+import { PositionsLevels } from './pages/positions-levels/positions-levels';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -21,6 +22,8 @@ export const routes: Routes = [
   { path: 'locations', component: Locations },
   { path: 'shifts', component: Shifts },
   { path: 'schedules', component: Schedules },
+  { path: 'positions&levels', component:PositionsLevels },
+
   { path: 'users', component: Users },
   { path: 'profile', component: Profile },
   { path: 'swap-config', component: SwapConfig },

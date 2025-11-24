@@ -1,10 +1,11 @@
 export interface LevelI {
-  _id: string;
-  id?: string;
+  _id?: string;
   name: string;
-  position?: {
-    _id: number;
-    name: string
+  positionId: string;
+  createdAt?: string;
+  updatedAt?: string;
+  Position?: {
+    name: string;
   };
-  positionId: number,
+  id?: string; // في بعض الأحيان بيكون في id بالإضافة لـ _id
 }

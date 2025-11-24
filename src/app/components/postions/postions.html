@@ -1,0 +1,290 @@
+<div class="min-h-screen bg-gray-50/30 p-4">
+  <!-- Header Section -->
+  <div class="mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Positions</h1>
+        <p class="text-gray-600 text-sm mt-1">Manage company positions structure</p>
+      </div>
+      <button
+        (click)="openAddForm()"
+        class="bg-pro cursor-pointer text-white px-4 py-2 rounded-lg transition hover:bg-pro-hover"
+      >
+        <i class="fas fa-plus mr-1.5"></i>
+        Add Position
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Section -->
+  <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+    <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      
+      <!-- Search Input -->
+      <div class="flex-1 w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-search mr-2 text-pro"></i>
+          Search Positions
+        </label>
+        <div class="relative group">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Search position names..."
+            class="w-full pl-11 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pro focus:border-pro transition-all duration-300 outline-none text-sm bg-white group-hover:border-pro/60"
+          >
+          <div class="absolute left-3 top-1/2 transform -translate-y-1/2">
+            <i class="fas fa-search text-gray-400 group-hover:text-pro transition-colors duration-300"></i>
+          </div>
+          <div 
+            *ngIf="searchTerm" 
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer hover:scale-110 transition-transform duration-200"
+            (click)="clearSearch()"
+          >
+            <i class="fas fa-times text-gray-400 hover:text-red-500 transition-colors duration-200"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2 self-end">
+        <button
+          (click)="refreshData()"
+          [class.animate-spin]="loading"
+          class="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:border-pro hover:bg-pro/5 transition-all duration-200 text-sm font-medium text-gray-700 hover:text-pro"
+          title="Refresh Data"
+        >
+          <i class="fas fa-sync-alt text-xs"></i>
+          Refresh
+        </button>
+        
+        <button
+          *ngIf="hasActiveSearch()"
+          (click)="clearSearch()"
+          class="flex items-center gap-2 px-4 py-3 border border-red-200 rounded-xl hover:border-red-300 hover:bg-red-50 transition-all duration-200 text-sm font-medium text-red-600 hover:text-red-700"
+          title="Clear Search"
+        >
+          <i class="fas fa-times text-xs"></i>
+          Clear Search
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Search Display -->
+    <div *ngIf="hasActiveSearch()" class="mt-4 flex flex-wrap gap-2 animate-fadeIn">
+      <div class="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-sm border border-blue-200">
+        <i class="fas fa-search text-xs"></i>
+        <span>Search: "{{searchTerm}}"</span>
+        <span class="bg-blue-200 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+          {{filteredPositions.length}} result(s)
+        </span>
+        <button (click)="clearSearch()" class="hover:text-blue-900 transition-colors ml-1">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="mb-4 flex items-center justify-between">
+    <p class="text-sm text-gray-600">
+      Showing <span class="font-semibold text-pro">{{filteredPositions.length}}</span> 
+      of <span class="font-semibold">{{positions.length}}</span> positions
+      <span *ngIf="hasActiveSearch()" class="text-pro font-medium ml-2">
+        • Search Results
+      </span>
+    </p>
+    
+    <div *ngIf="filteredPositions.length === 0 && hasActiveSearch()" class="text-sm">
+      <button 
+        (click)="clearSearch()"
+        class="text-pro hover:text-blue-700 transition-colors duration-200 font-medium"
+      >
+        <i class="fas fa-redo mr-1"></i>
+        Clear search to see all positions
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-full">
+        <thead>
+          <tr class="bg-gray-50 border-b border-gray-100">
+            <th class="py-3 px-4 text-left">
+              <span class="font-semibold text-gray-700 text-xs uppercase tracking-wider">Position Name</span>
+            </th>
+            <th class="py-3 px-4 text-right w-24">
+              <span class="font-semibold text-gray-700 text-xs uppercase tracking-wider">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr 
+            *ngFor="let position of filteredPositions; let i = index"
+            class="hover:bg-blue-50/30 transition-all duration-150 animate-fadeIn"
+            [style.animation-delay]="(i * 0.05) + 's'"
+          >
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-briefcase text-pro text-sm"></i>
+                </div>
+                <span class="font-medium text-gray-900 text-sm">{{position.name}}</span>
+                
+                <!-- Search Highlight -->
+                <span *ngIf="hasActiveSearch()" class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium ml-2 animate-pulse">
+                  Match
+                </span>
+              </div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex items-center justify-end gap-1">
+                <button
+                  (click)="openEditForm(position)"
+                  class="p-2 bg-blue-50 text-pro rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-150 transform hover:scale-105"
+                  title="Edit Position"
+                >
+                  <i class="fas fa-edit text-xs"></i>
+                </button>
+                <button
+                  (click)="deletePosition(position)"
+                  class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all duration-150 transform hover:scale-105"
+                  title="Delete Position"
+                >
+                  <i class="fas fa-trash text-xs"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Empty State -->
+          <tr *ngIf="filteredPositions.length === 0">
+            <td colspan="2" class="py-12 px-4 text-center">
+              <div class="flex flex-col items-center gap-3 text-gray-400 animate-pulse-slow">
+                <i class="fas fa-inbox text-4xl"></i>
+                <p class="text-sm font-medium">
+                  {{ hasActiveSearch() ? 'No positions match your search' : 'No positions found' }}
+                </p>
+                <p class="text-xs">
+                  {{ hasActiveSearch() ? 'Try adjusting your search terms' : 'Create your first position to get started' }}
+                </p>
+                <button 
+                  *ngIf="hasActiveSearch()"
+                  (click)="clearSearch()"
+                  class="mt-2 px-4 py-2 bg-pro text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium"
+                >
+                  Clear Search
+                </button>
+                <button 
+                  *ngIf="!hasActiveSearch()"
+                  (click)="openAddForm()"
+                  class="mt-2 px-4 py-2 bg-pro text-white rounded-lg hover:bg-blue-700 transition-all duration-200 text-sm font-medium"
+                >
+                  <i class="fas fa-plus mr-1.5"></i>
+                  Add First Position
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div
+    *ngIf="showForm"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+  >
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm animate-fadeIn">
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b border-gray-100">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-gray-900">
+            {{ editingPosition ? 'Edit Position' : 'Add Position' }}
+          </h3>
+          <button
+            (click)="closeForm()"
+            class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <i class="fas fa-times text-gray-400 text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5">
+        <form (ngSubmit)="submitForm()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Position Name
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="positionName"
+              name="positionName"
+              placeholder="Enter position name"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-sm"
+              required
+            >
+          </div>
+
+          <div class="flex gap-2 pt-2">
+            <button
+              type="button"
+              (click)="closeForm()"
+              class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="flex-1 px-4 py-2.5 bg-pro text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium"
+            >
+              {{ editingPosition ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div
+    *ngIf="showDeleteConfirm"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+  >
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm animate-fadeIn">
+      <div class="p-5 text-center">
+        <div class="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
+          <i class="fas fa-exclamation-triangle text-red-600"></i>
+        </div>
+        
+        <h3 class="text-base font-semibold text-gray-900 mb-2">Delete Position</h3>
+        <p class="text-gray-600 text-sm mb-4">
+          Delete <span class="font-medium text-gray-900">{{deletePositionName}}</span>? 
+          This cannot be undone.
+        </p>
+
+        <div class="flex gap-2">
+          <button
+            (click)="cancelDelete()"
+            class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            (click)="confirmDelete()"
+            class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all text-sm font-medium"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

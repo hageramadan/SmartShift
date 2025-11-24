@@ -1,0 +1,87 @@
+<div class="min-h-screen bg-gray-50/30">
+  <!-- Page Header -->
+  <div class="bg-gray-50/30 border-b border-gray-200">
+    <div class="px-4 py-6">
+      <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl font-bold  text-pro mb-2">Positions & Levels</h1>
+        <p class="text-gray-600 text-sm">
+          Manage positions structure and hierarchical levels
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <!-- Positions Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-4 border-b border-gray-100 bg-blue-50">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-layer-group text-pro text-sm"></i>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900">Positions</h2>
+          </div>
+        </div>
+        <div class="p-0">
+          <app-postions></app-postions>
+        </div>
+      </div>
+
+      <!-- Levels Section -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-4 border-b border-gray-100 bg-green-50">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-chart-line text-green-600 text-sm"></i>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900">Levels</h2>
+          </div>
+        </div>
+        <div class="p-0">
+          <app-levels></app-levels>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-gray-600">Total Positions</p>
+            <p class="text-xl font-bold text-gray-900">{{ positionsCount }}</p>
+          </div>
+          <div class="p-2 bg-blue-50 rounded-lg">
+            <i class="fas fa-briefcase text-blue-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-gray-600">Total Levels</p>
+            <p class="text-xl font-bold text-gray-900">{{ levelsCount }}</p>
+          </div>
+          <div class="p-2 bg-green-50 rounded-lg">
+            <i class="fas fa-chart-line text-green-600"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-gray-600">Last Activity</p>
+            <p class="text-base font-semibold text-gray-900">Just now</p>
+          </div>
+          <div class="p-2 bg-purple-50 rounded-lg">
+            <i class="fas fa-clock text-purple-600"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

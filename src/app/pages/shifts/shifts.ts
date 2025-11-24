@@ -112,20 +112,20 @@ export class Shifts {
     // },
   ];
 
-  newShift: ShiftI = {
-    id: 0,
-    name: '',
-    startTime: '',
-     time: '',
-    endTime: '',
-    department: '',
-    subDepartment: '',
-    location: '',
-    registerConfig: '',
-    checkInStart: false,
-    checkOutEnd: false,
-    earlyCheckIn: false,
-  };
+  // newShift: ShiftI = {
+  //   id: 0,
+  //   name: '',
+  //   startTime: '',
+  //    time: '',
+  //   endTime: '',
+  //   department: '',
+  //   subDepartment: '',
+  //   location: '',
+  //   registerConfig: '',
+  //   checkInStart: false,
+  //   checkOutEnd: false,
+  //   earlyCheckIn: false,
+  // };
 
   isModalOpen = false;
   isEditing = false;
@@ -141,105 +141,105 @@ export class Shifts {
     return department ? department._id : null;
   }
 
-  openModal(editShift?: ShiftI) {
-    this.isModalOpen = true;
-    if (editShift) {
-      this.newShift = { ...editShift };
-      this.isEditing = true;
-      this.editId = editShift.id;
-    } else {
-      this.isEditing = false;
-      this.newShift = {
-        id: 0,
-        name: '',
-        startTime: '',
-        endTime: '',
-        department: '',
-        subDepartment: '',
-        location: '',
-        registerConfig: '',
-        checkInStart: false,
-        checkOutEnd: false,
-        earlyCheckIn: false,
-      };
-    }
-  }
+  // openModal(editShift?: ShiftI) {
+    // this.isModalOpen = true;
+    // if (editShift) {
+    //   this.newShift = { ...editShift };
+    //   this.isEditing = true;
+  //     this.editId = editShift.id;
+  //   } else {
+  //     this.isEditing = false;
+  //     this.newShift = {
+  //       id: 0,
+  //       name: '',
+  //       startTime: '',
+  //       endTime: '',
+  //       department: '',
+  //       subDepartment: '',
+  //       location: '',
+  //       registerConfig: '',
+  //       checkInStart: false,
+  //       checkOutEnd: false,
+  //       earlyCheckIn: false,
+  //     };
+  //   }
+  // }
 
-  closeModal() {
-    this.isModalOpen = false;
-    this.isEditing = false;
-    this.editId = null;
-    this.newShift = {
-      id: 0,
-      name: '',
-       time: '',
-      startTime: '',
-      endTime: '',
-      department: '',
-      subDepartment: '',
-      location: '',
-      registerConfig: '',
-      checkInStart: false,
-      checkOutEnd: false,
-      earlyCheckIn: false,
-    };
-  }
+  // closeModal() {
+  //   this.isModalOpen = false;
+  //   this.isEditing = false;
+  //   this.editId = null;
+  //   this.newShift = {
+  //     id: 0,
+  //     name: '',
+  //      time: '',
+  //     startTime: '',
+  //     endTime: '',
+  //     department: '',
+  //     subDepartment: '',
+  //     location: '',
+  //     registerConfig: '',
+  //     checkInStart: false,
+  //     checkOutEnd: false,
+  //     earlyCheckIn: false,
+  //   };
+  // }
 
-  validateForm(): boolean {
-    if (
-      !this.newShift.name ||
-      !this.newShift.department ||
-      !this.newShift.subDepartment ||
-      !this.newShift.location ||
-      !this.newShift.startTime ||
-      !this.newShift.endTime
-    ) {
-      this.toastr.warning('Please fill in all required fields!', 'Validation');
-      return false;
-    }
-    return true;
-  }
+  // validateForm(): boolean {
+  //   if (
+  //     !this.newShift.name ||
+  //     !this.newShift.department ||
+  //     !this.newShift.subDepartment ||
+  //     !this.newShift.location ||
+  //     !this.newShift.startTime ||
+  //     !this.newShift.endTime
+  //   ) {
+  //     this.toastr.warning('Please fill in all required fields!', 'Validation');
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
-  saveShift() {
-    if (!this.validateForm()) return;
+  // saveShift() {
+  //   if (!this.validateForm()) return;
 
     // تحويل checkboxes إلى نص
-    const registerArr = [];
-    if (this.newShift.checkInStart) registerArr.push('Check in at shift start');
-    if (this.newShift.checkOutEnd) registerArr.push('Check out at shift end');
-    if (this.newShift.earlyCheckIn) registerArr.push('Early check in allowed');
-    this.newShift.registerConfig = registerArr.join(' / ');
+    // const registerArr = [];
+    // if (this.newShift.checkInStart) registerArr.push('Check in at shift start');
+    // if (this.newShift.checkOutEnd) registerArr.push('Check out at shift end');
+    // if (this.newShift.earlyCheckIn) registerArr.push('Early check in allowed');
+    // this.newShift.registerConfig = registerArr.join(' / ');
 
-    if (this.isEditing) {
-      const index = this.shifts.findIndex((s) => s.id === this.editId);
-      if (index > -1) {
-        this.shifts[index] = { ...this.newShift };
-        this.toastr.info('Shift updated successfully!', 'Updated');
-      }
-    } else {
-      this.newShift.id = Date.now();
-      this.shifts.push({ ...this.newShift });
-      this.toastr.success('New shift added!', 'Created');
-    }
-    this.closeModal();
+  //   if (this.isEditing) {
+  //     const index = this.shifts.findIndex((s) => Number(s.id) === this.editId);
+  //     if (index > -1) {
+  //       this.shifts[index] = { ...this.newShift };
+  //       this.toastr.info('Shift updated successfully!', 'Updated');
+  //     }
+  //   } else {
+  //     this.newShift.id = Date.now();
+  //     this.shifts.push({ ...this.newShift });
+  //     this.toastr.success('New shift added!', 'Created');
+  //   }
+  //   this.closeModal();
+  // }
+
+  // confirmDelete(id: number) {
+  //   this.shiftToDelete = id;
+  //   this.showDeleteConfirm = true;
+  // }
+
+  // deleteShift() {
+  //   if (this.shiftToDelete != null) {
+  //     this.shifts = this.shifts.filter((s) => Number(s.id) !== this.shiftToDelete);
+  //     this.toastr.error('Shift deleted successfully!', 'Deleted');
+  //     this.showDeleteConfirm = false;
+  //     this.shiftToDelete = null;
+  //   }
   }
 
-  confirmDelete(id: number) {
-    this.shiftToDelete = id;
-    this.showDeleteConfirm = true;
-  }
+  // cancelDelete() {
+  //   this.showDeleteConfirm = false;
+  //   this.shiftToDelete = null;
+  // }
 
-  deleteShift() {
-    if (this.shiftToDelete != null) {
-      this.shifts = this.shifts.filter((s) => s.id !== this.shiftToDelete);
-      this.toastr.error('Shift deleted successfully!', 'Deleted');
-      this.showDeleteConfirm = false;
-      this.shiftToDelete = null;
-    }
-  }
-
-  cancelDelete() {
-    this.showDeleteConfirm = false;
-    this.shiftToDelete = null;
-  }
-}
