@@ -1,4 +1,20 @@
 <div class="p-6 bg-gray-50 min-h-screen relative">
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="bg-white p-6 rounded-lg shadow-xl flex items-center gap-3">
+      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-pro"></div>
+      <span class="text-gray-700">Processing...</span>
+    </div>
+  </div>
+
+  <!-- Data Loading Spinner -->
+  <div *ngIf="isDataLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div class="bg-white p-6 rounded-lg shadow-xl flex items-center gap-3">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-pro"></div>
+      <span class="text-gray-700">Loading shifts...</span>
+    </div>
+  </div>
+
   <!-- Header -->
   <div class="flex justify-between items-center mb-6">
     <div>
@@ -8,58 +24,204 @@
 
     <button
       (click)="addShift()"
-      class="bg-pro cursor-pointer text-white px-5 py-2 rounded-lg  transition"
+      [disabled]="isDataLoading"
+      class="bg-pro cursor-pointer text-white px-5 py-2 rounded-lg transition hover:bg-pro-hover disabled:opacity-50 disabled:cursor-not-allowed"
     >
       + Add Shift
     </button>
   </div>
 
+  <!-- Filters -->
+  <div class="bg-white p-4 rounded-lg shadow border border-gray-200 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <!-- Shift Name Filter -->
+      <div class="relative">
+        <input
+          [(ngModel)]="filters.shiftName"
+          (input)="applyFilters()"
+          type="text"
+          [disabled]="isDataLoading"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pro focus:border-pro disabled:bg-gray-100"
+          placeholder="Search shift name"
+        />
+      </div>
+
+      <!-- Shift Type Filter -->
+      <div class="relative">
+        <input
+          [(ngModel)]="filters.shiftType"
+          (input)="applyFilters()"
+          type="text"
+          [disabled]="isDataLoading"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pro focus:border-pro disabled:bg-gray-100"
+          placeholder="Search shift type"
+        />
+      </div>
+
+      <!-- Department Filter -->
+      <div class="relative">
+        <select
+          [(ngModel)]="filters.departmentId"
+          (change)="applyFilters()"
+          [disabled]="isDataLoading"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pro focus:border-pro bg-white disabled:bg-gray-100"
+        >
+          <option value="">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept._id">
+            {{ dept.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Sub-Department Filter -->
+      <div class="relative">
+        <select
+          [(ngModel)]="filters.subDepartmentId"
+          (change)="applyFilters()"
+          [disabled]="isDataLoading"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pro focus:border-pro bg-white disabled:bg-gray-100"
+        >
+          <option value="">All Sub-Departments</option>
+          <option *ngFor="let sub of subDepartments" [value]="sub._id">
+            {{ sub.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Clear Filters -->
+      <button
+        (click)="clearFilters()"
+        [disabled]="isDataLoading"
+        class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md transition font-medium disabled:opacity-50"
+      >
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
   <!-- Table -->
-  <div class="overflow-x-auto bg-white border border-gray-200 rounded-lg">
+  <div class="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
     <table class="min-w-full border-collapse">
-      <thead class="border-b border-gray-200 text-gray-700 text-sm capitalize ">
-        <tr class="">
-          <th class="px-4 py-2 text-left">Shift Name</th>
-          <th class=" px-4 py-2 text-left">Time</th>
-          <th class="px-4 py-2 text-left">Department</th>
-          <th class="px-4 py-2 text-left">Location</th>
-          <th class="px-4 py-2 text-left">Register Config</th>
-          <th class="px-4 py-2 text-center">Actions</th>
+      <thead class="border-b border-gray-200 text-gray-700 text-sm capitalize">
+        <tr>
+          <th class="px-4 py-3 text-left font-semibold">Shift Name</th>
+          <th class="px-4 py-3 text-left font-semibold">Type</th>
+          <th class="px-4 py-3 text-left font-semibold">Time</th>
+          <th class="px-4 py-3 text-left font-semibold">Department</th>
+          <th class="px-4 py-3 text-left font-semibold">Sub-Department</th>
+          <th class="px-4 py-3 text-left font-semibold">Duration</th>
+          <th class="px-4 py-3 text-center font-semibold">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let shift of shifts" class="border-b border-gray-200 hover:bg-gray-50 transition">
-          <td class="px-4 py-4 text-sm  text-gray-800">
+        <!-- Loading State -->
+        <tr *ngIf="isDataLoading">
+          <td colspan="7" class="px-4 py-8 text-center">
+            <div class="flex justify-center items-center gap-2">
+              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-pro"></div>
+              <span class="text-gray-500">Loading shifts...</span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Empty State -->
+        <tr *ngIf="!isDataLoading && paginatedShifts.length === 0">
+          <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+            No shifts found
+          </td>
+        </tr>
+
+        <!-- Shifts Data -->
+        <tr 
+          *ngFor="let shift of paginatedShifts" 
+          class="border-b border-gray-200 hover:bg-gray-50 transition"
+        >
+          <td class="px-4 py-4 text-sm text-gray-800">
             <i class="fa-regular fa-clock text-pro me-1.5"></i>
             {{ shift.shiftName }}
           </td>
-          <td class="px-4 py-1 text-sm ">{{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }}</td>
-          <td class="px-4 py-1 text-sm ">
-          <span class="bg-pro-hover1 text-pro rounded-xl p-1 px-3"> {{ shift.department?.name }}</span> 
-          </td>
-          <td class="px-4 py-1 text-sm ">{{ shift.location }}</td>
-          <td class="px-4 py-1 text-sm ">
-            <span class="border border-gray-200 rounded-2xl p-1 px-3">
-            {{ shift.department?.name }}
+          <td class="px-4 py-4 text-sm text-gray-700">
+            <span class="bg-blue-100 text-blue-800 rounded-full px-2 py-1 text-xs">
+              {{ shift.shiftType }}
             </span>
           </td>
-          <td class="px-4 py-1 text-sm  text-center flex gap-2 justify-center">
-            <button
-              (click)="editShift(shift)"
-              class=" px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
-            >
-               <i class="fa-solid fa-pencil text-gray-600"></i>
-            </button>
-            <button
-              (click)="confirmDelete(shift.id||'')"
-              class="text-red-500 px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer"
-            >
-               <i class="fa-regular fa-trash-can"></i>
-            </button>
+          <td class="px-4 py-4 text-sm text-gray-700">
+            {{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }}
+          </td>
+          <td class="px-4 py-4 text-sm text-gray-700">
+            <span class="bg-pro-hover1 text-pro rounded-xl px-3 py-1 text-sm">
+              {{ getDepartmentName(shift.departmentId) }}
+            </span>
+          </td>
+          <td class="px-4 py-4 text-sm text-gray-700">
+            <span class="border border-gray-200 rounded-2xl px-3 py-1 text-sm">
+              {{ getSubDepartmentName(shift.subDepartmentId) }}
+            </span>
+          </td>
+          <td class="px-4 py-4 text-sm text-gray-700">
+            {{ shift.durationFormatted }}
+          </td>
+          <td class="px-4 py-4 text-sm text-center">
+            <div class="flex gap-2 justify-center">
+              <button
+                (click)="editShift(shift)"
+                [disabled]="isLoading || isDataLoading"
+                class="px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer disabled:opacity-50"
+              >
+                <i class="fa-solid fa-pencil text-gray-600"></i>
+              </button>
+              <button
+                (click)="confirmDelete(shift._id || shift.id)"
+                [disabled]="isLoading || isDataLoading"
+                class="text-red-500 px-2.5 py-2 rounded-full hover:bg-gray-100 cursor-pointer disabled:opacity-50"
+              >
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Pagination -->
+    <div *ngIf="filteredShifts.length > 0" class="flex justify-between items-center p-4 border-t border-gray-200">
+      <div class="text-sm text-gray-500">
+        Showing {{ (currentPage - 1) * pageSize + 1 }} to 
+        {{ Math.min(currentPage * pageSize, filteredShifts.length) }} of 
+        {{ filteredShifts.length }} entries
+      </div>
+      
+      <div class="flex gap-2">
+        <button
+          (click)="previousPage()"
+          [disabled]="currentPage === 1 || isLoading || isDataLoading"
+          class="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+        >
+          Previous
+        </button>
+        
+        <div class="flex gap-1">
+          <button
+            *ngFor="let page of getPageNumbers()"
+            (click)="goToPage(page)"
+            [disabled]="isLoading || isDataLoading"
+            [class]="page === currentPage 
+              ? 'bg-pro text-white px-3 py-1 rounded transition disabled:opacity-50' 
+              : 'bg-white text-gray-700 px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition disabled:opacity-50'"
+          >
+            {{ page }}
+          </button>
+        </div>
+        
+        <button
+          (click)="nextPage()"
+          [disabled]="currentPage * pageSize >= filteredShifts.length || isLoading || isDataLoading"
+          class="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+        >
+          Next
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Add/Edit Modal -->
@@ -68,7 +230,7 @@
     class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
   >
     <div class="bg-white rounded-2xl shadow-xl w-[90%] max-w-lg p-6 relative">
-      <h2 class="text-2xl font-semibold mb-6" style="color: var(--secondary-color)">
+      <h2 class="text-2xl font-semibold mb-6 text-gray-800">
         {{ isEditing ? 'Edit Shift' : 'Add New Shift' }}
       </h2>
 
@@ -80,67 +242,83 @@
             id="shiftName"
             placeholder=" "
             [(ngModel)]="newShift.shiftName"
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+            [disabled]="isLoading"
+            [ngClass]="{'border-red-500': (submitted && !newShift.shiftName) || validationErrors.shiftName}"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none disabled:bg-gray-100"
           />
           <label
             for="shiftName"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
           >
-            Shift Name (e.g., Morning Shift)
+            Shift Name *
           </label>
+          <div *ngIf="validationErrors.shiftName" class="text-red-500 text-xs mt-1">
+            {{ validationErrors.shiftName }}
+          </div>
+        </div>
+
+        <!-- Shift Type -->
+        <div class="relative">
+          <select
+            id="shiftType"
+            [(ngModel)]="newShift.shiftType"
+            [disabled]="isLoading"
+            [ngClass]="{'border-red-500': (submitted && !newShift.shiftType) || validationErrors.shiftType}"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none bg-white disabled:bg-gray-100"
+          >
+            <option value="" disabled selected>Select Shift Type *</option>
+            <option *ngFor="let type of shiftTypes" [value]="type">{{ type }}</option>
+          </select>
+          <label
+            for="shiftType"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
+          >
+            Shift Type *
+          </label>
+          <div *ngIf="validationErrors.shiftType" class="text-red-500 text-xs mt-1">
+            {{ validationErrors.shiftType }}
+          </div>
         </div>
 
         <!-- Department Select -->
         <div class="relative">
           <select
             id="department"
-            [(ngModel)]="newShift.department"
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none bg-white"
+            [(ngModel)]="newShift.departmentId"
+            [disabled]="isLoading"
+            [ngClass]="{'border-red-500': (submitted && !newShift.departmentId) || validationErrors.departmentId}"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none bg-white disabled:bg-gray-100"
           >
-            <option value="" disabled selected></option>
-            <option *ngFor="let dept of departments" [value]="dept.name">{{ dept.name }}</option>
+            <option value="" disabled selected>Select Department *</option>
+            <option *ngFor="let dept of departments" [value]="dept._id">{{ dept.name }}</option>
           </select>
           <label
             for="department"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
           >
-            Select Department
+            Department *
           </label>
+          <div *ngIf="validationErrors.departmentId" class="text-red-500 text-xs mt-1">
+            {{ validationErrors.departmentId }}
+          </div>
         </div>
 
         <!-- Sub-Department Select -->
         <div class="relative">
           <select
             id="subDepartment"
-            [(ngModel)]="newShift.subDepartment"
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none bg-white"
+            [(ngModel)]="newShift.subDepartmentId"
+            [disabled]="isLoading"
+            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none bg-white disabled:bg-gray-100"
           >
-            <option value="" disabled selected></option>
-            <option *ngFor="let sub of subDepartments" [value]="sub.name">{{ sub.name }}</option>
+            <option value="">Select Sub-Department (Optional)</option>
+            <option *ngFor="let sub of subDepartments" [value]="sub._id">{{ sub.name }}</option>
           </select>
           <label
             for="subDepartment"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
           >
-            Select Sub-Department
-          </label>
-        </div>
-
-        <!-- Location Select -->
-        <div class="relative">
-          <select
-            id="location"
-            [(ngModel)]="newShift.location"
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none bg-white"
-          >
-            <option value="" disabled selected></option>
-            <option *ngFor="let loc of locations" [value]="loc.name">{{ loc.name }}</option>
-          </select>
-          <label
-            for="location"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
-          >
-            Select Location
+            Sub-Department
           </label>
         </div>
 
@@ -151,46 +329,39 @@
               type="time"
               id="startTime"
               [(ngModel)]="newShift.startTimeFormatted"
-              class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+              [disabled]="isLoading"
+              [ngClass]="{'border-red-500': (submitted && !newShift.startTimeFormatted) || validationErrors.startTime}"
+              class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none disabled:bg-gray-100"
             />
             <label
               for="startTime"
-              class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+              class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
             >
-              Start Time
+              Start Time *
             </label>
+            <div *ngIf="validationErrors.startTime" class="text-red-500 text-xs mt-1">
+              {{ validationErrors.startTime }}
+            </div>
           </div>
           <div class="relative">
             <input
               type="time"
               id="endTime"
               [(ngModel)]="newShift.endTimeFormatted"
-              class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-[var(--primary-color)] focus:ring-1 focus:ring-[var(--primary-color)] outline-none"
+              [disabled]="isLoading"
+              [ngClass]="{'border-red-500': (submitted && !newShift.endTimeFormatted) || validationErrors.endTime}"
+              class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none disabled:bg-gray-100"
             />
             <label
               for="endTime"
-              class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-[var(--primary-color)] peer-focus:text-xs bg-white px-1"
+              class="absolute left-3 top-3 text-gray-400 text-sm transition-all peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs bg-white px-1"
             >
-              End Time
+              End Time *
             </label>
+            <div *ngIf="validationErrors.endTime" class="text-red-500 text-xs mt-1">
+              {{ validationErrors.endTime }}
+            </div>
           </div>
-        </div>
-
-        <!-- Register Configuration -->
-        <div class="space-y-2 mt-2 text-sm text-gray-700">
-          <p style="color: var(--secondary-color)" class="font-semibold">Register Configuration</p>
-          <label class="flex items-center gap-2">
-            <input type="checkbox" [(ngModel)]="newShift.checkInStart" />
-            Staff must check in at shift start
-          </label>
-          <label class="flex items-center gap-2">
-            <input type="checkbox" [(ngModel)]="newShift.checkOutEnd" />
-            Staff must check out at shift end
-          </label>
-          <label class="flex items-center gap-2">
-            <input type="checkbox" [(ngModel)]="newShift.earlyCheckIn" />
-            Staff can check in before shift start
-          </label>
         </div>
       </div>
 
@@ -198,15 +369,18 @@
       <div class="flex justify-end gap-3 mt-6">
         <button
           (click)="closeModal()"
-          class="px-4 py-2 rounded-lg border border-[var(--third-color)] text-[var(--third-color)] hover:bg-[var(--primary-hover)] transition"
+          [disabled]="isLoading"
+          class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-medium disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           (click)="saveShift()"
-          class="px-4 py-2 rounded-lg bg-[var(--primary-color)] text-white hover:bg-[var(--third-color)] transition"
+          [disabled]="isLoading"
+          class="px-4 py-2 rounded-lg bg-pro text-white hover:bg-pro-hover transition font-medium disabled:opacity-50 flex items-center gap-2"
         >
-          {{ isEditing ? 'Update' : 'Save' }}
+          <span>{{ isEditing ? 'Update' : 'Save' }}</span>
+          <div *ngIf="isLoading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
         </button>
       </div>
     </div>
@@ -224,15 +398,18 @@
       <div class="flex justify-center gap-4">
         <button
           (click)="cancelDelete()"
-          class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400"
+          [disabled]="isLoading"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition font-medium disabled:opacity-50"
         >
           Cancel
         </button>
         <button
-           (click)="deleteShiftConfirmed()"
-          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          (click)="deleteShiftConfirmed()"
+          [disabled]="isLoading"
+          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium disabled:opacity-50 flex items-center gap-2"
         >
-          Delete
+          <span>Delete</span>
+          <div *ngIf="isLoading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
         </button>
       </div>
     </div>

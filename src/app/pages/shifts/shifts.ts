@@ -3,34 +3,47 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { CrudService } from '../../services/crud.service';
-
-interface Department {
-  _id: string;
-  name: string;
-}
-
-interface SubDepartment {
-  _id: string;
-  name: string;
-}
-
-interface Location {
-  _id?: string;
-  name: string;
-}
+import { SharedService } from '../../services/shared.service';
+import { SubDepartmentI } from '../../models/sub-department-i';
+import { DepartmentI } from '../../models/department-i';
+import { LocationI } from '../../models/location-i';
 
 interface Shift {
+  _id?: string;
   id?: string;
   shiftName?: string;
   shiftType?: string;
+  startTime?: number;
+  endTime?: number;
   startTimeFormatted?: string;
   endTimeFormatted?: string;
-  department?: Department | null;
-  subDepartment?: SubDepartment | null;
-  location?: Location | null;
+  departmentId?: string;
+  subDepartmentId?: string;
+  department?: DepartmentI | null;
+  subDepartment?: SubDepartmentI | null;
+  location?: LocationI | null;
   checkInStart?: boolean;
   checkOutEnd?: boolean;
   earlyCheckIn?: boolean;
+  durationMinutes?: number;
+  isOvernight?: boolean;
+  durationFormatted?: string;
+}
+
+interface Filters {
+  shiftName: string;
+  shiftType: string;
+  departmentId: string;
+  subDepartmentId: string;
+}
+
+interface ValidationErrors {
+  shiftName?: string;
+  shiftType?: string;
+  startTime?: string;
+  endTime?: string;
+  departmentId?: string;
+  general?: string;
 }
 
 @Component({
@@ -42,61 +55,279 @@ interface Shift {
 })
 export class Shifts implements OnInit {
   shifts: Shift[] = [];
-  departments: Department[] = [];
-  subDepartments: SubDepartment[] = [];
-  locations: Location[] = [];
+  filteredShifts: Shift[] = [];
+  paginatedShifts: Shift[] = [];
+  departments: DepartmentI[] = [];
+  subDepartments: SubDepartmentI[] = [];
+  locations: LocationI[] = [];
 
   isModalOpen = false;
   isEditing = false;
   showDeleteConfirm = false;
   shiftToDeleteId: string | null = null;
+  submitted = false;
 
-  newShift: Partial<Shift> = {};
+  // Validation errors
+  validationErrors: ValidationErrors = {};
+
+  // Pagination
+  currentPage = 1;
+  pageSize = 10;
+  totalPages = 1;
+  totalItems = 0;
+
+  // Filters
+  filters: Filters = {
+    shiftName: '',
+    shiftType: '',
+    departmentId: '',
+    subDepartmentId: ''
+  };
+
+  // Loading states
+  isLoading = false;
+  isDataLoading = true;
+
+  newShift: Partial<Shift> = {
+    shiftType: 'Regular',
+    shiftName: '',
+    startTimeFormatted: '',
+    endTimeFormatted: '',
+    departmentId: '',
+    subDepartmentId: ''
+  };
+
+  // Shift types for dropdown
+  shiftTypes: string[] = ['Regular', 'Night', 'Weekend', 'OnCall', 'Emergency', 'Flexible'];
 
   constructor(
     private toastr: ToastrService,
-    private crud: CrudService
+    private crud: CrudService,
+    private sharedSrv: SharedService
   ) {}
 
   ngOnInit() {
-    this.fetchSharedData();
+    this.loadData();
+  }
+
+  loadData() {
+    this.isDataLoading = true;
+    this.sharedSrv.loadAll();
+
+    this.sharedSrv.getDepartments().subscribe((depts) => {
+      this.departments = depts;
+      this.checkDataLoaded();
+    });
+
+    this.sharedSrv.getSubDepartments().subscribe((subDepts) => {
+      this.subDepartments = subDepts;
+      this.checkDataLoaded();
+    });
+
+    this.sharedSrv.getLocations().subscribe((locs) => {
+      this.locations = locs;
+      this.checkDataLoaded();
+    });
+
     this.fetchShifts();
   }
 
-  fetchSharedData() {
-    // جلب الـ departments, subDepartments, locations مباشرة
-    this.crud.getAll<Department>('departments').subscribe({
-      next: res => this.departments = res.data ?? [],
-      error: () => this.toastr.error('Failed to fetch departments')
-    });
-
-    this.crud.getAll<SubDepartment>('subdepartments').subscribe({
-      next: res => this.subDepartments = res.data ?? [],
-      error: () => this.toastr.error('Failed to fetch subDepartments')
-    });
-
-    this.crud.getAll<Location>('locations').subscribe({
-      next: res => this.locations = res.data ?? [],
-      error: () => this.toastr.error('Failed to fetch locations')
-    });
+  private checkDataLoaded() {
+    if (this.departments.length > 0 && this.subDepartments.length > 0 && this.locations.length > 0) {
+      this.isDataLoading = false;
+    }
   }
 
   fetchShifts() {
+    this.isDataLoading = true;
     this.crud.getAll<Shift>('shifts').subscribe({
-      next: res => this.shifts = res.data ?? [],
-      error: () => this.toastr.error('Failed to fetch shifts')
+      next: (res) => {
+        this.shifts = res.data ?? [];
+        this.totalItems = res.total || this.shifts.length;
+        this.applyFilters();
+        this.isDataLoading = false;
+      },
+      error: (err) => {
+        this.toastr.error('Failed to fetch shifts');
+        this.isDataLoading = false;
+        console.error('Error fetching shifts:', err);
+      }
     });
   }
 
+  // Filter Methods
+  applyFilters() {
+    this.currentPage = 1;
+    this.filteredShifts = this.shifts.filter(shift => {
+      const nameMatch = !this.filters.shiftName || 
+        (shift.shiftName && shift.shiftName.toLowerCase().includes(this.filters.shiftName.toLowerCase()));
+      
+      const typeMatch = !this.filters.shiftType || 
+        (shift.shiftType && shift.shiftType.toLowerCase().includes(this.filters.shiftType.toLowerCase()));
+      
+      const departmentMatch = !this.filters.departmentId || 
+        shift.departmentId === this.filters.departmentId;
+      
+      const subDepartmentMatch = !this.filters.subDepartmentId || 
+        shift.subDepartmentId === this.filters.subDepartmentId;
+
+      return nameMatch && typeMatch && departmentMatch && subDepartmentMatch;
+    });
+    
+    this.totalItems = this.filteredShifts.length;
+    this.updatePagination();
+  }
+
+  clearFilters() {
+    this.filters = {
+      shiftName: '',
+      shiftType: '',
+      departmentId: '',
+      subDepartmentId: ''
+    };
+    this.applyFilters();
+  }
+
+  // Pagination Methods
+  updatePagination() {
+    this.totalPages = Math.ceil(this.filteredShifts.length / this.pageSize);
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.paginatedShifts = this.filteredShifts.slice(startIndex, endIndex);
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
+  }
+
+  goToPage(page: number) {
+    this.currentPage = page;
+    this.updatePagination();
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagination();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePagination();
+    }
+  }
+
+  // Math utility for template
+  Math = Math;
+
+  // Validation Methods
+  private validateForm(): boolean {
+    this.validationErrors = {};
+
+    // Required field validation
+    if (!this.newShift.shiftName?.trim()) {
+      this.validationErrors.shiftName = 'Shift name is required';
+    }
+
+    if (!this.newShift.shiftType?.trim()) {
+      this.validationErrors.shiftType = 'Shift type is required';
+    }
+
+    if (!this.newShift.startTimeFormatted) {
+      this.validationErrors.startTime = 'Start time is required';
+    }
+
+    if (!this.newShift.endTimeFormatted) {
+      this.validationErrors.endTime = 'End time is required';
+    }
+
+    if (!this.newShift.departmentId) {
+      this.validationErrors.departmentId = 'Department is required';
+    }
+
+    // Time validation
+    if (this.newShift.startTimeFormatted && this.newShift.endTimeFormatted) {
+      const startTime = this.timeToMinutes(this.newShift.startTimeFormatted);
+      const endTime = this.timeToMinutes(this.newShift.endTimeFormatted);
+      
+      if (startTime >= endTime) {
+        this.validationErrors.endTime = 'End time must be after start time';
+      }
+    }
+
+    return Object.keys(this.validationErrors).length === 0;
+  }
+
+  private clearValidationErrors() {
+    this.validationErrors = {};
+  }
+
+  // Helper function to convert time string to minutes (for internal use only)
+  private timeToMinutes(timeStr: string): number {
+    if (!timeStr) return 0;
+    
+    // إذا كان الوقت بصيغة AM/PM
+    if (timeStr.includes('AM') || timeStr.includes('PM')) {
+      const [time, period] = timeStr.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      
+      let totalMinutes = hours * 60 + (minutes || 0);
+      
+      if (period === 'PM' && hours !== 12) {
+        totalMinutes += 12 * 60;
+      } else if (period === 'AM' && hours === 12) {
+        totalMinutes -= 12 * 60;
+      }
+      
+      return totalMinutes;
+    } else {
+      // إذا كان الوقت بصيغة 24 ساعة (HH:MM)
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + (minutes || 0);
+    }
+  }
+
+  // Helper function to convert time input (HH:MM) to AM/PM format for API
+  private formatTimeForAPI(timeStr: string): string {
+    if (!timeStr) return '';
+    
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    let displayHours = hours % 12;
+    displayHours = displayHours === 0 ? 12 : displayHours;
+    
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  }
+
+  // CRUD Operations
   addShift() {
     this.isModalOpen = true;
     this.isEditing = false;
+    this.submitted = false;
+    this.clearValidationErrors();
     this.newShift = {
+      shiftType: 'Regular',
       shiftName: '',
-      shiftType: '',
-      department: null,
-      subDepartment: null,
-      location: null,
+      startTimeFormatted: '',
+      endTimeFormatted: '',
+      departmentId: '',
+      subDepartmentId: '',
       checkInStart: false,
       checkOutEnd: false,
       earlyCheckIn: false
@@ -106,44 +337,231 @@ export class Shifts implements OnInit {
   editShift(shift: Shift) {
     this.isModalOpen = true;
     this.isEditing = true;
-    this.newShift = { ...shift };
+    this.submitted = false;
+    this.clearValidationErrors();
+
+    // استخدام الوقت المنسق مباشرة من الـ API
+    this.newShift = {
+      _id: shift._id || shift.id,
+      shiftName: shift.shiftName || '',
+      shiftType: shift.shiftType || 'Regular',
+      startTimeFormatted: shift.startTimeFormatted || '',
+      endTimeFormatted: shift.endTimeFormatted || '',
+      departmentId: shift.departmentId || '',
+      subDepartmentId: shift.subDepartmentId || '',
+      checkInStart: shift.checkInStart || false,
+      checkOutEnd: shift.checkOutEnd || false,
+      earlyCheckIn: shift.earlyCheckIn || false
+    };
   }
 
   saveShift() {
-    const payload: any = { ...this.newShift };
+    this.submitted = true;
+    this.clearValidationErrors();
 
-    if (this.isEditing && this.newShift.id) {
-      this.crud.update<Shift>('shifts', this.newShift.id, payload).subscribe({
-        next: res => {
-          const idx = this.shifts.findIndex(s => s.id === res.data.id);
-          if (idx !== -1) this.shifts[idx] = res.data;
-          this.toastr.success('Shift updated');
-          this.closeModal();
-        },
-        error: () => this.toastr.error('Update failed')
-      });
-    } else {
-      this.crud.create<Shift>('shifts', payload).subscribe({
-        next: res => {
-          this.shifts = [res.data, ...this.shifts];
-          this.toastr.success('Shift created');
-          this.closeModal();
-        },
-        error: () => this.toastr.error('Create failed')
-      });
+    // Frontend validation
+    if (!this.validateForm()) {
+      this.showValidationErrors();
+      return;
     }
+
+    // تحويل الوقت من صيغة الـ input (HH:MM) إلى صيغة AM/PM للـ API
+    const startTimeFormatted = this.formatTimeForAPI(this.newShift.startTimeFormatted || '');
+    const endTimeFormatted = this.formatTimeForAPI(this.newShift.endTimeFormatted || '');
+
+    // إعداد الـ payload بشكل صحيح - إرسال الوقت كـ string
+    const payload: any = {
+      shiftName: (this.newShift.shiftName || '').trim(),
+      shiftType: (this.newShift.shiftType || '').trim(),
+      startTime: startTimeFormatted, // إرسال كـ string
+      endTime: endTimeFormatted,     // إرسال كـ string
+      departmentId: this.newShift.departmentId
+    };
+
+    // إضافة subDepartmentId إذا كان موجوداً
+    if (this.newShift.subDepartmentId) {
+      payload.subDepartmentId = this.newShift.subDepartmentId;
+    }
+
+    console.log('Saving shift payload:', payload);
+
+    this.isLoading = true;
+
+    let obs$;
+    
+    if (this.isEditing && this.newShift._id) {
+      obs$ = this.crud.update<Shift>('shifts', this.newShift._id, payload);
+    } else {
+      obs$ = this.crud.create<Shift>('shifts', payload);
+    }
+
+    obs$.subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        console.log('API Response:', res);
+        
+        if (res && (res.data || res._id)) {
+          this.handleSaveSuccess(res.data || res);
+        } else {
+          this.toastr.error('Unexpected response format from server');
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.handleApiError(err);
+      }
+    });
+  }
+
+  private showValidationErrors() {
+    // عرض رسائل الخطأ للمستخدم
+    if (this.validationErrors.shiftName) {
+      this.toastr.error(this.validationErrors.shiftName);
+    }
+    if (this.validationErrors.shiftType) {
+      this.toastr.error(this.validationErrors.shiftType);
+    }
+    if (this.validationErrors.startTime) {
+      this.toastr.error(this.validationErrors.startTime);
+    }
+    if (this.validationErrors.endTime) {
+      this.toastr.error(this.validationErrors.endTime);
+    }
+    if (this.validationErrors.departmentId) {
+      this.toastr.error(this.validationErrors.departmentId);
+    }
+    if (this.validationErrors.general) {
+      this.toastr.error(this.validationErrors.general);
+    }
+  }
+
+  private handleApiError(err: any) {
+    console.error('API Error Details:', err);
+    
+    let errorMessage = 'Operation failed';
+    let errorDetails = '';
+
+    // معالجة مختلف أشكال الأخطاء من الـ API
+    if (err.status === 422) {
+      errorMessage = 'Validation Error';
+      
+      if (err.error && err.error.details) {
+        // إذا كان الخطأ يحتوي على details
+        if (typeof err.error.details === 'string') {
+          errorDetails = err.error.details;
+        } else if (Array.isArray(err.error.details)) {
+          errorDetails = err.error.details.join(', ');
+        } else if (typeof err.error.details === 'object') {
+          errorDetails = this.formatObjectErrors(err.error.details);
+        }
+      } else if (err.error && err.error.message) {
+        errorDetails = err.error.message;
+      } else if (err.error && err.error.error) {
+        errorDetails = err.error.error;
+      }
+    } else if (err.status === 400) {
+      errorMessage = 'Bad Request';
+      if (err.error && err.error.message) {
+        errorDetails = err.error.message;
+      }
+    } else if (err.status === 404) {
+      errorMessage = 'Resource not found';
+    } else if (err.status === 500) {
+      errorMessage = 'Server error';
+    }
+
+    // عرض الرسالة النهائية
+    const finalMessage = errorDetails ? `${errorMessage}: ${errorDetails}` : errorMessage;
+    this.toastr.error(finalMessage);
+
+    // تعيين أخطاء الـ validation في الحقول المناسبة
+    if (err.status === 422 && err.error && err.error.details) {
+      this.setValidationErrorsFromApi(err.error.details);
+    }
+  }
+
+  private formatObjectErrors(errorObj: any): string {
+    if (!errorObj) return '';
+    
+    const errors: string[] = [];
+    
+    for (const [field, messages] of Object.entries(errorObj)) {
+      if (Array.isArray(messages)) {
+        errors.push(`${field}: ${messages.join(', ')}`);
+      } else {
+        errors.push(`${field}: ${messages}`);
+      }
+    }
+    
+    return errors.join('; ');
+  }
+
+  private setValidationErrorsFromApi(errorDetails: any) {
+    if (typeof errorDetails === 'object') {
+      for (const [field, messages] of Object.entries(errorDetails)) {
+        const fieldName = this.mapApiFieldToValidationField(field);
+        if (Array.isArray(messages)) {
+          this.validationErrors[fieldName] = messages[0];
+        } else {
+          this.validationErrors[fieldName] = messages as string;
+        }
+      }
+    }
+  }
+
+  private mapApiFieldToValidationField(apiField: string): keyof ValidationErrors {
+    // Mapping between API field names and our validation error field names
+    const fieldMap: { [key: string]: keyof ValidationErrors } = {
+      'shiftName': 'shiftName',
+      'shiftType': 'shiftType',
+      'startTime': 'startTime',
+      'endTime': 'endTime',
+      'departmentId': 'departmentId'
+    };
+    
+    return fieldMap[apiField] || 'general';
+  }
+
+  private handleSaveSuccess(savedShift: any) {
+    if (this.isEditing) {
+      // تحديث العنصر الموجود
+      const index = this.shifts.findIndex(s => s._id === savedShift._id || s.id === savedShift._id);
+      if (index !== -1) {
+        this.shifts[index] = { ...this.shifts[index], ...savedShift };
+      }
+      this.toastr.success('Shift updated successfully');
+    } else {
+      // إضافة عنصر جديد
+      this.shifts = [savedShift, ...this.shifts];
+      this.toastr.success('Shift created successfully');
+      this.currentPage = 1; // الانتقال للصفحة الأولى
+    }
+
+    this.applyFilters();
+    this.closeModal();
+    this.refreshData(); // إعادة تحميل البيانات من السيرفر
+  }
+
+  // دالة مساعدة لإعادة تحميل البيانات من السيرفر
+  refreshData() {
+    this.sharedSrv.refetchAll();
+    this.fetchShifts();
   }
 
   closeModal() {
     this.isModalOpen = false;
     this.newShift = {};
     this.isEditing = false;
+    this.submitted = false;
+    this.isLoading = false;
+    this.clearValidationErrors();
   }
 
-  // confirmDelete(id: string) {
-  //   this.showDeleteConfirm = true;
-  //   this.shiftToDeleteId = id;
-  // }
+  confirmDelete(id?: string) {
+    if (!id) return; 
+    this.showDeleteConfirm = true;
+    this.shiftToDeleteId = id;
+  }
 
   cancelDelete() {
     this.showDeleteConfirm = false;
@@ -153,19 +571,42 @@ export class Shifts implements OnInit {
   deleteShiftConfirmed() {
     if (!this.shiftToDeleteId) return;
 
+    this.isLoading = true;
+
     this.crud.delete<Shift>('shifts', this.shiftToDeleteId).subscribe({
-      next: () => {
-        this.shifts = this.shifts.filter(s => s.id !== this.shiftToDeleteId);
-        this.toastr.info('Shift deleted');
+      next: (res: any) => {
+        this.isLoading = false;
+        
+        // إزالة من القائمة المحلية
+        this.shifts = this.shifts.filter(s => (s._id !== this.shiftToDeleteId && s.id !== this.shiftToDeleteId));
+        
+        // تحديث الفلترة والترقيم
+        this.applyFilters();
+        
+        this.toastr.success(res?.message || 'Shift deleted successfully');
         this.cancelDelete();
+        
+        // إعادة تحميل البيانات للتأكد من المزامنة
+        this.refreshData();
       },
-      error: () => this.toastr.error('Delete failed')
+      error: (err) => {
+        this.isLoading = false;
+        this.handleApiError(err);
+      },
     });
   }
-  confirmDelete(id?: string) {
-  if (!id) return; 
-  this.showDeleteConfirm = true;
-  this.shiftToDeleteId = id;
-}
 
+  // Helper function to get department name
+  getDepartmentName(deptId: string | undefined): string {
+    if (!deptId) return 'Not assigned';
+    const dept = this.departments.find(d => d._id === deptId);
+    return dept ? dept.name : 'Unknown';
+  }
+
+  // Helper function to get sub-department name
+  getSubDepartmentName(subDeptId: string | undefined): string {
+    if (!subDeptId) return 'Not assigned';
+    const subDept = this.subDepartments.find(s => s._id === subDeptId);
+    return subDept?.name?? 'Unknown';
+  }
 }

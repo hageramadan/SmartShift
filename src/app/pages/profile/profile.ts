@@ -4,6 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { UserProfileI } from '../../models/user-profile';
 import { CrudService } from '../../services/crud.service';
+import { SharedService } from '../../services/shared.service';
+import { DepartmentI } from '../../models/department-i';
+import { PositionI } from '../../models/position-i';
+import { LevelI } from '../../models/level-i';
 
 @Component({
   selector: 'app-profile',
@@ -47,13 +51,24 @@ export class Profile implements OnInit {
   showEditForm = false;
   loading = false;
 
+  // القوائم للـ select boxes
+  departments: DepartmentI[] = [];
+  positions: PositionI[] = [];
+  levels: LevelI[] = [];
+  roles: string[] = ['user', 'manager', 'admin'];
+
+  // Loading state
+  isLoading = false;
+
   constructor(
     private toastr: ToastrService,
-    private crud: CrudService
+    private crud: CrudService,
+    private sharedSrv: SharedService
   ) {}
 
   ngOnInit() {
     this.loadProfile();
+    this.loadSharedData();
   }
 
   loadProfile() {
@@ -88,8 +103,31 @@ export class Profile implements OnInit {
     });
   }
 
+  loadSharedData() {
+    this.sharedSrv.loadAll();
+
+    this.sharedSrv.getDepartments().subscribe((depts) => {
+      this.departments = depts;
+    });
+
+    this.sharedSrv.getPositions().subscribe((positions) => {
+      this.positions = positions;
+    });
+
+    this.sharedSrv.getLevels().subscribe((levels) => {
+      this.levels = levels;
+    });
+  }
+
   openEditForm() {
-    this.tempAdmin = { ...this.admin };
+    // إنشاء نسخة للتعديل مع الحفاظ على الهيكل
+    this.tempAdmin = {
+      ...this.admin,
+      departmentId: this.admin.department?._id || '',
+      positionId: this.admin.position?._id || '',
+      levelId: this.admin.level?._id || '',
+      role: this.admin.role || 'user'
+    };
     this.showEditForm = true;
   }
 
