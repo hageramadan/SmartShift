@@ -3,15 +3,17 @@
   <!-- Header -->
   <div class="flex justify-between items-center mb-6">
     <h2 class="text-2xl font-bold text-pro">Schedules Management</h2>
+    
+    <!-- Create Button واحد -->
     <button 
-      class="bg-pro hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-      (click)="showCreateModal = true">
+      class="bg-pro hover:bg-blue-700 text-white px-6 py-3 rounded-xl flex items-center gap-3 transition-all duration-200 shadow-md hover:shadow-lg"
+      (click)="openCreateModal()">
       <i class="fas fa-plus"></i>
-      New Schedule
+      Create Schedule
     </button>
   </div>
 
-  <!-- Error Messages - إضافة z-index عالي -->
+  <!-- Error Messages -->
   <div *ngIf="error && !showCreateModal" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4 flex justify-between items-center relative z-50">
     <div>
       <strong class="font-bold">Error!</strong>
@@ -142,7 +144,7 @@
             (change)="applyFilters()">
             <option value="">All Shifts</option>
             <option *ngFor="let shift of shifts" [value]="shift._id">
-              {{ shift.shiftName }} ({{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }})
+              {{ shift.shiftName }} ({{ shift.shiftType }}) - {{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }}
             </option>
           </select>
         </div>
@@ -206,43 +208,47 @@
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10 bg-pro2 text-pro rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                  {{ getUserName(schedule.userId).charAt(0) }}
+                  {{ getUserDisplay(schedule).charAt(0) }}
                 </div>
                 <div class="ml-4">
-                  <div class="text-sm font-medium text-gray-900">{{ getUserName(schedule.userId) }}</div>
+                  <div class="text-sm font-medium text-gray-900">{{ getUserDisplay(schedule) }}</div>
+                  <div class="text-xs text-gray-500" *ngIf="getUserDisplay(schedule).includes('(')">
+                    {{ schedule.userId?.substring(0, 8) }}...
+                  </div>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-pro2 text-pro border border-blue-200">
-                {{ getDepartmentName(schedule.departmentId) }}
+                {{ getDepartmentDisplay(schedule) }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 border border-gray-200">
-                {{ getSubDepartmentName(schedule.subDepartmentId) }}
+                {{ getSubDepartmentDisplay(schedule) }}
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="text-sm font-medium text-gray-900">{{ getShiftName(schedule.shiftId) }}</span>
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-gray-900">{{ getShiftDisplay(schedule) }}</span>
+                <span class="text-xs text-gray-500" *ngIf="getShiftTypeDisplay(schedule)">
+                  {{ getShiftTypeDisplay(schedule) }}
+                </span>
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="text-sm text-gray-500">{{ getShiftTime(schedule.shiftId) }}</span>
+              <span class="text-sm text-gray-500">{{ getShiftTimeDisplay(schedule) }}</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <div class="flex gap-2">
                 <button 
                   (click)="updateSchedule(schedule)"
-                  [title]="'Edit ' + getUserName(schedule.userId)"
-                  [disabled]="loading"
-                  class="text-pro disabled:opacity-50 disabled:cursor-not-allowed p-2 rounded-lg hover:bg-yellow-50 transition-colors">
+                  class="text-pro hover:text-blue-800 p-2 rounded-lg hover:bg-yellow-50 transition-colors">
                   <i class="fas fa-edit"></i>
                 </button>
                 <button 
                   (click)="deleteSchedule(schedule._id!)"
-                  [title]="'Delete ' + getUserName(schedule.userId)"
-                  [disabled]="loading"
-                  class="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed p-2 rounded-lg hover:bg-red-50 transition-colors">
+                  class="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -309,141 +315,386 @@
     </div>
   </div>
 
-  <!-- Create Schedule Modal -->
-  <div *ngIf="showCreateModal" class="fixed inset-0 bg-white/80 backdrop-blur-md flex items-center justify-center p-6 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-200/60 relative z-60">
-      <div class="bg-pro2 text-pro px-6 py-4 rounded-t-2xl flex justify-between items-center">
-        <h5 class="text-xl font-semibold flex items-center gap-3">
-          <i class="fas fa-plus-circle"></i>
-          Create New Schedule
-        </h5>
+  <!-- Create Schedule Modal الموحد -->
+  <div *ngIf="showCreateModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl  relative z-60 max-h-[90vh] overflow-hidden flex flex-col">
+      <!-- Header -->
+      <div class="bg-pro text-white px-8 py-6 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-white/20 rounded-xl">
+            <i class="fas fa-calendar-plus text-2xl"></i>
+          </div>
+          <div>
+            <h5 class="text-2xl font-bold">Create Schedule</h5>
+            <p class="text-blue-100 text-sm mt-1">Add new schedule entries</p>
+          </div>
+        </div>
         <button 
           type="button" 
-          class="text-pro hover:text-blue-100 text-xl transition-colors"
+          class="text-white hover:text-blue-100 text-xl transition-all duration-200 p-2 hover:bg-white/10 rounded-lg"
           (click)="closeModal()">
           <i class="fas fa-times"></i>
         </button>
       </div>
       
-      <div class="p-6">
-        <form (ngSubmit)="createSchedule()" #scheduleForm="ngForm">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 required">Date</label>
-              <input 
-                type="date" 
-                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                [class.border-red-500]="formErrors.date"
-                [(ngModel)]="newSchedule.date" 
-                name="date" 
-                required>
-              <p *ngIf="formErrors.date" class="text-red-500 text-xs mt-1 flex items-center gap-1">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ formErrors.date }}
-              </p>
-              <p class="text-xs text-gray-500 mt-2">Select schedule date</p>
+      <!-- Tabs -->
+      <div class="bg-pro2  px-8 py-4">
+        <div class="flex space-x-1">
+          <button 
+            (click)="setCreateMode('single')"
+            class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+            [class.bg-white]="createMode === 'single'"
+            [class.text-pro]="createMode === 'single'"
+            [class.shadow-sm]="createMode === 'single'"
+            [class.text-gray-600]="createMode !== 'single'"
+            [class.hover:text-pro]="createMode !== 'single'">
+            <i class="fas fa-user"></i>
+            Single Schedule
+          </button>
+          <button 
+            (click)="setCreateMode('bulk')"
+            class="px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+            [class.bg-white]="createMode === 'bulk'"
+            [class.text-pro]="createMode === 'bulk'"
+            [class.shadow-sm]="createMode === 'bulk'"
+            [class.text-gray-600]="createMode !== 'bulk'"
+            [class.hover:text-pro]="createMode !== 'bulk'">
+            <i class="fas fa-users"></i>
+            Bulk Create
+          </button>
+        </div>
+      </div>
+      
+      <!-- Content -->
+      <div class="flex-1 overflow-y-auto p-8">
+        
+        <!-- Single Schedule Tab -->
+        <div *ngIf="createMode === 'single'" class="space-y-6 animate-fade-in">
+          <form #scheduleForm="ngForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 required">Date</label>
+                <input 
+                  type="date" 
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  [class.border-red-500]="formErrors.date"
+                  [(ngModel)]="newSchedule.date" 
+                  name="date" 
+                  required>
+                <p *ngIf="formErrors.date" class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ formErrors.date }}
+                </p>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 required">Department</label>
+                <select 
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  [class.border-red-500]="formErrors.departmentId"
+                  [(ngModel)]="newSchedule.departmentId" 
+                  (change)="onModalDepartmentChange()" 
+                  name="departmentId" 
+                  required>
+                  <option value="">Select Department</option>
+                  <option *ngFor="let dept of departments" [value]="dept._id">
+                    {{ dept.name }}
+                  </option>
+                </select>
+                <p *ngIf="formErrors.departmentId" class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ formErrors.departmentId }}
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 required">Sub Department</label>
+                <select 
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  [class.border-red-500]="formErrors.subDepartmentId"
+                  [(ngModel)]="newSchedule.subDepartmentId" 
+                  name="subDepartmentId" 
+                  required>
+                  <option value="">Select Sub Department</option>
+                  <option *ngFor="let subDept of filteredSubDepartments" [value]="subDept._id">
+                    {{ subDept.name }}
+                  </option>
+                </select>
+                <p *ngIf="formErrors.subDepartmentId" class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ formErrors.subDepartmentId }}
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 required">User</label>
+                <select 
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  [class.border-red-500]="formErrors.userId"
+                  [(ngModel)]="newSchedule.userId" 
+                  name="userId" 
+                  required>
+                  <option value="">Select User</option>
+                  <option *ngFor="let user of filteredUsers" [value]="user._id">
+                    {{ user.fullName }} ({{ user.employeeId }})
+                  </option>
+                </select>
+                <p *ngIf="formErrors.userId" class="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ formErrors.userId }}
+                </p>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2 required">Shift</label>
+                <select 
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  [class.border-red-500]="formErrors.shiftId"
+                  [(ngModel)]="newSchedule.shiftId" 
+                  name="shiftId" 
+                  required>
+                  <option value="">Select Shift</option>
+                  <option *ngFor="let shift of shifts" [value]="shift._id">
+                    {{ shift.shiftName }} ({{ shift.shiftType }}) - {{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }}
+                  </option>
+                </select>
+                <p *ngIf="formErrors.shiftId" class="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ formErrors.shiftId }}
+                </p>
+              </div>
             </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 required">Department</label>
-              <select 
-                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                [class.border-red-500]="formErrors.departmentId"
-                [(ngModel)]="newSchedule.departmentId" 
-                (change)="onModalDepartmentChange()" 
-                name="departmentId" 
-                required>
-                <option value="">Select Department</option>
-                <option *ngFor="let dept of departments" [value]="dept._id">
-                  {{ dept.name }}
-                </option>
-              </select>
-              <p *ngIf="formErrors.departmentId" class="text-red-500 text-xs mt-1 flex items-center gap-1">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ formErrors.departmentId }}
-              </p>
+          </form>
+        </div>
+
+        <!-- Bulk Create Tab -->
+        <div *ngIf="createMode === 'bulk'" class="space-y-6 animate-fade-in">
+          <!-- Step 1: Date Selection -->
+          <div *ngIf="bulkCreateStep === 1" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <!-- Date Range -->
+              <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                <h6 class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <i class="fas fa-calendar-alt text-pro"></i>
+                  Select Date Range
+                </h6>
+                <div class="grid grid-cols-1 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input 
+                      type="date" 
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      [(ngModel)]="dateRange.start"
+                      (change)="onDateRangeChange()">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                    <input 
+                      type="date" 
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      [(ngModel)]="dateRange.end"
+                      (change)="onDateRangeChange()">
+                  </div>
+                </div>
+                <button 
+                  type="button"
+                  class="w-full mt-4 bg-pro text-white px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 font-medium"
+                  (click)="generateDateRange()"
+                  [disabled]="!dateRange.start || !dateRange.end">
+                  <i class="fas fa-calendar-plus"></i>
+                  Generate Dates
+                </button>
+              </div>
+
+              <!-- Selected Dates -->
+              <div class="bg-white rounded-xl p-6 border border-gray-200" *ngIf="selectedDates.length > 0">
+                <div class="flex justify-between items-center mb-4">
+                  <h6 class="font-semibold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-list-check text-blue-600"></i>
+                    Selected Dates ({{ bulkCreateData.dates.length }})
+                  </h6>
+                  <button 
+                    type="button"
+                    class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    (click)="toggleAllDates()">
+                    {{ bulkCreateData.dates.length === selectedDates.length ? 'Deselect All' : 'Select All' }}
+                  </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                  <label *ngFor="let date of selectedDates" 
+                         class="flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer"
+                         [class.border-blue-500]="bulkCreateData.dates.includes(date)"
+                         [class.bg-blue-50]="bulkCreateData.dates.includes(date)"
+                         [class.border-gray-200]="!bulkCreateData.dates.includes(date)"
+                         [class.bg-white]="!bulkCreateData.dates.includes(date)">
+                    <input 
+                      type="checkbox" 
+                      [checked]="bulkCreateData.dates.includes(date)"
+                      (change)="toggleDate(date)"
+                      class="rounded text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm font-medium">{{ formatDate(date) }}</span>
+                  </label>
+                </div>
+              </div>
             </div>
+
+            <p *ngIf="bulkFormErrors.dates" class="text-red-500 text-sm flex items-center gap-2 p-3 bg-red-50 rounded-lg">
+              <i class="fas fa-exclamation-circle"></i>
+              {{ bulkFormErrors.dates }}
+            </p>
           </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 required">Sub Department</label>
-              <select 
-                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                [class.border-red-500]="formErrors.subDepartmentId"
-                [(ngModel)]="newSchedule.subDepartmentId" 
-                name="subDepartmentId" 
-                required>
-                <option value="">Select Sub Department</option>
-                <option *ngFor="let subDept of filteredSubDepartments" [value]="subDept._id">
-                  {{ subDept.name }}
-                </option>
-              </select>
-              <p *ngIf="formErrors.subDepartmentId" class="text-red-500 text-xs mt-1 flex items-center gap-1">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ formErrors.subDepartmentId }}
-              </p>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 required">User</label>
-              <select 
-                class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                [class.border-red-500]="formErrors.userId"
-                [(ngModel)]="newSchedule.userId" 
-                name="userId" 
-                required>
-                <option value="">Select User</option>
-                <option *ngFor="let user of filteredUsers" [value]="user._id">
-                  {{ user.fullName }} ({{ user.employeeId }})
-                </option>
-              </select>
-              <p *ngIf="formErrors.userId" class="text-red-500 text-xs mt-1 flex items-center gap-1">
-                <i class="fas fa-exclamation-circle"></i>
-                {{ formErrors.userId }}
-              </p>
+
+          <!-- Step 2: User and Settings Selection -->
+          <div *ngIf="bulkCreateStep === 2" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <!-- Settings -->
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-3 required">Department</label>
+                  <select 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    [(ngModel)]="bulkCreateData.departmentId" 
+                    (change)="onBulkDepartmentChange()">
+                    <option value="">Select Department</option>
+                    <option *ngFor="let dept of departments" [value]="dept._id">
+                      {{ dept.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-3 required">Sub Department</label>
+                  <select 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    [(ngModel)]="bulkCreateData.subDepartmentId">
+                    <option value="">Select Sub Department</option>
+                    <option *ngFor="let subDept of filteredSubDepartments" [value]="subDept._id">
+                      {{ subDept.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-3 required">Shift</label>
+                  <select 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    [(ngModel)]="bulkCreateData.shiftId">
+                    <option value="">Select Shift</option>
+                    <option *ngFor="let shift of shifts" [value]="shift._id">
+                      {{ shift.shiftName }} ({{ shift.shiftType }}) - {{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Users Selection -->
+              <div class="bg-white rounded-xl p-6 border border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                  <label class="block text-sm font-medium text-gray-700 required">
+                    Select Users ({{ bulkCreateData.userIds.length }} selected)
+                  </label>
+                  <button 
+                    type="button"
+                    class="text-sm text-pro font-medium"
+                    (click)="toggleAllUsers()">
+                    {{ bulkCreateData.userIds.length === filteredUsers.length ? 'Deselect All' : 'Select All' }}
+                  </button>
+                </div>
+                <div class="max-h-64 overflow-y-auto space-y-2">
+                  <div *ngIf="filteredUsers.length === 0" class="text-center text-gray-500 py-8">
+                    <i class="fas fa-users text-3xl mb-3 text-gray-300"></i>
+                    <p>Please select a department first</p>
+                  </div>
+                  <label *ngFor="let user of filteredUsers" 
+                         class="flex items-center gap-4 p-3 rounded-lg border transition-all cursor-pointer"
+                         [class.border-blue-500]="bulkCreateData.userIds.includes(user._id!)"
+                         [class.bg-blue-50]="bulkCreateData.userIds.includes(user._id!)"
+                         [class.border-gray-200]="!bulkCreateData.userIds.includes(user._id!)"
+                         [class.bg-white]="!bulkCreateData.userIds.includes(user._id!)">
+                    <input 
+                      type="checkbox" 
+                      [checked]="bulkCreateData.userIds.includes(user._id!)"
+                      (change)="toggleUser(user._id!)"
+                      class="rounded text-pro focus:ring-2 ">
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-gray-900">{{ user.fullName }}</div>
+                      <div class="text-xs text-gray-500">{{ user.employeeId }}</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2 required">Shift</label>
-            <select 
-              class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              [class.border-red-500]="formErrors.shiftId"
-              [(ngModel)]="newSchedule.shiftId" 
-              name="shiftId" 
-              required>
-              <option value="">Select Shift</option>
-              <option *ngFor="let shift of shifts" [value]="shift._id">
-                {{ shift.shiftName }} ({{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }})
-              </option>
-            </select>
-            <p *ngIf="formErrors.shiftId" class="text-red-500 text-xs mt-1 flex items-center gap-1">
-              <i class="fas fa-exclamation-circle"></i>
-              {{ formErrors.shiftId }}
-            </p>
-            <p class="text-xs text-gray-500 mt-2">Choose shift timing</p>
+          <!-- Step 3: Confirmation -->
+          <div *ngIf="bulkCreateStep === 3" class="space-y-6">
+            <div class="bg-pro2  rounded-xl p-6">
+              <h6 class="font-semibold text-pro mb-4 flex items-center gap-2">
+                <i class="fas fa-check-circle"></i>
+                Ready to Create Schedules
+              </h6>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <p class="text-pro mb-2"><strong>Dates:</strong> {{ bulkCreateData.dates.length }} selected</p>
+                  <p class="text-pro mb-2"><strong>Users:</strong> {{ bulkCreateData.userIds.length }} selected</p>
+                  <p class="text-pro"><strong>Shift:</strong> {{ getSelectedShiftName() }}</p>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-blue-200">
+                  <p class="text-pro font-semibold text-center text-lg">
+                    Total: {{ bulkCreateData.dates.length * bulkCreateData.userIds.length }} Schedules
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </form>
+        </div>
       </div>
       
-      <div class="bg-gray-50/80 px-6 py-4 rounded-b-2xl flex justify-end gap-3 border-t border-gray-200/60">
-        <button 
-          type="button" 
-          class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
-          (click)="closeModal()" 
-          [disabled]="loading">
-          <i class="fas fa-times"></i>
-          Cancel
-        </button>
-        <button 
-          type="button" 
-          class="px-6 py-3 bg-pro text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
-          (click)="createSchedule()" 
-          [disabled]="!isValidSchedule(newSchedule) || loading">
-          <i class="fas fa-save"></i>
-          {{ loading ? 'Creating...' : 'Create Schedule' }}
-        </button>
+      <!-- Footer -->
+      <div class="bg-gray-50/80 px-8 py-6 border-t border-gray-200/60 flex justify-between items-center">
+        <!-- Bulk Navigation -->
+        <div *ngIf="createMode === 'bulk'">
+          <button 
+            type="button" 
+            class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
+            (click)="previousStep()"
+            [disabled]="bulkCreateStep === 1">
+            <i class="fas fa-arrow-left"></i>
+            Previous
+          </button>
+        </div>
+        
+        <div class="flex items-center gap-3 ml-auto">
+          <button 
+            type="button" 
+            class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all duration-200 flex items-center gap-2 font-medium"
+            (click)="closeModal()">
+            <i class="fas fa-times"></i>
+            Cancel
+          </button>
+
+          <!-- Bulk Next Button -->
+          <button 
+            type="button" 
+            class="px-8 py-3 bg-pro text-white rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
+            (click)="nextStep()"
+            *ngIf="createMode === 'bulk' && bulkCreateStep < 3"
+            [disabled]="!canProceedToNextStep()">
+            Next
+            <i class="fas fa-arrow-right"></i>
+          </button>
+
+          <!-- Create Button -->
+          <button 
+            type="button" 
+            class="px-8 py-3 bg-pro text-white rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium shadow-md hover:shadow-lg"
+            (click)="createSchedule()"
+            *ngIf="(createMode === 'single') || (createMode === 'bulk' && bulkCreateStep === 3)"
+            [disabled]="(createMode === 'single' && !isValidSchedule(newSchedule)) || (createMode === 'bulk' && !isBulkFormValid()) || loading">
+            <i class="fas fa-save" [class.fa-spin]="loading"></i>
+            {{ loading ? 'Creating...' : (createMode === 'single' ? 'Create Schedule' : 'Create All Schedules') }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

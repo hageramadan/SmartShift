@@ -1,3 +1,4 @@
+// crud.service.ts
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Api } from './api.service';
@@ -18,8 +19,13 @@ export class CrudService {
     return this.api.getById<ApiResponse<T>>(endpoint, id);
   }
 
+  // إضافة دالة post
+  post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
+    return this.api.post<ApiResponse<T>>(endpoint, data);
+  }
+
   create<T>(endpoint: string, data: Partial<T>): Observable<ApiResponse<T>> {
-    return this.api.post<ApiResponse<T>>(endpoint, data );
+    return this.api.post<ApiResponse<T>>(endpoint, data);
   }
 
   update<T>(endpoint: string, id: string, data: Partial<T>): Observable<ApiResponse<T>> {
@@ -29,7 +35,8 @@ export class CrudService {
   delete<T>(endpoint: string, id: string): Observable<ApiResponse<null>> {
     return this.api.delete<ApiResponse<null>>(endpoint, id);
   }
-    customPatch<T>(endpoint: string, data: Partial<T>): Observable<ApiResponse<T>> {
+
+  customPatch<T>(endpoint: string, data: Partial<T>): Observable<ApiResponse<T>> {
     return this.api.patch<ApiResponse<T>>(endpoint, '', data);
   }
 }

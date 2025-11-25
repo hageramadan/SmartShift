@@ -1,7 +1,8 @@
+// shared.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, forkJoin } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
-import { CrudService } from './crud.service';
+import { Api } from './api.service'; // استيراد Api مباشرة
 import { UserI } from '../models/user-i';
 import { DepartmentI } from '../models/department-i';
 import { SubDepartmentI } from '../models/sub-department-i';
@@ -42,19 +43,19 @@ export class SharedService {
 
   private isLoaded = false;
 
-  constructor(private toastr: ToastrService, private crud: CrudService) {}
+  constructor(private toastr: ToastrService, private api: Api) {} // استخدام Api مباشرة
 
   loadAll(): void {
     if (this.isLoaded) return;
 
     forkJoin({
-      users: this.crud.getAll<UserI>('users'),
-      depts: this.crud.getAll<DepartmentI>('departments'),
-      sub_depts: this.crud.getAll<SubDepartmentI>('subdepartments'),
-      poss: this.crud.getAll<PositionI>('positions'),
-      lvls: this.crud.getAll<LevelI>('levels'),
-      locats: this.crud.getAll<LocationI>('locations'),
-      shifts: this.crud.getAll<ShiftI>('shifts'), 
+      users: this.api.getAll<ApiResponse<UserI[]>>('users'),
+      depts: this.api.getAll<ApiResponse<DepartmentI[]>>('departments'),
+      sub_depts: this.api.getAll<ApiResponse<SubDepartmentI[]>>('subdepartments'),
+      poss: this.api.getAll<ApiResponse<PositionI[]>>('positions'),
+      lvls: this.api.getAll<ApiResponse<LevelI[]>>('levels'),
+      locats: this.api.getAll<ApiResponse<LocationI[]>>('locations'),
+      shifts: this.api.getAll<ApiResponse<ShiftI[]>>('shifts'), 
     }).subscribe({
       next: ({ users, depts, sub_depts, poss, lvls, locats, shifts }) => {
         this.users$.next(users?.data ?? []);
@@ -78,6 +79,19 @@ export class SharedService {
     });
   }
 
+  // إضافة دوال للـ POST والـ PATCH والـ DELETE
+  post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
+    return this.api.post<ApiResponse<T>>(endpoint, data);
+  }
+
+  patch<T>(endpoint: string, id: string, data: any): Observable<ApiResponse<T>> {
+    return this.api.patch<ApiResponse<T>>(endpoint, id, data);
+  }
+
+  delete<T>(endpoint: string, id: string): Observable<ApiResponse<T>> {
+    return this.api.delete<ApiResponse<T>>(endpoint, id);
+  }
+
   // Observables
   getUsers(): Observable<UserI[]> { return this.users$.asObservable(); }
   getDepartments(): Observable<DepartmentI[]> { return this.departments$.asObservable(); }
@@ -86,7 +100,9 @@ export class SharedService {
   getLevels(): Observable<LevelI[]> { return this.levels$.asObservable(); }
   getLocations(): Observable<LocationI[]> { return this.locats$.asObservable(); }
   getShifts(): Observable<ShiftI[]> { return this.shifts$.asObservable(); } 
-
+getAll<T>(endpoint: string): Observable<ApiResponse<T>> {
+  return this.api.getAll<ApiResponse<T>>(endpoint);
+}
   // Meta
   getUsersMeta(): Observable<Meta> { return this.meta.users.asObservable(); }
   getDepartmentsMeta(): Observable<Meta> { return this.meta.departments.asObservable(); }
