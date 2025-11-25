@@ -14,12 +14,42 @@ import { LevelI } from '../../models/level-i';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './profile.html',
-  styleUrls: ['./profile.css'],
 })
 export class Profile implements OnInit {
-  admin!: UserProfileI;
-  tempAdmin!: any; // استخدام any للسماح بالتعديل المؤقت
+  admin: UserProfileI = {
+    _id: '',
+    firstName: '',
+    lastName: '',
+    fullName: '',
+    email: '',
+    role: '',
+    employeeId: '',
+    nickname: '',
+    contactNumber: '',
+    photo: '',
+    department: { _id: '', name: '' },
+    position: { _id: '', name: '' },
+    level: { _id: '', name: '' }
+  };
+  
+  tempAdmin: UserProfileI = {
+    _id: '',
+    firstName: '',
+    lastName: '',
+    fullName: '',
+    email: '',
+    role: '',
+    employeeId: '',
+    nickname: '',
+    contactNumber: '',
+    photo: '',
+    department: { _id: '', name: '' },
+    position: { _id: '', name: '' },
+    level: { _id: '', name: '' }
+  };
+  
   showEditForm = false;
+  loading = false;
 
   // القوائم للـ select boxes
   departments: DepartmentI[] = [];
@@ -42,21 +72,31 @@ export class Profile implements OnInit {
   }
 
   loadProfile() {
+    this.loading = true;
     this.crud.getAll<UserProfileI>('users/me').subscribe({
       next: (res: any) => {
+        this.loading = false;
         if (res?.data) {
-          this.admin = res.data;
-          // إنشاء نسخة للتعديل مع الحفاظ على الهيكل
-          this.tempAdmin = {
-            ...res.data,
-            departmentId: res.data.department?._id || '',
-            positionId: res.data.position?._id || '',
-            levelId: res.data.level?._id || '',
-            role: res.data.role || 'user'
+          this.admin = {
+            _id: res.data._id || '',
+            firstName: res.data.firstName || '',
+            lastName: res.data.lastName || '',
+            fullName: res.data.fullName || `${res.data.firstName} ${res.data.lastName}`,
+            email: res.data.email || '',
+            role: res.data.role || '',
+            employeeId: res.data.employeeId || '',
+            nickname: res.data.nickname || '',
+            contactNumber: res.data.contactNumber || '',
+            photo: res.data.photo || '',
+            department: res.data.department || { _id: '', name: '' },
+            position: res.data.position || { _id: '', name: '' },
+            level: res.data.level || { _id: '', name: '' }
           };
+          this.tempAdmin = { ...this.admin };
         }
       },
       error: (err) => {
+        this.loading = false;
         console.error(err);
         this.toastr.error('Failed to load profile');
       },
@@ -96,98 +136,43 @@ export class Profile implements OnInit {
   }
 
   saveChanges() {
-    this.isLoading = true;
+    if (!this.tempAdmin.firstName || !this.tempAdmin.lastName || !this.tempAdmin.email) {
+      this.toastr.error('Please fill in all required fields');
+      return;
+    }
 
     const body: any = {
-      photo: this.tempAdmin.photo,
       firstName: this.tempAdmin.firstName,
       lastName: this.tempAdmin.lastName,
-      nickname: this.tempAdmin.nickname,
-      // role: this.tempAdmin.role,
-      // departmentId: this.tempAdmin.departmentId,
-      // positionId: this.tempAdmin.positionId,
-      // levelId: this.tempAdmin.levelId
+      email: this.tempAdmin.email
     };
 
-    // إزالة الحقول الفارغة
-    Object.keys(body).forEach(key => {
-      if (body[key] === null || body[key] === undefined || body[key] === '') {
-        delete body[key];
-      }
-    });
-
-    console.log('Updating profile with:', body);
+    if (this.tempAdmin.nickname !== undefined) {
+      body.nickname = this.tempAdmin.nickname;
+    }
+    if (this.tempAdmin.contactNumber !== undefined) {
+      body.contactNumber = this.tempAdmin.contactNumber;
+    }
 
     this.crud.customPatch<UserProfileI>('users/updateMe', body).subscribe({
       next: (res: any) => {
-        this.isLoading = false;
         if (res?.data) {
-          this.admin = res.data;
+          this.admin = {
+            ...res.data,
+            fullName: res.data.fullName || `${res.data.firstName} ${res.data.lastName}`,
+            department: res.data.department || this.admin.department,
+            position: res.data.position || this.admin.position,
+            level: res.data.level || this.admin.level
+          };
           this.toastr.success('Profile updated successfully');
-          this.showEditForm = false;
-          
-          // إعادة تحميل البيانات للحصول على أحدث التحديثات
-          this.loadProfile();
         }
+        this.showEditForm = false;
       },
       error: (err) => {
-        this.isLoading = false;
-        console.error('Update error:', err);
-        this.handleError(err);
+        console.error(err);
+        const errorMessage = err?.error?.message || err?.error?.details || 'Failed to update profile';
+        this.toastr.error(errorMessage);
       },
     });
-  }
-
-  private handleError(err: any) {
-    let errorMessage = 'Failed to update profile';
-    
-    if (err?.error?.details) {
-      if (Array.isArray(err.error.details)) {
-        errorMessage = `Failed: ${err.error.details.join(', ')}`;
-      } else if (typeof err.error.details === 'string') {
-        errorMessage = err.error.details;
-      } else if (typeof err.error.details === 'object') {
-        errorMessage = this.formatObjectErrors(err.error.details);
-      }
-    } else if (err?.error?.message) {
-      errorMessage = err.error.message;
-    }
-    
-    this.toastr.error(errorMessage);
-  }
-
-  private formatObjectErrors(errorObj: any): string {
-    if (!errorObj) return '';
-    
-    const errors: string[] = [];
-    
-    for (const [field, messages] of Object.entries(errorObj)) {
-      if (Array.isArray(messages)) {
-        errors.push(`${field}: ${messages.join(', ')}`);
-      } else {
-        errors.push(`${field}: ${messages}`);
-      }
-    }
-    
-    return errors.join('; ');
-  }
-
-  // Helper functions for template
-  getSelectedDepartmentName(): string {
-    if (!this.tempAdmin?.departmentId) return 'Not selected';
-    const dept = this.departments.find(d => d._id === this.tempAdmin.departmentId);
-    return dept ? dept.name : 'Unknown';
-  }
-
-  getSelectedPositionName(): string {
-    if (!this.tempAdmin?.positionId) return 'Not selected';
-    const position = this.positions.find(p => p._id === this.tempAdmin.positionId);
-    return position ? position.name : 'Unknown';
-  }
-
-  getSelectedLevelName(): string {
-    if (!this.tempAdmin?.levelId) return 'Not selected';
-    const level = this.levels.find(l => l._id === this.tempAdmin.levelId);
-    return level ? level.name : 'Unknown';
   }
 }

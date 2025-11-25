@@ -8,7 +8,7 @@
       </div>
       <button
         (click)="openAddForm()"
-        class="bg-pro cursor-pointer text-white px-4 py-2.5 rounded-lg transition hover:bg-green-700 text-sm font-medium"
+        class="bg-pro cursor-pointer text-white px-4 py-2.5 rounded-lg hover:bg-green-700 text-sm font-medium"
       >
         <i class="fas fa-plus mr-1.5"></i>
         Add Level
@@ -31,7 +31,7 @@
             <select
               [(ngModel)]="selectedPositionId"
               (change)="applyFilters()"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
             >
               <option value="">All Positions</option>
               <option *ngFor="let position of positions" [value]="position._id">
@@ -51,23 +51,23 @@
           <i class="fas fa-search mr-2 text-green-600"></i>
           Search Levels
         </label>
-        <div class="relative group">
+        <div class="relative">
           <input
             type="text"
             [(ngModel)]="searchTerm"
             (input)="onSearch()"
             placeholder="Search level names..."
-            class="w-full pl-11 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300 outline-none text-sm bg-white group-hover:border-green-500/60"
+            class="w-full pl-11 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white hover:border-green-500/60"
           >
           <div class="absolute left-3 top-1/2 transform -translate-y-1/2">
-            <i class="fas fa-search text-gray-400 group-hover:text-green-600 transition-colors duration-300"></i>
+            <i class="fas fa-search text-gray-400"></i>
           </div>
           <div 
             *ngIf="searchTerm" 
-            class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer hover:scale-110 transition-transform duration-200"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
             (click)="clearSearch()"
           >
-            <i class="fas fa-times text-gray-400 hover:text-red-500 transition-colors duration-200"></i>
+            <i class="fas fa-times text-gray-400 hover:text-red-500"></i>
           </div>
         </div>
       </div>
@@ -76,18 +76,17 @@
       <div class="flex gap-2 self-end">
         <button
           (click)="refreshData()"
-          [class.animate-spin]="loading"
-          class="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:border-green-500 hover:bg-green-500/5 transition-all duration-200 text-sm font-medium text-gray-700 hover:text-green-600"
+          class="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl  bg-pro2 text-sm font-medium text-pro"
           title="Refresh Data"
         >
-          <i class="fas fa-sync-alt text-xs"></i>
+          <i class="fas fa-sync-alt text-xs "[class.animate-spin]="loading"></i>
           Refresh
         </button>
         
         <button
           *ngIf="hasActiveFilters()"
           (click)="clearPositionFilter(); clearSearch()"
-          class="flex items-center gap-2 px-4 py-3 border border-red-200 rounded-xl hover:border-red-300 hover:bg-red-50 transition-all duration-200 text-sm font-medium text-red-600 hover:text-red-700"
+          class="flex items-center gap-2 px-4 py-3 border border-red-200 rounded-xl hover:border-red-300 hover:bg-red-50 text-sm font-medium text-red-600 hover:text-red-700"
           title="Clear All Filters"
         >
           <i class="fas fa-times text-xs"></i>
@@ -97,11 +96,11 @@
     </div>
 
     <!-- Active Filters Display -->
-    <div *ngIf="hasActiveFilters()" class="mt-4 flex flex-wrap gap-2 animate-fadeIn">
+    <div *ngIf="hasActiveFilters()" class="mt-4 flex flex-wrap gap-2">
       <div *ngIf="searchTerm" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-sm border border-blue-200">
         <i class="fas fa-search text-xs"></i>
         <span>Search: "{{searchTerm}}"</span>
-        <button (click)="clearSearch()" class="hover:text-blue-900 transition-colors ml-1">
+        <button (click)="clearSearch()" class="hover:text-blue-900 ml-1">
           <i class="fas fa-times text-xs"></i>
         </button>
       </div>
@@ -109,7 +108,7 @@
       <div *ngIf="selectedPositionId" class="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm border border-green-200">
         <i class="fas fa-briefcase text-xs"></i>
         <span>Position: {{getPositionName(selectedPositionId)}}</span>
-        <button (click)="clearPositionFilter()" class="hover:text-green-900 transition-colors ml-1">
+        <button (click)="clearPositionFilter()" class="hover:text-green-900 ml-1">
           <i class="fas fa-times text-xs"></i>
         </button>
       </div>
@@ -129,7 +128,7 @@
     <div *ngIf="filteredLevels.length === 0 && hasActiveFilters()" class="text-sm">
       <button 
         (click)="clearPositionFilter(); clearSearch()"
-        class="text-green-600 hover:text-green-700 transition-colors duration-200 font-medium"
+        class="text-green-600 hover:text-green-700 font-medium"
       >
         <i class="fas fa-redo mr-1"></i>
         Clear filters to see all levels
@@ -157,9 +156,8 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
           <tr 
-            *ngFor="let level of filteredLevels; let i = index"
-            class="hover:bg-green-50/30 transition-all duration-150 animate-fadeIn"
-            [style.animation-delay]="(i * 0.05) + 's'"
+            *ngFor="let level of filteredLevels"
+            class="hover:bg-green-50/30"
           >
             <td class="py-3 px-4">
               <div class="flex items-center gap-3">
@@ -181,14 +179,14 @@
               <div class="flex items-center justify-end gap-1">
                 <button
                   (click)="openEditForm(level)"
-                  class="p-2 bg-blue-50 text-green-600 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-all duration-150 transform hover:scale-105"
+                  class="p-2 bg-blue-50 text-green-600 rounded-lg hover:bg-blue-100 hover:text-blue-700"
                   title="Edit Level"
                 >
                   <i class="fas fa-edit text-xs"></i>
                 </button>
                 <button
                   (click)="deleteLevel(level)"
-                  class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all duration-150 transform hover:scale-105"
+                  class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700"
                   title="Delete Level"
                 >
                   <i class="fas fa-trash text-xs"></i>
@@ -200,7 +198,7 @@
           <!-- Empty State -->
           <tr *ngIf="filteredLevels.length === 0">
             <td colspan="3" class="py-12 px-4 text-center">
-              <div class="flex flex-col items-center gap-3 text-gray-400 animate-pulse-slow">
+              <div class="flex flex-col items-center gap-3 text-gray-400">
                 <i class="fas fa-chart-line text-4xl"></i>
                 <p class="text-sm font-medium">
                   {{ hasActiveFilters() ? 'No levels match your filters' : 'No levels found' }}
@@ -211,14 +209,14 @@
                 <button 
                   *ngIf="hasActiveFilters()"
                   (click)="clearPositionFilter(); clearSearch()"
-                  class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 text-sm font-medium"
+                  class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
                 >
                   Clear All Filters
                 </button>
                 <button 
                   *ngIf="!hasActiveFilters()"
                   (click)="openAddForm()"
-                  class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 text-sm font-medium"
+                  class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
                 >
                   <i class="fas fa-plus mr-1.5"></i>
                   Add First Level
@@ -236,7 +234,7 @@
     *ngIf="showForm"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
   >
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm animate-fadeIn">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm">
       <!-- Modal Header -->
       <div class="px-5 py-4 border-b border-gray-100">
         <div class="flex items-center justify-between">
@@ -246,7 +244,7 @@
           <button
             (click)="closeForm()"
             [disabled]="formSubmitting"
-            class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="p-1.5 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <i class="fas fa-times text-gray-400 text-sm"></i>
           </button>
@@ -270,16 +268,16 @@
               placeholder="Enter level name"
               [class.border-red-300]="formErrors.levelName"
               [class.border-green-300]="levelName && !formErrors.levelName"
-              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all outline-none text-sm"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
               [disabled]="formSubmitting"
             >
             <!-- Error Message -->
-            <div *ngIf="formErrors.levelName" class="mt-1 flex items-center gap-1 text-red-600 text-xs animate-fadeIn">
+            <div *ngIf="formErrors.levelName" class="mt-1 flex items-center gap-1 text-red-600 text-xs">
               <i class="fas fa-exclamation-circle"></i>
               <span>{{ formErrors.levelName }}</span>
             </div>
             <!-- Success Indicator -->
-            <div *ngIf="levelName && !formErrors.levelName" class="mt-1 flex items-center gap-1 text-green-600 text-xs animate-fadeIn">
+            <div *ngIf="levelName && !formErrors.levelName" class="mt-1 flex items-center gap-1 text-green-600 text-xs">
               <i class="fas fa-check-circle"></i>
               <span>Level name looks good</span>
             </div>
@@ -296,7 +294,7 @@
               name="formSelectedPositionId"
               [class.border-red-300]="formErrors.position"
               [class.border-green-300]="formSelectedPositionId && !formErrors.position"
-              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all outline-none bg-white text-sm"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white text-sm"
               [disabled]="formSubmitting || positions.length === 0"
             >
               <option value="" disabled selected>Select position</option>
@@ -310,12 +308,12 @@
               <span>Loading positions...</span>
             </div>
             <!-- Error Message -->
-            <div *ngIf="formErrors.position" class="mt-1 flex items-center gap-1 text-red-600 text-xs animate-fadeIn">
+            <div *ngIf="formErrors.position" class="mt-1 flex items-center gap-1 text-red-600 text-xs">
               <i class="fas fa-exclamation-circle"></i>
               <span>{{ formErrors.position }}</span>
             </div>
             <!-- Success Indicator -->
-            <div *ngIf="formSelectedPositionId && !formErrors.position" class="mt-1 flex items-center gap-1 text-green-600 text-xs animate-fadeIn">
+            <div *ngIf="formSelectedPositionId && !formErrors.position" class="mt-1 flex items-center gap-1 text-green-600 text-xs">
               <i class="fas fa-check-circle"></i>
               <span>Position selected</span>
             </div>
@@ -327,14 +325,14 @@
               type="button"
               (click)="closeForm()"
               [disabled]="formSubmitting"
-              class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               [disabled]="formSubmitting || hasFormErrors()"
-              class="flex-1 px-4 py-2.5 bg-pro text-white rounded-lg hover:bg-green-700 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              class="flex-1 px-4 py-2.5 bg-pro text-white rounded-lg hover:bg-green-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <i *ngIf="formSubmitting" class="fas fa-spinner fa-spin"></i>
               {{ formSubmitting ? 'Processing...' : (editingLevel ? 'Update' : 'Create') }}
@@ -342,7 +340,7 @@
           </div>
 
           <!-- Form Level Errors -->
-          <div *ngIf="hasFormErrors()" class="p-3 bg-red-50 border border-red-200 rounded-lg animate-fadeIn">
+          <div *ngIf="hasFormErrors()" class="p-3 bg-red-50 border border-red-200 rounded-lg">
             <div class="flex items-center gap-2 text-red-700 text-sm">
               <i class="fas fa-exclamation-triangle"></i>
               <span>Please fix the errors above before submitting</span>
@@ -358,7 +356,7 @@
     *ngIf="showDeleteConfirm"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
   >
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm animate-fadeIn">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm">
       <div class="p-5 text-center">
         <div class="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
           <i class="fas fa-exclamation-triangle text-red-600"></i>
@@ -374,14 +372,14 @@
           <button
             (click)="cancelDelete()"
             [disabled]="deleteSubmitting"
-            class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             (click)="confirmDelete()"
             [disabled]="deleteSubmitting"
-            class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <i *ngIf="deleteSubmitting" class="fas fa-spinner fa-spin"></i>
             {{ deleteSubmitting ? 'Deleting...' : 'Delete' }}

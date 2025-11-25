@@ -13,6 +13,192 @@
     </button>
   </div>
 
+  <!-- Advanced Filter Section -->
+  <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+    <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      
+      <!-- Department Filter -->
+      <div class="flex-1 w-full">
+        <div class="relative">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-filter mr-2 text-green-600"></i>
+            Filter by Department
+          </label>
+          <div class="relative">
+            <select
+              [(ngModel)]="selectedDepartmentId"
+              (change)="applyFilters()"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
+            >
+              <option value="">All Departments</option>
+              <option *ngFor="let department of departments" [value]="department._id">
+                {{department.name}}
+              </option>
+            </select>
+            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Position Filter -->
+      <div class="flex-1 w-full">
+        <div class="relative">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-filter mr-2 text-green-600"></i>
+            Filter by Position
+          </label>
+          <div class="relative">
+            <select
+              [(ngModel)]="selectedPositionId"
+              (change)="applyFilters()"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
+            >
+              <option value="">All Positions</option>
+              <option *ngFor="let position of positions" [value]="position._id">
+                {{position.name}}
+              </option>
+            </select>
+            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role Filter -->
+      <div class="flex-1 w-full">
+        <div class="relative">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-filter mr-2 text-green-600"></i>
+            Filter by Role
+          </label>
+          <div class="relative">
+            <select
+              [(ngModel)]="selectedRole"
+              (change)="applyFilters()"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
+            >
+              <option value="">All Roles</option>
+              <option *ngFor="let role of roles" [value]="role">
+                {{role}}
+              </option>
+            </select>
+            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Input -->
+      <div class="flex-1 w-full">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          <i class="fas fa-search mr-2 text-green-600"></i>
+          Search Users
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()"
+            placeholder="Search user names..."
+            class="w-full pl-11 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white hover:border-green-500/60"
+          >
+          <div class="absolute left-3 top-1/2 transform -translate-y-1/2">
+            <i class="fas fa-search text-gray-400"></i>
+          </div>
+          <div 
+            *ngIf="searchTerm" 
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            (click)="clearSearch()"
+          >
+            <i class="fas fa-times text-gray-400 hover:text-red-500"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2 self-end">
+        <button
+          (click)="refreshData()"
+          class="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:border-green-500 hover:bg-green-500/5 text-sm font-medium text-gray-700 hover:text-green-600"
+          title="Refresh Data"
+        >
+          <i class="fas fa-sync-alt text-xs"></i>
+          Refresh
+        </button>
+        
+        <button
+          *ngIf="hasActiveFilters()"
+          (click)="clearAllFilters()"
+          class="flex items-center gap-2 px-4 py-3 border border-red-200 rounded-xl hover:border-red-300 hover:bg-red-50 text-sm font-medium text-red-600 hover:text-red-700"
+          title="Clear All Filters"
+        >
+          <i class="fas fa-times text-xs"></i>
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Filters Display -->
+    <div *ngIf="hasActiveFilters()" class="mt-4 flex flex-wrap gap-2">
+      <div *ngIf="searchTerm" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-sm border border-blue-200">
+        <i class="fas fa-search text-xs"></i>
+        <span>Search: "{{searchTerm}}"</span>
+        <button (click)="clearSearch()" class="hover:text-blue-900 ml-1">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+      
+      <div *ngIf="selectedDepartmentId" class="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm border border-green-200">
+        <i class="fas fa-building text-xs"></i>
+        <span>Department: {{getDepartmentName(selectedDepartmentId)}}</span>
+        <button (click)="clearDepartmentFilter()" class="hover:text-green-900 ml-1">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+
+      <div *ngIf="selectedPositionId" class="flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-2 rounded-lg text-sm border border-purple-200">
+        <i class="fas fa-briefcase text-xs"></i>
+        <span>Position: {{getPositionName(selectedPositionId)}}</span>
+        <button (click)="clearPositionFilter()" class="hover:text-purple-900 ml-1">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+
+      <div *ngIf="selectedRole" class="flex items-center gap-2 bg-orange-50 text-orange-700 px-3 py-2 rounded-lg text-sm border border-orange-200">
+        <i class="fas fa-user-tag text-xs"></i>
+        <span>Role: {{selectedRole}}</span>
+        <button (click)="clearRoleFilter()" class="hover:text-orange-900 ml-1">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="mb-4 flex items-center justify-between">
+    <p class="text-sm text-gray-600">
+      Showing <span class="font-semibold text-green-600">{{filteredUsers.length}}</span> 
+      of <span class="font-semibold">{{users.length}}</span> users
+      <span *ngIf="hasActiveFilters()" class="text-green-600 font-medium ml-2">
+        • Filtered Results
+      </span>
+    </p>
+    
+    <div *ngIf="filteredUsers.length === 0 && hasActiveFilters()" class="text-sm">
+      <button 
+        (click)="clearAllFilters()"
+        class="text-green-600 hover:text-green-700 font-medium"
+      >
+        <i class="fas fa-redo mr-1"></i>
+        Clear filters to see all users
+      </button>
+    </div>
+  </div>
+
   <!-- Table -->
   <div class="overflow-x-auto">
     <table
@@ -32,7 +218,7 @@
       </thead>
       <tbody>
         <tr
-          *ngFor="let user of users; trackBy: trackByUserId"
+          *ngFor="let user of filteredUsers; trackBy: trackByUserId"
           class="border-b hover:bg-gray-50 transition rounded-xl border-gray-200"
         >
           <td class="py-3 px-4">{{ user?.employeeId }}</td>
@@ -63,8 +249,61 @@
             </button>
           </td>
         </tr>
+
+        <!-- Empty State -->
+        <tr *ngIf="filteredUsers.length === 0">
+          <td colspan="8" class="py-12 px-4 text-center">
+            <div class="flex flex-col items-center gap-3 text-gray-400">
+              <i class="fas fa-users text-4xl"></i>
+              <p class="text-sm font-medium">
+                {{ hasActiveFilters() ? 'No users match your filters' : 'No users found' }}
+              </p>
+              <p class="text-xs">
+                {{ hasActiveFilters() ? 'Try adjusting your search or filters' : 'Create your first user to get started' }}
+              </p>
+              <button 
+                *ngIf="hasActiveFilters()"
+                (click)="clearAllFilters()"
+                class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+              >
+                Clear All Filters
+              </button>
+              <button 
+                *ngIf="!hasActiveFilters()"
+                (click)="addUser()"
+                class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+              >
+                <i class="fas fa-plus mr-1.5"></i>
+                Add First User
+              </button>
+            </div>
+          </td>
+        </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="filteredUsers.length > 0" class="flex justify-between items-center mt-4">
+    <div class="text-sm text-gray-600">
+      Page {{currentPage}} of {{totalPages}}
+    </div>
+    <div class="flex gap-2">
+      <button
+        (click)="previousPage()"
+        [disabled]="currentPage === 1"
+        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+      >
+        Previous
+      </button>
+      <button
+        (click)="nextPage()"
+        [disabled]="currentPage === totalPages"
+        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+      >
+        Next
+      </button>
+    </div>
   </div>
 
   <!-- Form Modal -->
@@ -72,7 +311,7 @@
     *ngIf="showForm"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
   >
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl animate-fadeIn">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl">
       <h3 class="text-2xl font-semibold mb-6 text-gray-800">
         {{ selectedUser ? 'Edit User' : 'Add User' }}
       </h3>
@@ -238,7 +477,7 @@
   <!-- Confirm Delete Modal -->
   <div
     *ngIf="showConfirm"
-    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
   >
     <div class="bg-white p-8 rounded-2xl shadow-xl w-[90%] max-w-md text-center">
       <h3 class="text-xl font-semibold text-gray-800 mb-3">Confirm Deletion</h3>
