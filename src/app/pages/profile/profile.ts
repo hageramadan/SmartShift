@@ -4,10 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { UserProfileI } from '../../models/user-profile';
 import { CrudService } from '../../services/crud.service';
-import { SharedService } from '../../services/shared.service';
-import { DepartmentI } from '../../models/department-i';
-import { PositionI } from '../../models/position-i';
-import { LevelI } from '../../models/level-i';
 
 @Component({
   selector: 'app-profile',
@@ -20,7 +16,6 @@ export class Profile implements OnInit {
     _id: '',
     firstName: '',
     lastName: '',
-    fullName: '',
     email: '',
     role: '',
     employeeId: '',
@@ -36,7 +31,6 @@ export class Profile implements OnInit {
     _id: '',
     firstName: '',
     lastName: '',
-    fullName: '',
     email: '',
     role: '',
     employeeId: '',
@@ -51,24 +45,13 @@ export class Profile implements OnInit {
   showEditForm = false;
   loading = false;
 
-  // القوائم للـ select boxes
-  departments: DepartmentI[] = [];
-  positions: PositionI[] = [];
-  levels: LevelI[] = [];
-  roles: string[] = ['user', 'manager', 'admin'];
-
-  // Loading state
-  isLoading = false;
-
   constructor(
     private toastr: ToastrService,
-    private crud: CrudService,
-    private sharedSrv: SharedService
+    private crud: CrudService
   ) {}
 
   ngOnInit() {
     this.loadProfile();
-    this.loadSharedData();
   }
 
   loadProfile() {
@@ -81,7 +64,6 @@ export class Profile implements OnInit {
             _id: res.data._id || '',
             firstName: res.data.firstName || '',
             lastName: res.data.lastName || '',
-            fullName: res.data.fullName || `${res.data.firstName} ${res.data.lastName}`,
             email: res.data.email || '',
             role: res.data.role || '',
             employeeId: res.data.employeeId || '',
@@ -103,31 +85,8 @@ export class Profile implements OnInit {
     });
   }
 
-  loadSharedData() {
-    this.sharedSrv.loadAll();
-
-    this.sharedSrv.getDepartments().subscribe((depts) => {
-      this.departments = depts;
-    });
-
-    this.sharedSrv.getPositions().subscribe((positions) => {
-      this.positions = positions;
-    });
-
-    this.sharedSrv.getLevels().subscribe((levels) => {
-      this.levels = levels;
-    });
-  }
-
   openEditForm() {
-    // إنشاء نسخة للتعديل مع الحفاظ على الهيكل
-    this.tempAdmin = {
-      ...this.admin,
-      departmentId: this.admin.department?._id || '',
-      positionId: this.admin.position?._id || '',
-      levelId: this.admin.level?._id || '',
-      role: this.admin.role || 'user'
-    };
+    this.tempAdmin = { ...this.admin };
     this.showEditForm = true;
   }
 
@@ -147,6 +106,7 @@ export class Profile implements OnInit {
       email: this.tempAdmin.email
     };
 
+    // إضافة الحقول الاختيارية فقط إذا كانت موجودة
     if (this.tempAdmin.nickname !== undefined) {
       body.nickname = this.tempAdmin.nickname;
     }
@@ -159,11 +119,12 @@ export class Profile implements OnInit {
         if (res?.data) {
           this.admin = {
             ...res.data,
-            fullName: res.data.fullName || `${res.data.firstName} ${res.data.lastName}`,
             department: res.data.department || this.admin.department,
             position: res.data.position || this.admin.position,
             level: res.data.level || this.admin.level
           };
+          this.toastr.success('Profile updated successfully');
+        } else {
           this.toastr.success('Profile updated successfully');
         }
         this.showEditForm = false;
