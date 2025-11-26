@@ -5,42 +5,71 @@
     <p class="text-gray-600 text-sm mt-1">View and manage my profile information</p>
   </div>
 
-  <h2 class="text-2xl font-semibold text-[#0F7B8A]">My Profile</h2>
-  <p class="text-gray-500 mb-4">View and manage your profile information</p>
+  <!-- Main Content -->
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Column - Profile Card -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <!-- Profile Header -->
+          <div class="bg-pro2 px-6 py-8 text-pro text-center">
+            <!-- Profile Picture -->
+            <div class="relative mx-auto w-32 h-32 mb-4">
+              <div
+                class="w-full h-full bg-pro2 rounded-full flex items-center justify-center border-4 border-white/20 shadow-lg"
+              >
+                <img
+                  *ngIf="admin?.photo"
+                  [src]="admin.photo"
+                  alt="Profile"
+                  class="w-28 h-28 rounded-full object-cover"
+                />
+                <div *ngIf="!admin?.photo" class="text-3xl font-bold text-white">
+                  {{ (admin?.firstName?.charAt(0) || '') + (admin?.lastName?.charAt(0) || '') }}
+                </div>
+              </div>
+            </div>
 
-  <div class="grid grid-cols-1 mx-auto w-full lg:w-1/2 gap-5">
-    <!-- Profile Header -->
-    <div class="bg-white col-span-1 border border-gray-200 rounded-lg p-6 flex flex-col items-center gap-6">
-      <div class="w-20 h-20 flex items-center justify-center bg-pro text-white text-3xl font-bold rounded-full overflow-hidden">
-        <img *ngIf="admin?.photo" [src]="admin.photo" alt="Profile Picture" class="w-20 h-20 rounded-full object-cover" />
-        <span *ngIf="!admin?.photo" class="text-white">
-          {{ admin?.firstName?.charAt(0) }}{{ admin?.lastName?.charAt(0) }}
-        </span>
-      </div>
+            <!-- User Info -->
+            <h2 class="text-xl font-bold mb-2">{{ admin?.firstName }} {{ admin?.lastName }}</h2>
+            <p class="text-pro  mb-3">{{ admin?.position?.name || 'Position' }}</p>
+            <div class="flex justify-center gap-2 mb-4">
+              <span
+                class="bg-pro2  text-pro px-3 py-1 rounded-full text-sm backdrop-blur-sm border border-white/20"
+              >
+                {{ admin?.department?.name || 'Department' }}
+              </span>
+            </div>
+          </div>
 
-      <div class="flex-1 text-center">
-        <h3 class="text-xl font-semibold text-[#0F7B8A] mb-2">{{ admin?.firstName }} {{ admin?.lastName }}</h3>
-        <p class="border inline-flex items-center justify-center rounded-md px-2 py-0.5 text-xs font-medium bg-[#E0F4F6] text-[#0F7B8A] mb-4">
-          {{ admin?.role }}
-        </p>
-        <div class="flex gap-2">
-        <p class="border inline-flex items-center justify-center rounded-md px-2 py-0.5 text-xs font-medium bg-[#E0F4F6] text-[#0F7B8A] ml-9">
-          {{ admin?.position?.name }}
-        </p>
-        <p class="border inline-flex items-center justify-center rounded-md px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-500">
-          {{ admin?.department?.name }}
-        </p>
+          <!-- Action Buttons -->
+          <div class="p-6">
+            <button
+              (click)="openEditForm()"
+              class="w-full bg-pro text-white px-4 py-3 rounded-lg hover:bg-pro2 transition-all font-medium flex items-center justify-center gap-2 mb-3"
+            >
+              <i class="fas fa-edit"></i>
+              Edit Profile
+            </button>
+
+          </div>
         </div>
       </div>
 
-      <div class="self-start mt-3 border-t border-gray-200 w-full">
-        <div class="bg-white py-6">
-          <div class="space-y-3 text-sm text-gray-600 flex flex-col gap-4">
-            <div class="flex items-center gap-4">
-              <i class="fa-regular fa-envelope text-pro text-xl"></i>
-              <p class="flex flex-col text-[16px]">
-                <span class="text-gray-500 text-md">Email:</span> {{ admin?.email }}
-              </p>
+      <!-- Right Column - Details -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <!-- Tabs -->
+          <div class="border-b border-gray-100">
+            <div class="flex overflow-x-auto">
+              <button
+                class="px-6 py-4 border-b-2 border-pro text-pro font-medium flex items-center gap-2"
+              >
+                <i class="fas fa-user-circle"></i>
+                Personal Info
+              </button>
+
+
             </div>
           </div>
 
@@ -183,13 +212,6 @@
         </div>
       </div>
 
-      <button
-        (click)="openEditForm()"
-        class="bg-pro w-full cursor-pointer text-white px-4 py-3 rounded-lg hover:bg-pro-hover transition font-medium"
-      >
-        Edit Profile
-      </button>
-
       <!-- Role -->
       <div class="bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border border-blue-100">
         <div class="flex items-center gap-3">
@@ -215,7 +237,6 @@
   <div
     *ngIf="showEditForm"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-    class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 backdrop-blur-sm backdrop-brightness-80"
   >
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
       <!-- Modal Header -->
@@ -247,51 +268,7 @@
               required
             />
           </div>
-    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md relative max-h-[90vh] overflow-y-auto">
-      <h3 class="text-2xl font-semibold mb-6 text-gray-600">
-        Edit Profile
-      </h3>
 
-      <div class="grid grid-cols-1 gap-5">
-        <!-- First Name -->
-        <div class="relative">
-          <input
-            [(ngModel)]="tempAdmin.firstName"
-            type="text"
-            id="firstName"
-            placeholder=" "
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none transition"
-          />
-          <label
-            for="firstName"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all duration-300
-                   peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
-                   peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs peer-focus:font-medium
-                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium bg-white px-1 cursor-text"
-          >
-            First Name *
-          </label>
-        </div>
-
-        <!-- Last Name -->
-        <div class="relative">
-          <input
-            [(ngModel)]="tempAdmin.lastName"
-            type="text"
-            id="lastName"
-            placeholder=" "
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none transition"
-          />
-          <label
-            for="lastName"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all duration-300
-                   peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
-                   peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs peer-focus:font-medium
-                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium bg-white px-1 cursor-text"
-          >
-            Last Name *
-          </label>
-        </div>
           <!-- Last Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -306,25 +283,6 @@
             />
           </div>
 
-        <!-- Nick Name -->
-        <div class="relative">
-          <input
-            [(ngModel)]="tempAdmin.nickname"
-            type="text"
-            id="nickname"
-            placeholder=" "
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none transition"
-          />
-          <label
-            for="nickname"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all duration-300
-                   peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
-                   peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs peer-focus:font-medium
-                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium bg-white px-1 cursor-text"
-          >
-            Nickname
-          </label>
-        </div>
           <!-- Nickname -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2"> Nickname </label>
@@ -336,132 +294,31 @@
             />
           </div>
 
-        <!-- Email -->
-        <div class="relative">
-          <input
-            [(ngModel)]="tempAdmin.email"
-            type="email"
-            id="email"
-            placeholder=" "
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none transition"
-          />
-          <label
-            for="email"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all duration-300
-                   peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-sm
-                   peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs peer-focus:font-medium
-                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium bg-white px-1 cursor-text"
-          >
-            Email
-          </label>
-        </div>
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Email <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              [(ngModel)]="tempAdmin.email"
+              name="email"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none text-sm transition-all"
+              required
+            />
+          </div>
 
-        <!-- Role -->
-        <div class="relative">
-          <select
-            [(ngModel)]="tempAdmin.role"
-            id="role"
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none transition bg-white appearance-none"
-          >
-            <option value="" disabled>Select Role</option>
-            <option *ngFor="let role of roles" [value]="role" [selected]="tempAdmin.role === role">
-              {{ role | titlecase }}
-            </option>
-          </select>
-          <label
-            for="role"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all duration-300
-                   peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs peer-focus:font-medium
-                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium bg-white px-1 cursor-text"
-          >
-            Role
-          </label>
-        </div>
+          <!-- Contact Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"> Contact Number </label>
+            <input
+              type="tel"
+              [(ngModel)]="tempAdmin.contactNumber"
+              name="contactNumber"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none text-sm transition-all"
+            />
+          </div>
 
-        <!-- Department -->
-        <div class="relative">
-          <select
-            [(ngModel)]="tempAdmin.departmentId"
-            id="department"
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none transition bg-white appearance-none"
-          >
-            <option value="" disabled>Select Department</option>
-            <option *ngFor="let dept of departments" [value]="dept._id" [selected]="tempAdmin.departmentId === dept._id">
-              {{ dept.name }}
-            </option>
-          </select>
-          <label
-            for="department"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all duration-300
-                   peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs peer-focus:font-medium
-                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium bg-white px-1 cursor-text"
-          >
-            Department
-          </label>
-        </div>
-
-        <!-- Position -->
-        <div class="relative">
-          <select
-            [(ngModel)]="tempAdmin.positionId"
-            id="position"
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none transition bg-white appearance-none"
-          >
-            <option value="" disabled>Select Position</option>
-            <option *ngFor="let position of positions" [value]="position._id" [selected]="tempAdmin.positionId === position._id">
-              {{ position.name }}
-            </option>
-          </select>
-          <label
-            for="position"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all duration-300
-                   peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs peer-focus:font-medium
-                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium bg-white px-1 cursor-text"
-          >
-            Position
-          </label>
-        </div>
-
-        <!-- Level -->
-        <div class="relative">
-          <select
-            [(ngModel)]="tempAdmin.levelId"
-            id="level"
-            class="peer w-full border rounded-lg p-3 border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro outline-none transition bg-white appearance-none"
-          >
-            <option value="" disabled>Select Level</option>
-            <option *ngFor="let level of levels" [value]="level._id" [selected]="tempAdmin.levelId === level._id">
-              {{ level.name }}
-            </option>
-          </select>
-          <label
-            for="level"
-            class="absolute left-3 top-3 text-gray-400 text-sm transition-all duration-300
-                   peer-focus:-top-2 peer-focus:text-pro peer-focus:text-xs peer-focus:font-medium
-                   peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium bg-white px-1 cursor-text"
-          >
-            Access Level
-          </label>
-        </div>
-      </div>
-
-      <!-- Buttons -->
-      <div class="flex justify-end gap-3 mt-6">
-        <button
-          (click)="closeForm()"
-          [disabled]="isLoading"
-          class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-medium disabled:opacity-50"
-        >
-          Cancel
-        </button>
-        <button
-          (click)="saveChanges()"
-          [disabled]="isLoading"
-          class="px-4 py-2 rounded-lg bg-pro text-white hover:bg-pro-hover transition font-medium disabled:opacity-50 flex items-center gap-2"
-        >
-          <span>Save Changes</span>
-          <div *ngIf="isLoading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-        </button>
           <!-- Form Actions -->
           <div class="flex gap-2 pt-4">
             <button
