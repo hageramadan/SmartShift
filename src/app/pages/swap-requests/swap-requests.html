@@ -1,110 +1,267 @@
-<div class="p-6 bg-gray-50 min-h-screen">
-  <h2 class="text-2xl font-bold mb-6 text-gray-800">Swap Requests</h2>
+<div class="p-6 space-y-6">
+  <!-- Header -->
+  <div>
+    <h2 class="text-2xl font-semibold">Swap Requests</h2>
+    <p class="text-gray-500">Manage shift swap requests</p>
+  </div>
 
-  <!-- Summary Cards -->
-  <div class="grid grid-cols-3 gap-4 mb-8">
-    <div class="flex justify-between bg-white items-center p-5 rounded-2xl border border-gray-200">
-      <div>
-        <p class="text-gray-500 mb-3">Pending</p>
-        <p>{{ pendingCount }}</p>
+  <!-- Filters -->
+  <div class="bg-white p-4 rounded-lg shadow border border-gray-200 sticky top-0 z-20">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <!-- Search -->
+      <div class="relative">
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="search"
+            (ngModelChange)="onSearchDebounced()"
+            placeholder="Search by user, shift, sub-department..."
+            class="w-full border border-gray-300 rounded-md px-10 py-2 focus:outline-none focus:ring-1 focus:ring-pro focus:border-pro"
+          />
+          <!-- Search icon -->
+          <span class="absolute left-3 top-2.5 text-gray-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"
+              />
+            </svg>
+          </span>
+        </div>
       </div>
 
-      <div
-        class="bg-yellow-100 text-yellow-700 w-10 h-10 flex items-center justify-center rounded-full text-center"
+      <!-- Department Filter -->
+      <div class="flex flex-col md:flex-row md:items-center gap-1">
+        <select
+          [(ngModel)]="departmentId"
+          (change)="onDepartmentChange()"
+          [disabled]="isDepartmentFilterDisabled"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pro focus:border-pro bg-white disabled:bg-gray-100"
+        >
+          <option value="all">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept._id">{{ dept.name }}</option>
+        </select>
+
+        <!-- Hint for managers -->
+        <span *ngIf="isDepartmentFilterDisabled" class="text-gray-400 text-xs ml-2">
+          You can only view your department.
+        </span>
+      </div>
+
+      <!-- Clear Filters -->
+      <button
+        (click)="clearFilters()"
+        [disabled]="isLoading || isDataLoading"
+        class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md transition font-medium disabled:opacity-50"
       >
-        <i class="fa-regular fa-clock text-xl"></i>
-      </div>
+        Clear Filters
+      </button>
     </div>
-    <div class="flex justify-between bg-white items-center p-5 rounded-2xl border border-gray-200">
-      <div>
-        <p class="text-gray-500 mb-3">Approved</p>
-        <p>{{ approvedCount }}</p>
-      </div>
 
-      <div
-        class="bg-green-100 text-green-800 w-10 h-10 flex items-center justify-center rounded-full text-center"
-      >
-        <i class="fa-solid fa-check text-xl"></i>
-      </div>
-    </div>
-    <div class="flex justify-between bg-white items-center p-5 rounded-2xl border border-gray-200" >
-      <div>
-        <p class="text-gray-500 mb-3">Rejected</p>
-        <p>{{ rejectedCount }}</p>
-      </div>
-      <div
-        class="bg-red-100 text-red-500 w-10 h-10 flex items-center justify-center rounded-full text-center"
-      >
-        <i class="fa-solid fa-x text-lg"></i>
+    <!-- Status Filter -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-3">Status Filter</label>
+      <div class="flex flex-wrap gap-4">
+        <label
+          *ngFor="let s of ['all', 'pending', 'approved', 'rejected']"
+          class="flex items-center cursor-pointer"
+        >
+          <input
+            type="radio"
+            name="status"
+            [value]="s"
+            [(ngModel)]="status"
+            (change)="onStatusChange()"
+            [disabled]="isDataLoading"
+            class="w-4 h-4 focus:ring-2 disabled:opacity-50"
+            [ngClass]="{
+              'text-yellow-600 focus:ring-yellow-500': s === 'pending',
+              'text-green-600 focus:ring-green-500': s === 'approved',
+              'text-red-600 focus:ring-red-500': s === 'rejected',
+              'text-gray-600 focus:ring-gray-400': s === 'all'
+            }"
+          />
+          <span class="ml-2 text-gray-700">{{ s.charAt(0).toUpperCase() + s.slice(1) }}</span>
+        </label>
       </div>
     </div>
   </div>
 
-  <!-- Requests Table -->
-  <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-    <table class="min-w-full text-sm text-left text-gray-600">
-      <thead class="text-gray-800 border-b border-gray-200">
+  <!-- Table -->
+  <div
+    class="overflow-x-auto bg-white rounded-lg max-h-[600px] shadow border border-gray-200 relative"
+  >
+    <table class="min-w-full">
+      <thead class="bg-gray-50 text-left text-gray-900 border-b border-gray-200 sticky top-0">
         <tr>
-          <th class="px-6 py-3">Requester</th>
-          <th class="px-6 py-3">Target User</th>
-          <th class="px-6 py-3">Shifts</th>
-          <th class="px-6 py-3">Date</th>
-          <th class="px-6 py-3">Reason</th>
-          <th class="px-6 py-3">Status</th>
-          <th class="px-6 py-3">Actions</th>
+          <th class="py-3 px-4 font-semibold">Requester</th>
+          <th class="py-3 px-4 font-semibold">Target User</th>
+          <th class="py-3 px-4 font-semibold">Sub Department</th>
+          <th class="py-3 px-4 font-semibold">From Shift</th>
+          <th class="py-3 px-4 font-semibold">From Date</th>
+          <th class="py-3 px-4 font-semibold">To Shift</th>
+          <th class="py-3 px-4 font-semibold">To Date</th>
+          <th class="py-3 px-4 font-semibold">Reason</th>
+          <th class="py-3 px-4 font-semibold">Created At</th>
+          <th class="py-3 px-4 font-semibold">Updated At</th>
+          <th class="py-3 px-4 font-semibold">Status</th>
+
+          <th class="py-3 px-4 text-center font-semibold">Actions</th>
         </tr>
       </thead>
       <tbody>
+        <!-- Skeleton loading rows -->
+        <tr *ngIf="isDataLoading && requests.length === 0" class="animate-pulse">
+          <td colspan="10" class="py-4 space-y-2">
+            <div class="h-4 bg-gray-200 rounded w-full"></div>
+            <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+            <div class="h-4 bg-gray-200 rounded w-4/6"></div>
+          </td>
+        </tr>
+
+        <!-- Actual rows -->
         <tr
-          *ngFor="let req of requests"
-          class="border-b border-gray-200 hover:bg-gray-50 transition"
+          *ngFor="let r of paginatedRequests"
+          class="border-b hover:bg-gray-50 transition border-gray-200"
         >
-          <td class="px-6 py-4">
-            <div class="font-semibold">{{ req.requester }}</div>
-            <div class="text-xs text-gray-500">{{ req.requesterDepartment }}</div>
+          <td class="py-3 px-4">{{ getFullName(r.fromUser) }}</td>
+          <td class="py-3 px-4">{{ getFullName(r.toUser) }}</td>
+          <td class="py-3 px-4">{{ getDepartmentName(r.fromSchedule) }}</td>
+          <td class="py-3 px-4">
+            {{ getShiftType(r.fromSchedule)
+            }}<span *ngIf="getShiftType(r.fromSchedule)">
+              - {{ getShiftName(r.fromSchedule) }}</span
+            >
           </td>
-          <td class="px-6 py-4">
-            <div class="font-semibold">{{ req.targetUser }}</div>
-            <div class="text-xs text-gray-500">{{ req.targetDepartment }}</div>
+          <td class="py-3 px-4">{{ formatDate(r.fromSchedule?.date) }}</td>
+          <td class="py-3 px-4">
+            {{ getShiftType(r.toSchedule)
+            }}<span *ngIf="getShiftType(r.toSchedule)"> - {{ getShiftName(r.toSchedule) }}</span>
           </td>
-          <td class="px-6 py-4">
-            <span class="text-blue-600 font-medium">{{ req.fromShift }}</span>
-            <span class="mx-2 text-gray-400">→</span>
-            <span class="text-green-600 font-medium">{{ req.toShift }}</span>
-          </td>
-          <td class="px-6 py-4">{{ req.date }}</td>
-          <td class="px-6 py-4">{{ req.reason }}</td>
-          <td class="px-6 py-4">
+          <td class="py-3 px-4">{{ formatDate(r.toSchedule?.date) }}</td>
+          <td class="py-3 px-4">{{ r.message || '—' }}</td>
+          <td class="py-3 px-4">{{ formatDate(r.createdAt, true) }}</td>
+          <td class="py-3 px-4">{{ formatDate(r.updatedAt, true) }}</td>
+          <td class="py-3 px-4">
             <span
+              class="px-2 py-1 rounded text-xs font-medium"
               [ngClass]="{
-                'text-yellow-700 bg-amber-100 font-semibold px-3 py-2': req.status === 'pending',
-                'text-green-700 font-semibold bg-green-100 px-3 py-2': req.status === 'approved',
-                'text-red-700 font-semibold bg-red-100 px-3 py-2': req.status === 'rejected'
+                'bg-yellow-200 text-teal-700': r.status === 'pending',
+                'bg-green-200 text-teal-700': r.status === 'approved',
+                'bg-red-200 text-teal-700': r.status === 'rejected',
+                'bg-gray-200 text-teal-700': r.status === 'cancelled'
               }"
             >
-              {{ req.status }}
+              {{ r.status }}
             </span>
           </td>
-          <td class="px-6 py-4">
+          <td calss=""></td>
+          <td class="py-3 px-4 text-center space-x-2">
             <button
-              *ngIf="req.status === 'pending'"
-              (click)="approveRequest(req)"
-              class="bg-green-500 cursor-pointer hover:bg-green-600 text-white px-3 py-1 rounded-lg mr-2"
+              *ngIf="r.status === 'pending'"
+              (click)="approveRequest(r)"
+              [disabled]="isLoading || isDataLoading"
+              class="inline-flex items-center justify-center text-green-600 hover:text-green-800 transition disabled:opacity-50"
+              title="Approve"
             >
-              <i class="fa-solid fa-check"></i>
-              Approve
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414L8.414 15 4.293 10.879a1 1 0 011.414-1.414L8.414 12.172l7.879-7.879a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
             </button>
             <button
-              *ngIf="req.status === 'pending'"
-              (click)="rejectRequest(req)"
-              class="bg-red-500 cursor-pointer hover:bg-red-600 text-white px-3 py-1 rounded-lg"
+              *ngIf="r.status === 'pending'"
+              (click)="rejectRequest(r)"
+              [disabled]="isLoading || isDataLoading"
+              class="inline-flex items-center justify-center text-red-600 hover:text-red-800 transition disabled:opacity-50"
+              title="Reject"
             >
-              <i class="fa-solid fa-x"></i>
-              Reject
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10l-4.95-4.95a1 1 0 011.414-1.414L10 8.586z"
+                  clip-rule="evenodd"
+                />
+              </svg>
             </button>
           </td>
         </tr>
+
+        <!-- Empty state -->
+        <tr *ngIf="requests.length === 0 && !isDataLoading">
+          <td colspan="10" class="text-center py-8 text-gray-500">No swap requests found</td>
+        </tr>
       </tbody>
     </table>
+
+    <!-- Pagination -->
+    <div
+      *ngIf="totalItems > 0"
+      class="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4 z-10"
+    >
+      <div class="text-sm text-gray-500">
+        Page {{ currentPage }} of {{ totalPages }} • Showing {{ paginatedRequests.length }} items
+      </div>
+      <div class="flex items-center gap-4">
+        <nav class="flex gap-1">
+          <button
+            (click)="previousPage()"
+            [disabled]="currentPage === 1 || isLoading || isDataLoading"
+            class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button
+            *ngFor="let page of getPageNumbers()"
+            (click)="goToPage(page)"
+            [class]="
+              page === currentPage
+                ? 'px-3 py-1 bg-pro2 text-pro font-semibold border border-pro rounded-lg'
+                : 'px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50'
+            "
+          >
+            {{ page }}
+          </button>
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage >= totalPages || isLoading || isDataLoading"
+            class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </nav>
+        <select
+          [(ngModel)]="pageSize"
+          (change)="currentPage = 1; loadRequestsFromBackend(currentPage)"
+          class="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+        >
+          <option value="10">10 per page</option>
+          <option value="25">25 per page</option>
+          <option value="50">50 per page</option>
+          <option value="100">100 per page</option>
+        </select>
+      </div>
+    </div>
   </div>
 </div>
