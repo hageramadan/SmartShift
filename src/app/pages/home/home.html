@@ -40,7 +40,7 @@
     <div class="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between">
       <div>
         <h2 class="text-[#7f8c9c] text-[1rem] mb-2">Pending Swap Requests</h2>
-        <p class="text-xl">{{ pendingSwapCount }}</p>
+        <!-- <p class="text-xl">{{ pendingSwapCount }}</p> -->
       </div>
       <div class="bg-red-50 rounded-full p-2.5">
         <i class="fa-solid fa-arrows-rotate text-red-600 text-lg"></i>
@@ -73,7 +73,6 @@
     <h2 class="text-xl text-gray-800 mb-4">Recent Activity</h2>
     <div class="divide-y divide-gray-100">
       <div
-        *ngFor="let activity of recentActivity"
         class="py-7 flex flex-col sm:flex-row sm:justify-between sm:items-center"
       >
         <div class="flex items-center gap-3">
@@ -81,12 +80,12 @@
             <i class="fa-solid fa-arrows-rotate text-pro text-md font-light"></i>
           </div>
           <div>
-            <p class="text-gray-800 ">{{ activity.title }}</p>
-            <p class="text-gray-400 text-sm">{{ activity.date }}</p>
+            <!-- <p class="text-gray-800 ">{{ activity.title }}</p>
+            <p class="text-gray-400 text-sm">{{ activity.date }}</p> -->
           </div>
         </div>
 
-        <span
+        <!-- <span
           class="px-3 py-1 rounded-full text-sm  mt-2 sm:mt-0"
           [ngClass]="{
             'bg-yellow-100 text-yellow-700': activity.status === 'pending',
@@ -95,7 +94,7 @@
           }"
         >
           {{ activity.status }}
-        </span>
+        </span> -->
       </div>
     </div>
   </div>

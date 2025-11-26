@@ -10,8 +10,8 @@ export class CrudService {
 
   constructor(private api: Api) {}
 
-  getAll<T>(endpoint: string): Observable<ApiResponse<T[]>> {
-    return this.api.getAll<ApiResponse<T[]>>(endpoint);
+  getAll<T>(endpoint: string, filters?: any): Observable<ApiResponse<T[]>> {
+    return this.api.getAll<ApiResponse<T[]>>(endpoint, filters);
   }
 
   getById<T>(endpoint: string, id: string): Observable<ApiResponse<T>> {
