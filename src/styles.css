@@ -12,7 +12,7 @@
 }
 a{
     text-decoration: none;
-    color: var(--secondary-color);
+    /* color: var(--secondary-color); */
 }
 body{
     background-color: #f8f8f8 !important;
@@ -21,14 +21,14 @@ body{
 
   select option {
     background-color: white;
-    color: #2d3f51; 
-    
+    color: #2d3f51;
+
   }
 
   select option:hover,
   select option:focus,
   select option:checked {
-    background-color: var(--primary-hover) !important; 
+    background-color: var(--primary-hover) !important;
     color: var(--primary-color) !important;
   }
  select option:hover {
@@ -37,7 +37,7 @@ body{
 
   select:focus {
     outline: none;
-    border-color: var(--primary-color); 
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--primary-hover);
   }
 
@@ -99,7 +99,7 @@ body{
   background: #ffffff !important;
   color: #333 !important;
   border-radius: 12px !important;
-  border-top: 5px solid var(--primary-color); 
+  border-top: 5px solid var(--primary-color);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   padding: 14px 18px !important;
   font-family: 'Inter', sans-serif;
