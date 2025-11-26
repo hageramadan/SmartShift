@@ -33,8 +33,35 @@ export class AuthService {
   return this.userSubject.value;
   }
 
-  logout() {
-    this.userSubject.next(null);
-    sessionStorage.removeItem('user');
+  // Fetch user from backend
+  fetchCurrentUser() {
+    return this.api.getAll<UserI>('users/me').pipe(
+      tap(user => {
+        if (user) {
+          this.userSubject.next(user);
+          sessionStorage.setItem('user', JSON.stringify(user));
+        }
+      })
+    );
   }
+
+  logout() {
+  // Call backend to destroy session/cookie
+  this.api.getAll('users/logout').subscribe({
+    next: () => {
+      // Clear frontend state
+      this.userSubject.next(null);
+      sessionStorage.removeItem('user');
+      // Redirect to React login page
+      window.location.href = 'http://localhost:3001/login';
+    },
+    error: (err) => {
+      console.error('Logout failed', err);
+      // Still clear frontend state even if backend fails
+      this.userSubject.next(null);
+      sessionStorage.removeItem('user');
+      window.location.href = 'http://localhost:3001/login';
+    }
+  });
+}
 }

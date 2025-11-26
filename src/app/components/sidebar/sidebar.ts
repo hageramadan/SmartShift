@@ -48,6 +48,6 @@ export class Sidebar {
   logout() {
     this.authService.logout();
     this.closeOnMobile();
-    this.router.navigate(['/login']);
+    // this.router.navigate(['/login']);
   }
 }
