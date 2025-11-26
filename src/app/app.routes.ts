@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './guards/auth-guard';
 
 import { Home } from './pages/home/home';
 import { Departments } from './pages/departments/departments';
@@ -17,18 +18,18 @@ import { PositionsLevels } from './pages/positions-levels/positions-levels';
 
 export const routes: Routes = [
   { path: '', component: Home },
-  { path: 'departments', component: Departments },
-  { path: 'sub-departments', component: SubDepartmentsComponent },
-  { path: 'locations', component: Locations },
-  { path: 'shifts', component: Shifts },
-  { path: 'schedules', component: Schedules },
-  { path: 'positions&levels', component:PositionsLevels },
+  { path: 'departments', component: Departments, canActivate: [authGuard] },
+  { path: 'sub-departments', component: SubDepartmentsComponent, canActivate: [authGuard] },
+  { path: 'locations', component: Locations, canActivate: [authGuard] },
+  { path: 'shifts', component: Shifts, canActivate: [authGuard] },
+  { path: 'schedules', component: Schedules, canActivate: [authGuard] },
+  { path: 'positions&levels', component: PositionsLevels, canActivate: [authGuard] },
 
-  { path: 'users', component: Users },
-  { path: 'profile', component: Profile },
-  { path: 'swap-config', component: SwapConfig },
-  { path: 'swap-requests', component: SwapRequests },
-  { path: 'calendar-view', component: CalendarView },
-  { path: 'login', component:Login },
+  { path: 'users', component: Users, canActivate: [authGuard] },
+  { path: 'profile', component: Profile, canActivate: [authGuard] },
+  { path: 'swap-config', component: SwapConfig, canActivate: [authGuard] },
+  { path: 'swap-requests', component: SwapRequests, canActivate: [authGuard] },
+  { path: 'calendar-view', component: CalendarView, canActivate: [authGuard] },
+  { path: 'login', component: Login },
   { path: '**', component: NotFound },
 ];
