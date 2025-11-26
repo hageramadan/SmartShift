@@ -74,7 +74,7 @@ export class Home implements OnInit {
           : users;
 
         this.totalUsers = filteredUsers.length;
-        this.activeUsers = filteredUsers.filter(u => u.isActive === true).length;
+        this.activeUsers = filteredUsers.filter(u => u.isActive == true).length;
 
         // Recent users (last 7 days)
         const weekAgo = new Date();
