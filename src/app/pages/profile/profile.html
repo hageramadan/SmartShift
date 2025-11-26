@@ -1,10 +1,8 @@
-<div class="p-8 bg-gray-50 min-h-screen">
-  <!-- Loading Overlay -->
-  <div *ngIf="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm">
-    <div class="bg-white p-6 rounded-lg shadow-xl flex items-center gap-3">
-      <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-pro"></div>
-      <span class="text-gray-700">Updating profile...</span>
-    </div>
+<div class="min-h-screen bg-gray-50/30 p-6">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">My Profile</h1>
+    <p class="text-gray-600 text-sm mt-1">View and manage my profile information</p>
   </div>
 
   <h2 class="text-2xl font-semibold text-[#0F7B8A]">My Profile</h2>
@@ -44,30 +42,143 @@
                 <span class="text-gray-500 text-md">Email:</span> {{ admin?.email }}
               </p>
             </div>
-            <div class="flex items-center gap-4">
-              <i class="fa-regular fa-hospital text-pro text-xl"></i>
-              <p class="flex flex-col text-[16px]">
-                <span class="text-gray-500 text-md">Department:</span> {{ admin?.department?.name }}
-              </p>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6">
+            <!-- Personal Information Section -->
+            <div class="mb-8">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-user text-pro"></i>
+                Personal Information
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Employee ID -->
+                <div
+                  class="bg-gradient-to-r from-gray-50 to-white p-4 rounded-lg border border-gray-100"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-pro/10 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-id-card text-pro text-lg"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500 font-medium">Employee ID</p>
+                      <p class="text-pro font-semibold">{{ admin?.employeeId || 'N/A' }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Full Name -->
+                <div
+                  class="bg-gradient-to-r from-gray-50 to-white p-4 rounded-lg border border-gray-100"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-pro/10 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-signature text-pro text-lg"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500 font-medium">Full Name</p>
+                      <p class="text-pro font-semibold">
+                        {{ admin?.firstName }} {{ admin?.lastName }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nickname -->
+                <div
+                  class="bg-gradient-to-r from-gray-50 to-white p-4 rounded-lg border border-gray-100"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-pro/10 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-user-tag text-pro text-lg"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500 font-medium">Nickname</p>
+                      <p class="text-pro font-semibold">{{ admin?.nickname || 'N/A' }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Contact -->
+                <div
+                  class="bg-gradient-to-r from-gray-50 to-white p-4 rounded-lg border border-gray-100"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-pro/10 rounded-lg flex items-center justify-center">
+                      <i class="fas fa-phone text-pro text-lg"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-500 font-medium">Contact Number</p>
+                      <p class="text-pro font-semibold">{{ admin?.contactNumber || 'N/A' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="flex items-center gap-4">
-              <i class="fa-solid fa-suitcase text-pro text-xl"></i>
-              <p class="flex flex-col text-[16px]">
-                <span class="text-gray-500 text-md">Position:</span> {{ admin?.position?.name }}
-              </p>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="fa-solid fa-shield-heart text-pro text-xl"></i>
-              <p class="flex flex-col text-[16px]">
-                <span class="text-gray-500 text-md">Access Level:</span> {{ admin?.level?.name }}
-              </p>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="fa-regular fa-user text-pro text-xl"></i>
-              <p class="flex flex-col text-[16px]">
-                <span class="text-gray-500 text-md">Nickname:</span> {{ admin?.nickname }}
-              </p>
-            </div>
+
+            <!-- Work Information Section -->
+           <div>
+  <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <i class="fas fa-building text-pro"></i>
+    Work Information
+  </h3>
+
+  <div class="space-y-4">
+    <!-- الصف الأول - عمودين -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Email -->
+      <div class="bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border border-blue-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-envelope text-pro text-lg"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Email</p>
+            <p class="text-pro font-semibold text-sm">{{ admin?.email || 'N/A' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Position -->
+      <div class="bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border border-blue-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-briefcase text-pro text-lg"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Position</p>
+            <p class="text-pro font-semibold">{{ admin?.position?.name || 'N/A' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الصف الثاني - ثلاثة أعمدة -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Department -->
+      <div class="bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border border-blue-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-building text-pro text-lg"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Department</p>
+            <p class="text-pro font-semibold">{{ admin?.department?.name || 'N/A' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level -->
+      <div class="bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border border-blue-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-chart-line text-pro text-lg"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Level</p>
+            <p class="text-pro font-semibold">{{ admin?.level?.name || 'N/A' }}</p>
           </div>
         </div>
       </div>
@@ -78,14 +189,64 @@
       >
         Edit Profile
       </button>
+
+      <!-- Role -->
+      <div class="bg-gradient-to-r from-blue-50 to-white p-4 rounded-lg border border-blue-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-user-shield text-pro text-lg"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 font-medium">Role</p>
+            <p class="text-pro font-semibold">{{ admin?.role || 'N/A' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Edit Profile Modal -->
   <div
     *ngIf="showEditForm"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
     class="fixed inset-0 bg-black/30 flex items-center justify-center z-50 backdrop-blur-sm backdrop-brightness-80"
   >
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
+      <!-- Modal Header -->
+      <div class="bg-pro px-5 py-4 rounded-t-xl">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-white">Edit Profile</h3>
+          <button
+            (click)="closeForm()"
+            class="p-1.5 hover:bg-pro2 rounded-lg transition-colors text-white"
+          >
+            <i class="fas fa-times text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5">
+        <form (ngSubmit)="saveChanges()" class="space-y-4">
+          <!-- First Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              First Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="tempAdmin.firstName"
+              name="firstName"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none text-sm transition-all"
+              required
+            />
+          </div>
     <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md relative max-h-[90vh] overflow-y-auto">
       <h3 class="text-2xl font-semibold mb-6 text-gray-600">
         Edit Profile
@@ -131,6 +292,19 @@
             Last Name *
           </label>
         </div>
+          <!-- Last Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Last Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="tempAdmin.lastName"
+              name="lastName"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none text-sm transition-all"
+              required
+            />
+          </div>
 
         <!-- Nick Name -->
         <div class="relative">
@@ -151,6 +325,16 @@
             Nickname
           </label>
         </div>
+          <!-- Nickname -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"> Nickname </label>
+            <input
+              type="text"
+              [(ngModel)]="tempAdmin.nickname"
+              name="nickname"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pro focus:border-pro outline-none text-sm transition-all"
+            />
+          </div>
 
         <!-- Email -->
         <div class="relative">
@@ -278,6 +462,24 @@
           <span>Save Changes</span>
           <div *ngIf="isLoading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
         </button>
+          <!-- Form Actions -->
+          <div class="flex gap-2 pt-4">
+            <button
+              type="button"
+              (click)="closeForm()"
+              class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="flex-1 px-4 py-2.5 bg-pro text-white rounded-lg hover:bg-pro2 text-sm font-medium transition-all flex items-center justify-center gap-2"
+            >
+              <i class="fas fa-save"></i>
+              Save Changes
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

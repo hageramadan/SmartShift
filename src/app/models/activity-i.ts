@@ -1,6 +1,6 @@
 export interface ActivityI {
-id: number;
+id: string;
 title: string;
 date: string;
-status?: string;
+status?: 'pending' | 'approved' | 'rejected' | 'cancelled';
 }

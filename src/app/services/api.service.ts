@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { API_BASE_URL } from '../utils/constants';
 import { Observable } from 'rxjs';
 
@@ -10,8 +10,18 @@ import { Observable } from 'rxjs';
 export class Api {
   constructor(private http: HttpClient) { }
 
-  getAll<T>(endpoint: string): Observable<T> {
-    return this.http.get<T>(`${API_BASE_URL}/${endpoint}`, { withCredentials: true });
+  getAll<T>(endpoint: string, filters?: any): Observable<T> {
+    let httpParams = new HttpParams();
+
+    if (filters) {
+      Object.keys(filters).forEach(key => {
+        const value = filters[key];
+        if (value !== null && value !== undefined && value !== '') {
+          httpParams = httpParams.set(key, value.toString());
+        }
+      });
+    }
+    return this.http.get<T>(`${API_BASE_URL}/${endpoint}`, {params: httpParams, withCredentials: true });
   }
 
   getById<T>(endpoint: string, id: string): Observable<T> {

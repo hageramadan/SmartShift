@@ -1,26 +1,27 @@
+// models/user-profile.ts
 export interface UserProfileI {
-  _id: string;
-  nickname: string;
+  _id?: string;
   firstName: string;
   lastName: string;
-  fullName: string;
+  fullName?: string;
   email: string;
-  photo: string;
   role: string;
-  contactNumber: string;
-
-  position: {
-    _id: string;
-    name: string;
-  };
-
-  level: {
-    _id: string;
-    name: string;
-  };
-
+  employeeId?: string;
+  nickname?: string;
+  contactNumber?: string;
+  photo?: string;
   department: {
     _id: string;
     name: string;
   };
+  position: {
+    _id: string;
+    name: string;
+  };
+  level: {
+    _id: string;
+    name: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }

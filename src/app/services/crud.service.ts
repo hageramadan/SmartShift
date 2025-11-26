@@ -1,3 +1,4 @@
+// crud.service.ts
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Api } from './api.service';
@@ -10,16 +11,21 @@ export class CrudService {
 
   constructor(private api: Api) {}
 
-  getAll<T>(endpoint: string): Observable<ApiResponse<T[]>> {
-    return this.api.getAll<ApiResponse<T[]>>(endpoint);
+  getAll<T>(endpoint: string, filters?: any): Observable<ApiResponse<T[]>> {
+    return this.api.getAll<ApiResponse<T[]>>(endpoint, filters);
   }
 
   getById<T>(endpoint: string, id: string): Observable<ApiResponse<T>> {
     return this.api.getById<ApiResponse<T>>(endpoint, id);
   }
 
+  // إضافة دالة post
+  post<T>(endpoint: string, data: any): Observable<ApiResponse<T>> {
+    return this.api.post<ApiResponse<T>>(endpoint, data);
+  }
+
   create<T>(endpoint: string, data: Partial<T>): Observable<ApiResponse<T>> {
-    return this.api.post<ApiResponse<T>>(endpoint, data );
+    return this.api.post<ApiResponse<T>>(endpoint, data);
   }
 
   update<T>(endpoint: string, id: string, data: Partial<T>): Observable<ApiResponse<T>> {
@@ -29,7 +35,8 @@ export class CrudService {
   delete<T>(endpoint: string, id: string): Observable<ApiResponse<null>> {
     return this.api.delete<ApiResponse<null>>(endpoint, id);
   }
-    customPatch<T>(endpoint: string, data: Partial<T>): Observable<ApiResponse<T>> {
+
+  customPatch<T>(endpoint: string, data: Partial<T>): Observable<ApiResponse<T>> {
     return this.api.patch<ApiResponse<T>>(endpoint, '', data);
   }
 }
