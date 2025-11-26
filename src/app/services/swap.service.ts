@@ -115,6 +115,9 @@ export class SwapService implements OnDestroy {
     });
   }
 
+  getAllRequests(filters?: SwapFilters) {
+    return this.crud.getAll<SwapRequestI>('swapRequests', filters);
+  }
   /** Refresh current page */
   refresh(): void {
     this.loadRequests();

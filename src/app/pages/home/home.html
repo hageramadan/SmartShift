@@ -1,123 +1,270 @@
-<div class="p-6 bg-gray-50 min-h-screen">
+<div class="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
   <!-- Header -->
   <div class="mb-8">
     <h1 class="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
-    <p class="text-gray-600 mt-1">Welcome back! Here's what's happening today.</p>
+    <p class="text-gray-600 mt-1">Welcome back, {{ currentUser?.fullName }}!</p>
+    <p class="text-sm text-gray-500 mt-1">{{ currentUser?.role | titlecase }} • {{ currentDate }}</p>
   </div>
 
-  <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-10">
-    <div class="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between">
-      <div>
-        <h2 class="text-[#7f8c9c] text-[1rem] mb-2">Total Users</h2>
-        <p class="text-xl">{{ totalUsers }}</p>
-      </div>
-      <div class="bg-pro-hover1 rounded-full p-2.5">
-        <i class="fa-solid fa-users text-pro text-xl"></i>
-      </div>
-    </div>
-
-    <div class="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between">
-      <div>
-        <h2 class="text-[#7f8c9c] text-[1rem] mb-2">Departments</h2>
-        <p class="text-xl">{{ totalDepartments }}</p>
-      </div>
-      <div class="bg-pro-hover1 rounded-full p-2.5">
-        <i class="fa-regular fa-hospital text-pro text-xl"></i>
-      </div>
-    </div>
-
-    <div class="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between">
-      <div>
-        <h2 class="text-[#7f8c9c] text-[1rem] mb-2">Today's Schedules</h2>
-        <p class="text-xl">{{ schedulesCount }}</p>
-      </div>
-      <div class="bg-pro-hover1 rounded-full p-2.5">
-        <i class="fa-regular fa-calendar text-pro text-xl"></i>
-      </div>
-    </div>
-
-    <div class="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between">
-      <div>
-        <h2 class="text-[#7f8c9c] text-[1rem] mb-2">Pending Swap Requests</h2>
-        <!-- <p class="text-xl">{{ pendingSwapCount }}</p> -->
-      </div>
-      <div class="bg-red-50 rounded-full p-2.5">
-        <i class="fa-solid fa-arrows-rotate text-red-600 text-lg"></i>
-      </div>
-    </div>
-
-    <div class="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between">
-      <div>
-        <h2 class="text-[#7f8c9c] text-[1rem] mb-2">Active Shifts</h2>
-        <p class="text-xl">{{ activeShifts }}</p>
-      </div>
-      <div class="bg-pro-hover1 rounded-full p-2 flex items-center">
-        <i class="fa-regular fa-clock text-pro text-xl"></i>
-      </div>
-    </div>
-
-    <div class="bg-white p-5 rounded-xl border border-gray-200 flex items-center justify-between">
-      <div>
-        <h2 class="text-[#7f8c9c] text-[1rem] mb-2">Completed Shifts</h2>
-        <p class="text-xl">{{ completedShifts }}</p>
-      </div>
-      <div class="bg-pro-hover1 rounded-full p-2.5">
-        <i class="fa-regular fa-circle-check text-pro text-xl"></i>
-      </div>
-    </div>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-12">
+    <i class="fa-solid fa-spinner fa-spin text-4xl text-blue-600"></i>
+    <p class="mt-4 text-gray-600">Loading dashboard...</p>
   </div>
 
-  <!-- Recent Activity -->
-  <div class="bg-white p-6 rounded-xl border border-gray-200 shadow mb-10">
-    <h2 class="text-xl text-gray-800 mb-4">Recent Activity</h2>
-    <div class="divide-y divide-gray-100">
-      <div
-        class="py-7 flex flex-col sm:flex-row sm:justify-between sm:items-center"
-      >
-        <div class="flex items-center gap-3">
-          <div class="bg-pro-hover1 rounded-full p-2.5">
-            <i class="fa-solid fa-arrows-rotate text-pro text-md font-light"></i>
-          </div>
-          <div>
-            <!-- <p class="text-gray-800 ">{{ activity.title }}</p>
-            <p class="text-gray-400 text-sm">{{ activity.date }}</p> -->
-          </div>
-        </div>
-
-        <!-- <span
-          class="px-3 py-1 rounded-full text-sm  mt-2 sm:mt-0"
-          [ngClass]="{
-            'bg-yellow-100 text-yellow-700': activity.status === 'pending',
-            'bg-green-100 text-green-700': activity.status === 'approved',
-            'bg-red-100 text-red-700': activity.status === 'rejected'
-          }"
-        >
-          {{ activity.status }}
-        </span> -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Department Overview -->
-  <div class="bg-white p-6 rounded-xl border border-gray-200 shadow">
-    <h2 class="text-xl  text-gray-800 mb-7">Department Overview</h2>
-    <div class="grid grid-cols-1 md:grid-cols-1 gap-4 ">
-      <div
-        *ngFor="let dep of departments"
-        class="p-5 rounded-xl   bg-gray-50 cursor-pointer hover:shadow-md transition flex justify-between items-center"
-      >
+  <div *ngIf="!loading">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <!-- Total Users -->
+      <div class="bg-white p-5 rounded-xl border border-blue-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
         <div>
-          <h3 class="text-lg  text-gray-800 mb-2">{{ dep.name }}</h3>
-        <p class="text-gray-500 text-md mb-2">Manager: {{ dep.manager }}</p>
+          <h2 class="text-gray-500 text-sm mb-2">Total Users</h2>
+          <p class="text-2xl font-semibold text-gray-800">{{ totalUsers }}</p>
+          <p class="text-xs text-green-600 mt-1">{{ activeUsers }} active</p>
         </div>
-      <div>
-          <p class="text-pro text-end">
-          {{ dep.members }}
-        </p>
-          <p class="text-gray-400 font-normal">members</p>
+        <div class="bg-blue-100 rounded-full p-3">
+          <i class="fa-solid fa-users text-blue-600 text-2xl"></i>
+        </div>
+      </div>
+
+      <!-- Departments -->
+      <div class="bg-white p-5 rounded-xl border border-green-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+        <div>
+          <h2 class="text-gray-500 text-sm mb-2">Departments</h2>
+          <p class="text-2xl font-semibold text-gray-800">{{ totalDepartments }}</p>
+          <p class="text-xs text-gray-500 mt-1">Active units</p>
+        </div>
+        <div class="bg-green-100 rounded-full p-3">
+          <i class="fa-regular fa-hospital text-green-600 text-2xl"></i>
+        </div>
+      </div>
+
+      <!-- Today Schedules -->
+      <div class="bg-white p-5 rounded-xl border border-yellow-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+        <div>
+          <h2 class="text-gray-500 text-sm mb-2">Today's Schedules</h2>
+          <p class="text-2xl font-semibold text-gray-800">{{ schedulesToday }}</p>
+          <p class="text-xs text-blue-600 mt-1">{{ schedulesThisWeek }} this week</p>
+        </div>
+        <div class="bg-yellow-100 rounded-full p-3">
+          <i class="fa-regular fa-calendar text-yellow-600 text-2xl"></i>
+        </div>
+      </div>
+
+      <!-- Pending Swaps -->
+      <div class="bg-white p-5 rounded-xl border border-purple-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+        <div>
+          <h2 class="text-gray-500 text-sm mb-2">Pending Requests</h2>
+          <p class="text-2xl font-semibold text-gray-800">{{ pendingSwaps }}</p>
+          <p class="text-xs text-orange-600 mt-1" *ngIf="pendingSwaps > 0">Needs review</p>
+          <p class="text-xs text-gray-500 mt-1" *ngIf="pendingSwaps === 0">All clear</p>
+        </div>
+        <div class="bg-purple-100 rounded-full p-3">
+          <i class="fa-solid fa-repeat text-purple-600 text-2xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts Section -->
+    <div *ngIf="lowStaffingAlerts.length > 0" class="mb-6">
+      <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
+        <div class="flex items-start">
+          <i class="fa-solid fa-triangle-exclamation text-orange-600 text-xl mt-0.5 mr-3"></i>
+          <div class="flex-1">
+            <h3 class="font-semibold text-orange-800 mb-2">Staffing Alerts</h3>
+            <div class="space-y-2">
+              <div *ngFor="let alert of lowStaffingAlerts" class="text-sm text-orange-700">
+                <span class="font-medium">{{ formatDate(alert.date) }}</span> -
+                Only {{ alert.staffCount }} staff scheduled (Low coverage)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions (Admin/Manager) -->
+    <div class="mb-6" *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'manager'">
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Quick Actions</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <button routerLink="/users" class="bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:bg-blue-50 transition-all text-left">
+          <i class="fa-solid fa-user-plus text-blue-600 text-xl mb-2"></i>
+          <p class="text-sm font-medium text-gray-800">Add User</p>
+        </button>
+        <button routerLink="/schedules" class="bg-white border border-gray-200 rounded-lg p-4 hover:border-green-400 hover:bg-green-50 transition-all text-left">
+          <i class="fa-solid fa-calendar-plus text-green-600 text-xl mb-2"></i>
+          <p class="text-sm font-medium text-gray-800">Create Schedule</p>
+        </button>
+        <button routerLink="/swap-requests" class="bg-white border border-gray-200 rounded-lg p-4 hover:border-purple-400 hover:bg-purple-50 transition-all text-left">
+          <i class="fa-solid fa-clipboard-list text-purple-600 text-xl mb-2"></i>
+          <p class="text-sm font-medium text-gray-800">View Requests</p>
+        </button>
+        <button routerLink="/sub-departments" class="bg-white border border-gray-200 rounded-lg p-4 hover:border-orange-400 hover:bg-orange-50 transition-all">
+          <i class="fa-solid fa-building text-orange-600 text-xl mb-2"></i>
+          <p class="text-sm font-medium text-gray-800"> Sub-deartment </p>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left Column - Upcoming Schedules & Recent Activity -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Upcoming Schedules -->
+        <div class="bg-white rounded-xl shadow border">
+          <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">Upcoming Schedules</h2>
+            <span class="text-xs text-gray-500">Next 3 days</span>
+          </div>
+          <div class="p-5">
+            <div *ngIf="upcomingSchedules.length === 0" class="text-center py-8 text-gray-500">
+              <i class="fa-regular fa-calendar-xmark text-4xl mb-3 text-gray-300"></i>
+              <p>No upcoming schedules</p>
+            </div>
+            <div *ngIf="upcomingSchedules.length > 0" class="space-y-3">
+              <div *ngFor="let schedule of upcomingSchedules"
+                   class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="flex items-center space-x-3">
+                  <div class="bg-blue-100 rounded-lg px-3 py-2 text-center min-w-[60px]">
+                    <p class="text-xs font-medium text-blue-600">{{ formatScheduleDate(schedule?.date) }}</p>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-800 text-sm">{{ schedule?.user?.fullName || 'Staff Member' }}</p>
+                    <p class="text-xs text-gray-500">{{ schedule?.shift?.shiftType  || 'Unknown' }} - {{schedule?.shift?.shiftName || 'Unknown'}}</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs font-medium text-gray-600">{{ schedule?.shift?.startTimeFormatted }} - {{ schedule?.shift?.endTimeFormatted }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Swap Requests -->
+        <div class="bg-white rounded-xl shadow border">
+          <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">Recent Swap Requests</h2>
+            <a routerLink="/swap-requests" class="text-sm text-blue-600 hover:text-blue-700">View all</a>
+          </div>
+          <div class="p-5">
+            <div *ngIf="recentSwapRequests.length === 0" class="text-center py-8 text-gray-500">
+              <i class="fa-regular fa-handshake text-4xl mb-3 text-gray-300"></i>
+              <p>No recent swap requests</p>
+            </div>
+            <div *ngIf="recentSwapRequests.length > 0" class="space-y-3">
+              <div *ngFor="let swap of recentSwapRequests"
+                   class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="flex-1">
+                  <p class="font-medium text-gray-800 text-sm mb-1">{{ swap?.fromUser?.fullName }} ↔ {{ swap?.toUser?.fullName }}</p>
+                  <p class="text-xs text-gray-500">{{ formatDate(swap.requestDate) }}</p>
+                </div>
+                <span [ngClass]="getStatusClass(swap.status)" class="text-xs px-3 py-1 rounded-full font-medium">
+                  {{ swap.status | titlecase }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
+
+      <!-- Right Column - Department Stats & System Info -->
+      <div class="space-y-6">
+
+        <!-- Department Performance (Admin Only) -->
+        <div *ngIf="currentUser?.role === 'admin' && departmentStats.length > 0"
+             class="bg-white rounded-xl shadow border">
+          <div class="p-5 border-b border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-800">Department Performance</h2>
+          </div>
+          <div class="p-5">
+            <div class="space-y-4">
+              <div *ngFor="let dept of departmentStats" class="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="font-medium text-gray-800 text-sm">{{ dept.name }}</h3>
+                  <span [ngClass]="getUtilizationColor(dept.utilizationRate)" class="text-sm font-semibold">
+                    {{ dept.utilizationRate }}%
+                  </span>
+                </div>
+                <div class="flex justify-between text-xs text-gray-500 mb-2">
+                  <span>{{ dept.scheduledToday }}/{{ dept.totalStaff }} scheduled</span>
+                  <span>Today</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div [ngClass]="dept.utilizationRate >= 80 ? 'bg-green-500' : dept.utilizationRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'"
+                       class="h-2 rounded-full transition-all"
+                       [style.width.%]="dept.utilizationRate"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Summary -->
+        <div class="bg-white rounded-xl shadow border">
+          <div class="p-5 border-b border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-800">System Summary</h2>
+          </div>
+          <div class="p-5">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between py-2">
+                <div class="flex items-center space-x-3">
+                  <i class="fa-solid fa-user-check text-green-600"></i>
+                  <span class="text-sm text-gray-700">Active Staff</span>
+                </div>
+                <span class="font-semibold text-gray-800">{{ activeUsers }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <div class="flex items-center space-x-3">
+                  <i class="fa-solid fa-calendar-check text-blue-600"></i>
+                  <span class="text-sm text-gray-700">Week Schedules</span>
+                </div>
+                <span class="font-semibold text-gray-800">{{ schedulesThisWeek }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <div class="flex items-center space-x-3">
+                  <i class="fa-solid fa-clock text-orange-600"></i>
+                  <span class="text-sm text-gray-700">Pending Actions</span>
+                </div>
+                <span class="font-semibold text-gray-800">{{ pendingSwaps }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <div class="flex items-center space-x-3">
+                  <i class="fa-solid fa-building text-purple-600"></i>
+                  <span class="text-sm text-gray-700">Departments</span>
+                </div>
+                <span class="font-semibold text-gray-800">{{ totalDepartments }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Users (Admin/Manager) -->
+        <div *ngIf="(currentUser?.role === 'admin' || currentUser?.role === 'manager') && recentUsers.length > 0"
+             class="bg-white rounded-xl shadow border">
+          <div class="p-5 border-b border-gray-100">
+            <h2 class="text-lg font-semibold text-gray-800">New Members</h2>
+            <p class="text-xs text-gray-500 mt-1">Last 7 days</p>
+          </div>
+          <div class="p-5">
+            <div class="space-y-3">
+              <div *ngFor="let user of recentUsers"
+                   class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                  {{ getUserInitial(user) }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-800 truncate">{{ user.firstName }} {{ user.lastName }}</p>
+                  <p class="text-xs text-gray-500">{{ user.role | titlecase }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

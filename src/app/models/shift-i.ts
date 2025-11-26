@@ -1,6 +1,8 @@
 
 export interface ShiftI {
   _id: string;
+  departmentId: string;
+  subDepartmentId: string;
   shiftName: string;
   shiftType?: string;
   startTime: number;

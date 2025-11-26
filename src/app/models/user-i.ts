@@ -26,6 +26,9 @@ export interface UserI {
   departmentId: string;
   contactNumber: string;
   role: 'admin' | 'manager' | 'user';
+  createdAt?: string;
+  updatedAt?: string;
+  isActive?: boolean;
 }
 
 
