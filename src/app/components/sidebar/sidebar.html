@@ -1,16 +1,21 @@
-<!-- Overlay   -->
+<!-- Overlay -->
 <div
-  class="fixed inset-0 bg-black/15 bg-opacity-30 z-40 transition-opacity duration-300 md:hidden"
-  *ngIf="isSidebarOpen && screenWidth < 1020"
-  (click)="closeOnMobile()"
+  class="sidebar-overlay fixed inset-0 bg-black/40 z-40 transition-all duration-300"
+  [class.hidden]="!isSidebarOpen || screenWidth >= 1020"
+  [class.opacity-0]="!isSidebarOpen"
+  [class.opacity-100]="isSidebarOpen"
+  (click)="closeSidebar()"
 ></div>
 
+<!-- السايدبار الرئيسي -->
 <nav
-  class="fixed top-0 left-0 w-64 h-full bg-white flex flex-col shadow z-50 transform transition-transform duration-300"
+  class="sidebar fixed top-0 left-0 h-full bg-white flex flex-col shadow-lg z-50 transform transition-all duration-300 border-r border-gray-200"
   [class.-translate-x-full]="!isSidebarOpen && screenWidth < 1020"
+  [class.w-64]="isSidebarOpen || screenWidth < 1020"
 >
-  <!-- Header -->
-  <div class="flex items-center gap-3 mb-6 p-4 border-b border-gray-200">
+
+  <!-- الهيدر -->
+  <div class="flex items-center gap-3 p-4 border-b border-gray-200 bg-pro2">
     <div class="bg-pro text-white p-2 rounded-xl text-center">
       <i class="fa-solid fa-hospital"></i>
     </div>
@@ -20,41 +25,59 @@
     </div>
   </div>
 
-  <!-- User Info -->
-  <div class="flex items-center gap-3 pb-4 mb-2 px-4 border-b border-gray-200">
-    <div class="w-10 h-10 bg-pro text-white rounded-full flex items-center justify-center">D</div>
+  <!-- معلومات المستخدم -->
+  <div class="flex items-center gap-3 p-4 border-b border-gray-200">
+    <div class="w-10 h-10 bg-pro text-white rounded-full flex items-center justify-center font-semibold">
+      {{ getUserInitial() }}
+    </div>
     <div>
-      <h4 class="text-lg">Dr. Sarah Johnson</h4>
-      <div class="text-white bg-pro rounded-lg px-2 p-1 w-fit text-xs">admin</div>
+      <h4 class="text-pro font-medium text-sm">{{ getUserName() }}</h4>
+      <div class="text-white bg-pro rounded-lg px-2 py-1 w-fit text-xs capitalize">
+        {{ getUserRole() }}
+      </div>
     </div>
   </div>
 
-  <!-- Links -->
-  <ul class="flex-1 px-2 overflow-y-auto">
-    <li *ngFor="let link of links">
-      <a
-        [routerLink]="link.path"
-        routerLinkActive="bg-pro !text-white"
-        [routerLinkActiveOptions]="{ exact: true }"
-        (click)="closeOnMobile()"
-        class="flex items-center gap-3 p-2 my-2 mx-2 rounded transition-colors duration-50"
-        [ngClass]="{
-          'bg-pro-hover': !isLinkActive(link.path),
-          'bg-pro text-white': isLinkActive(link.path)
-        }"
-      >
-        <i [class]="link.icon"></i> {{ link.label }}
-      </a>
-    </li>
-  </ul>
+  <!-- روابط التنقل -->
+  <div class="flex-1 px-2 overflow-y-auto py-4">
+    <ul class="space-y-2">
+      <li *ngFor="let link of links">
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="bg-pro !text-white"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeOnMobile()"
+          class="flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-pro2 hover:text-pro"
+          [ngClass]="{
+            'bg-pro-hover': !isLinkActive(link.path),
+            'bg-pro text-white': isLinkActive(link.path)
+          }"
+        >
+          <i [class]="link.icon" class="w-5 text-center"></i>
+          <span class="font-medium text-sm">{{ link.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
 
-  <!-- Logout -->
-  <div class="mt-4 border-t border-gray-200 pt-2 px-2 w-full py-5 self-end cursor-pointer">
-    <a
+  <!-- زر الخروج -->
+  <div class="mt-auto p-4 border-t border-gray-200">
+    <button
       (click)="logout()"
-      class="flex items-center text-[0.9rem] gap-4 text-red-500 hover:text-red-600 transition-colors border border-red-400 rounded-xl text-red1 p-2 mt-4 mx-2 bg-red-hover"
+      class="flex items-center gap-3 w-full p-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 border border-red-200"
     >
-      <i class="fa-solid fa-right-from-bracket ms-3"></i> Logout
-    </a>
+      <i class="fa-solid fa-right-from-bracket"></i>
+      <span class="font-medium text-sm">Logout</span>
+    </button>
   </div>
 </nav>
+
+<!-- زر القائمة للموبايل -->
+<button
+  *ngIf="screenWidth < 1020"
+  (click)="onToggleSidebar()"
+  class="mobile-toggle-btn fixed top-4 left-4 z-50 w-10 h-10 bg-pro text-white rounded-lg shadow-lg flex items-center justify-center"
+  [class.hidden]="isSidebarOpen"
+>
+  <i class="fa-solid fa-bars"></i>
+</button>
