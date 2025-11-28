@@ -17,7 +17,7 @@ import { Login } from './components/login/login';
 import { PositionsLevels } from './pages/positions-levels/positions-levels';
 
 export const routes: Routes = [
-  { path: '', component: Home },
+  { path: '', component: Home, canActivate: [authGuard] },
   { path: 'departments', component: Departments, canActivate: [authGuard] },
   { path: 'sub-departments', component: SubDepartmentsComponent, canActivate: [authGuard] },
   { path: 'locations', component: Locations, canActivate: [authGuard] },

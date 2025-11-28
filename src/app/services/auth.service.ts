@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Api } from './api.service';
 import { UserI } from '../models/user-i';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
-import {take} from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
+import {take, tap, map } from 'rxjs/operators';
 
 interface AuthResponse {
   message: string;
@@ -40,15 +40,15 @@ export class AuthService {
   }
 
   // Fetch user from backend
-  fetchCurrentUser() {
-    return this.api.getAll<UserI>('users/me').pipe(
+  fetchCurrentUser(): Observable<UserI | null> {
+    return this.api.getAll<{ data: UserI }>('users/me').pipe(
+      map(res => res.data || null),
       tap(user => {
-          this.userSubject.next(user || null);
-          sessionStorage.setItem('user', JSON.stringify(user || null));
+        this.userSubject.next(user);
+        sessionStorage.setItem('user', JSON.stringify(user));
       })
     );
   }
-
 
   logout() {
     this.api.getAll('users/logout').pipe(take(1)).subscribe({
