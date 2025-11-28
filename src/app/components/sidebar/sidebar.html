@@ -1,4 +1,4 @@
-<!-- Overlay   -->
+Overlay
 <div
   class="fixed inset-0 bg-black/15 bg-opacity-30 z-40 transition-opacity duration-300 md:hidden"
   *ngIf="isSidebarOpen && screenWidth < 1020"
@@ -24,29 +24,28 @@
   <div class="flex items-center gap-3 pb-4 mb-2 px-4 border-b border-gray-200">
     <div class="w-10 h-10 bg-pro text-white rounded-full flex items-center justify-center">D</div>
     <div>
-      <h4 class="text-lg">Dr. Sarah Johnson</h4>
+      <h4 class="text-lg text-gray-600">Dr. Sarah Johnson</h4>
       <div class="text-white bg-pro rounded-lg px-2 p-1 w-fit text-xs">admin</div>
     </div>
   </div>
 
   <!-- Links -->
-  <ul class="flex-1 px-2 overflow-y-auto">
-    <li *ngFor="let link of links">
-      <a
-        [routerLink]="link.path"
-        routerLinkActive="bg-pro !text-white"
-        [routerLinkActiveOptions]="{ exact: true }"
-        (click)="closeOnMobile()"
-        class="flex items-center gap-3 p-2 my-2 mx-2 rounded transition-colors duration-50"
-        [ngClass]="{
-          'bg-pro-hover': !isLinkActive(link.path),
-          'bg-pro text-white': isLinkActive(link.path)
-        }"
-      >
-        <i [class]="link.icon"></i> {{ link.label }}
-      </a>
-    </li>
-  </ul>
+<ul class="flex-1 px-2 overflow-y-auto">
+  <li *ngFor="let link of links">
+    <a
+      [routerLink]="link.path"
+      (click)="closeOnMobile()"
+      class="flex items-center gap-3 p-2 my-2 mx-2 rounded-lg transition-colors duration-300"
+      [ngClass]="{
+        'bg-pro text-white': isLinkActive(link.path),'text-gray-500 hover:bg-gray-100': !isLinkActive(link.path)
+      }"
+    >
+      <i [class]="link.icon" [ngClass]="{'text-white': isLinkActive(link.path), 'text-gray-500': !isLinkActive(link.path)}"></i>
+      {{ link.label }}
+    </a>
+  </li>
+</ul>
+
 
   <!-- Logout -->
   <div class="mt-4 border-t border-gray-200 pt-2 px-2 w-full py-5 self-end cursor-pointer">

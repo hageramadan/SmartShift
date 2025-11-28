@@ -6,6 +6,7 @@ import { CrudService } from '../../services/crud.service';
 import { UserI } from '../../models/user-i';
 import { format, addDays, parseISO } from 'date-fns';
 import { SwapService } from '../../services/swap.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -39,14 +40,19 @@ export class Home implements OnInit {
   constructor(
     private shared: SharedService,
     private crud: CrudService,
-    private swapService: SwapService
+    private swapService: SwapService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.currentUser = JSON.parse(sessionStorage.getItem('user')!);
     this.currentDate = format(new Date(), 'EEEE, MMMM dd, yyyy');
-    this.shared.loadAll();
-    this.loadAllData();
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.currentUser = user;
+        this.shared.loadAll();
+        this.loadAllData();
+      }
+    });
   }
 
   async loadAllData() {
@@ -74,7 +80,7 @@ export class Home implements OnInit {
           : users;
 
         this.totalUsers = filteredUsers.length;
-        this.activeUsers = filteredUsers.filter(u => u.isActive === true).length;
+        this.activeUsers = filteredUsers.filter(u => u.isActive == true).length;
 
         // Recent users (last 7 days)
         const weekAgo = new Date();

@@ -1,38 +1,210 @@
-<div class="p-6 space-y-6">
-  <div class="flex justify-between items-center">
+<div class="p-6 space-y-6 bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <div class="flex justify-between items-start">
     <div>
-      <h2 class="text-2xl font-semibold">Schedule Calendar</h2>
-      <p class="text-gray-500">View schedules by user or department</p>
+      <h2 class="text-3xl font-bold text-gray-800">Schedule Calendar</h2>
+      <p class="text-gray-600 mt-1">
+        {{ userRole === 'manager' ? 'View your department schedules' : 'View all department schedules' }}
+      </p>
+    </div>
+
+    <!-- Role Badge -->
+    <div class="px-4 py-2 rounded-full text-sm font-semibold"
+         [ngClass]="userRole === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'">
+      {{ userRole === 'admin' ? 'Admin View' : 'Manager View' }}
     </div>
   </div>
 
-  <!-- Filter -->
-  <div class="flex items-center gap-3">
-    <label class="font-medium text-gray-700">View By:</label>
-    <select
-      [(ngModel)]="selectedDepartment"
-      (change)="onDepartmentChange()"
-      class="border border-gray-300 rounded-md px-4 py-2 focus:ring-1 focus:ring-pro focus:border-pro"
-    >
-      <option value="">All Departments</option>
-      <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
-    </select>
+  <!-- Filters Section -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center gap-4 flex-wrap">
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+        </svg>
+        <span class="font-semibold text-gray-700">Filters:</span>
+      </div>
+
+      <!-- Department Filter (Admin only can change) -->
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+        <select
+          [(ngModel)]="selectedDepartmentId"
+          (change)="onDepartmentChange()"
+          [disabled]="userRole === 'manager'"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#107c8c] focus:border-transparent transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+        >
+          <option value="">{{ userRole === 'admin' ? 'All Departments' : 'Your Department' }}</option>
+          <option *ngFor="let dept of departments" [value]="dept._id">
+            {{ dept.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Sub-Department Filter -->
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Sub-Department</label>
+        <select
+          [(ngModel)]="selectedSubDepartmentId"
+          (change)="onSubDepartmentChange()"
+          [disabled]="!selectedDepartmentId || filteredSubDepartments.length === 0"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#107c8c] focus:border-transparent transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+        >
+          <option value="">All Sub-Departments</option>
+          <option *ngFor="let subDept of filteredSubDepartments" [value]="subDept._id">
+            {{ subDept.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Reset Button -->
+      <div class="flex items-end">
+        <button
+          (click)="resetFilters()"
+          class="px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium flex items-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Filters Display -->
+    <div *ngIf="selectedDepartmentId || selectedSubDepartmentId" class="mt-4 pt-4 border-t border-gray-200">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-sm text-gray-600">Active filters:</span>
+
+        <span *ngIf="selectedDepartmentId"
+              class="inline-flex items-center gap-1.5 px-3 py-1 bg-[#107c8c] text-white rounded-full text-sm">
+          {{ selectedDepartmentName }}
+          <button *ngIf="userRole === 'admin'"
+                  (click)="clearDepartment()"
+                  class="hover:bg-white/20 rounded-full p-0.5">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </span>
+
+        <span *ngIf="selectedSubDepartmentId"
+              class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-600 text-white rounded-full text-sm">
+          {{ selectedSubDepartmentName }}
+          <button (click)="clearSubDepartment()"
+                  class="hover:bg-white/20 rounded-full p-0.5">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </button>
+        </span>
+      </div>
+    </div>
   </div>
 
-  <!-- Calendar -->
-  <div class="bg-white rounded-xl shadow p-4 border border-gray-200">
-    <full-calendar [options]="calendarOptions"></full-calendar>
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 shadow-xl">
+      <div class="flex items-center gap-3">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#107c8c]"></div>
+        <span class="text-lg font-medium text-gray-700">Loading schedules...</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Schedule Details -->
-  <div class="bg-white rounded-xl shadow p-6 border border-gray-200">
-    <h3 class="text-xl font-semibold mb-4 text-gray-800">Schedule Details</h3>
+  <!-- Calendar Section -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold text-gray-800">Monthly Overview</h3>
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="font-medium">{{ schedules.length }} schedules this month</span>
+        </div>
+      </div>
 
-    <div *ngFor="let s of getFilteredShifts()" class="border-b border-gray-100 py-3">
-      <p class="font-semibold text-pro">{{ s.name }}</p>
-      <p class="text-gray-500">{{ s.department }}</p>
-      <p class="text-sm mt-1">{{ s.shiftName }} — {{ s.time }}</p>
-      <p class="text-xs text-gray-400">{{ s.date }}</p>
+      <full-calendar [options]="calendarOptions"></full-calendar>
+    </div>
+  </div>
+
+  <!-- Schedule Details List -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div class="p-6 border-b border-gray-200">
+      <h3 class="text-xl font-semibold text-gray-800">Schedule Details</h3>
+      <p class="text-sm text-gray-600 mt-1">Complete list of scheduled shifts</p>
+    </div>
+
+    <div class="p-6">
+      <div *ngIf="schedules.length === 0" class="text-center py-12">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p class="text-gray-500 text-lg font-medium">No schedules found</p>
+        <p class="text-gray-400 text-sm mt-1">Try adjusting your filters or date range</p>
+      </div>
+
+      <div *ngIf="schedules.length > 0" class="grid gap-4">
+        <div *ngFor="let schedule of getFilteredSchedules(); let i = index"
+             class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <!-- User Name -->
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-10 h-10 rounded-full bg-[#107c8c] flex items-center justify-center text-white font-semibold">
+                  {{ schedule.user?.firstName?.charAt(0) }}{{ schedule.user?.lastName?.charAt(0) }}
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900 text-lg">
+                    {{ schedule.user?.fullName || 'Unknown User' }}
+                  </p>
+                  <p class="text-sm text-gray-500">{{ schedule.department?.name }}</p>
+                </div>
+              </div>
+
+              <!-- Schedule Details -->
+              <div class="ml-12 space-y-1.5">
+                <div class="flex items-center gap-2 text-gray-700">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                  </svg>
+                  <span class="text-sm">{{ schedule.subDepartment?.name || 'N/A' }}</span>
+                </div>
+
+                <div class="flex items-center gap-2 text-gray-700">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="font-medium text-sm">{{ schedule.shift?.shiftName }}</span>
+                  <span class="text-sm">— {{ formatShiftTime(schedule) }}</span>
+                </div>
+
+                <div class="flex items-center gap-2 text-gray-600">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span class="text-sm">{{ schedule.date }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Badge -->
+            <div *ngIf="schedule.isActive !== undefined"
+                 class="px-3 py-1 rounded-full text-xs font-semibold"
+                 [ngClass]="schedule.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+              {{ schedule.isActive ? 'Active' : 'Inactive' }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
