@@ -32,8 +32,8 @@ export class Sidebar {
     { path: '/schedules', label: 'Schedules', icon: 'fa-solid fa-calendar-days' },
     { path: '/users', label: 'Users', icon: 'fa-solid fa-users' },
     { path: '/positions&levels', label: 'Positions&levels', icon: 'fa-solid fa-briefcase' },
-    { path: '/profile', label: 'My Profile', icon: 'fa-solid fa-user' },
-    { path: '/swap-config', label: 'Swap Config', icon: 'fa-solid fa-retweet' },
+    // { path: '/profile', label: 'My Profile', icon: 'fa-solid fa-user' },
+    // { path: '/swap-config', label: 'Swap Config', icon: 'fa-solid fa-retweet' },
     { path: '/swap-requests', label: 'Swap Requests', icon: 'fa-solid fa-exchange-alt' },
     { path: '/calendar-view', label: 'Calendar View', icon: 'fa-solid fa-calendar' },
   ];
