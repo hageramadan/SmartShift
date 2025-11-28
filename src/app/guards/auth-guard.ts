@@ -1,23 +1,31 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-export const authGuard: CanActivateFn = (route, state) => {
+import { of, Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+
+export const authGuard: CanActivateFn = (route, state): Observable<boolean> => {
   const authService = inject(AuthService);
-  const router = inject(Router);
+  const allowedRoles = ['admin', 'manager'];
+
+  const redirectToLogin = (): boolean => {
+    window.location.href = 'http://localhost:3001/login';
+    return false;
+  };
 
   const user = authService.getCurrentUser();
-
- // Not logged in → redirect to React app login
-  if (!user) {
-    window.location.href = 'http://localhost:3001/login';
-    return false;
+  if (user) {
+    return of(allowedRoles.includes(user.role) || redirectToLogin());
   }
 
-  // Role check → redirect to React app or "Not Authorized" page
-  if (user.role !== 'admin' && user.role !== 'manager') {
-    window.location.href = 'http://localhost:3001/login';
-    return false;
-  }
-
-  return true;
+  // No local session → fetch from backend
+  return authService.fetchCurrentUser().pipe(
+    map(fetchedUser => {
+      return fetchedUser && allowedRoles.includes(fetchedUser.role) || redirectToLogin(); // boolean
+    }),
+    catchError(() => {
+      redirectToLogin();
+      return of(false); // observable for catchError
+    })
+  );
 };
