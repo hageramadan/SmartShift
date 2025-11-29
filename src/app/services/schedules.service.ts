@@ -44,7 +44,7 @@ export class SchedulesService {
     return this.sharedService.getAll<ScheduleI[]>(endpoint, {isActive: true});
   }
 
-  // دالة جديدة خاصة بالـ Schedules فقط
+  // دالة واحدة لتحميل جميع الشفتات
   getShiftsForSchedules(): Observable<ApiResponse<ShiftI[]>> {
     return this.sharedService.getAll<ShiftI[]>('shifts');
   }
@@ -70,4 +70,4 @@ export class SchedulesService {
   deleteSchedule(id: string): Observable<ApiResponse<any>> {
     return this.sharedService.delete<any>('schedules', id);
   }
-}
+} 
