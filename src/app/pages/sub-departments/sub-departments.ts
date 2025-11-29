@@ -7,6 +7,7 @@ import { SharedService } from '../../services/shared.service';
 import { SubDepartmentI } from '../../models/sub-department-i';
 import { UserI } from '../../models/user-i';
 import { DepartmentI } from '../../models/department-i';
+import { AuthService } from '../../services/auth.service';
 
 interface Filters {
   name: string;
@@ -52,15 +53,33 @@ export class SubDepartmentsComponent implements OnInit {
   isLoading = false;
   isDataLoading = true;
 
+  // Current user info
+  currentUser: UserI | null = null;
+  isManager = false;
+  userDepartmentId = '';
+
+
   constructor(
     private toastr: ToastrService,
     private sharedSrv: SharedService,
-    private crud: CrudService
+    private crud: CrudService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    this.loadCurrentUser();
     this.loadData();
   }
+
+  loadCurrentUser() {
+  this.currentUser = this.authService.getCurrentUser();
+  this.isManager = this.currentUser?.role === 'manager';
+  this.userDepartmentId = this.currentUser?.departmentId || '';
+  if (this.isManager) {
+    this.filters.departmentId = this.userDepartmentId;
+    this.formData.departmentId = this.userDepartmentId;
+  }
+}
 
   loadData() {
     this.isDataLoading = true;
@@ -70,12 +89,12 @@ export class SubDepartmentsComponent implements OnInit {
       this.users = users;
       this.checkDataLoaded();
     });
-    
+
     this.sharedSrv.getDepartments().subscribe((deps) => {
       this.departments = deps;
       this.checkDataLoaded();
     });
-    
+
     this.sharedSrv.getSubDepartments().subscribe((sdeps) => {
       this.subDepartments = sdeps;
       this.applyFilters();
@@ -106,22 +125,31 @@ export class SubDepartmentsComponent implements OnInit {
     return this.users.filter((u) => u.role === 'manager');
   }
 
+getFilteredManagers() {
+  if (!this.isManager) {
+    return this.managers;
+  }
+  return this.managers.filter(manager =>
+    manager.departmentId === this.userDepartmentId &&
+    manager._id !== this.currentUser?._id
+  );
+}
   // Filter Methods
   applyFilters() {
     this.currentPage = 1;
     this.filteredSubDepartments = this.subDepartments.filter(sub => {
-      const nameMatch = !this.filters.name || 
+      const nameMatch = !this.filters.name ||
         sub.name?.toLowerCase().includes(this.filters.name.toLowerCase());
-      
-      const departmentMatch = !this.filters.departmentId || 
+
+      const departmentMatch = !this.filters.departmentId ||
         sub.departmentId === this.filters.departmentId;
-      
-      const managerMatch = !this.filters.subManagerId || 
+
+      const managerMatch = !this.filters.subManagerId ||
         sub.subManagerId === this.filters.subManagerId;
 
       return nameMatch && departmentMatch && managerMatch;
     });
-    
+
     this.updatePagination();
   }
 
@@ -131,6 +159,9 @@ export class SubDepartmentsComponent implements OnInit {
       departmentId: '',
       subManagerId: ''
     };
+    if (this.isManager) {
+    this.filters.departmentId = this.userDepartmentId;
+    }
     this.applyFilters();
   }
 
@@ -145,18 +176,18 @@ export class SubDepartmentsComponent implements OnInit {
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   }
 
@@ -192,6 +223,9 @@ export class SubDepartmentsComponent implements OnInit {
       departmentId: '',
       subManagerId: '',
     };
+    if (this.isManager) {
+    this.formData.departmentId = this.userDepartmentId;
+    }
   }
 
   editSubDepartment(sub: SubDepartmentI) {
@@ -233,7 +267,7 @@ export class SubDepartmentsComponent implements OnInit {
     this.isLoading = true;
 
     let obs$;
-    
+
     if (this.selectedSub) {
       // استخدام update العادي
       obs$ = this.crud.update('subdepartments', this.selectedSub._id || '', payload);
@@ -245,7 +279,7 @@ export class SubDepartmentsComponent implements OnInit {
       next: (res: any) => {
         this.isLoading = false;
         console.log('API Response:', res);
-        
+
         if (res || (res.data || res._id)) {
           this.handleSaveSuccess(res.data || res);
         } else {
@@ -282,7 +316,7 @@ export class SubDepartmentsComponent implements OnInit {
 
   private handleSaveError(err: any) {
     let errorMessage = 'Operation failed';
-    
+
     if (err?.error) {
       if (typeof err.error === 'string') {
         errorMessage = err.error;
@@ -294,7 +328,7 @@ export class SubDepartmentsComponent implements OnInit {
         errorMessage = err.error.error;
       }
     }
-    
+
     this.toastr.error(errorMessage);
   }
 
@@ -338,23 +372,23 @@ export class SubDepartmentsComponent implements OnInit {
     this.crud.delete('subdepartments', this.deleteId).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        
+
         // إزالة من القائمة المحلية
         this.subDepartments = this.subDepartments.filter((d) => d._id !== this.deleteId);
-        
+
         // تحديث الفلترة والترقيم
         this.applyFilters();
-        
+
         this.toastr.success(res?.message || 'Sub-department deleted successfully');
         this.cancelDelete();
-        
+
         // إعادة تحميل البيانات للتأكد من المزامنة
         this.refreshData();
       },
       error: (err) => {
         this.isLoading = false;
-        const errorMessage = err?.error?.message || 
-                           err?.error?.details || 
+        const errorMessage = err?.error?.message ||
+                           err?.error?.details ||
                            'Delete failed';
         this.toastr.error(errorMessage);
       },
