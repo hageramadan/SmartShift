@@ -1,3 +1,4 @@
+<!-- shifts.html -->
 <div class="p-6 bg-gray-50 min-h-screen relative">
   <!-- Loading Overlay -->
   <div *ngIf="isLoading" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm">
@@ -60,7 +61,6 @@
           placeholder="Search shift type"
         />
       </div>
-
 
       <!-- Department Filter -->
       <div class="relative">
@@ -271,26 +271,49 @@
         <div class="relative">
           <select
             id="shiftType"
-            [(ngModel)]="newShift.shiftType"
+            (change)="onShiftTypeSelect($event)"
             [disabled]="isLoading"
             [ngClass]="{'border-red-500': (submitted && !newShift.shiftType) || validationErrors.shiftType}"
             class="text-gray-700 peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
             <option value="" disabled selected>Select Shift Type *</option>
-            <option *ngFor="let type of shiftTypes" [value]="type">{{ type }}</option>
+            <option *ngFor="let type of shiftTypes" [value]="type" [selected]="newShift.shiftType === type">
+              {{ type }}
+            </option>
+            <option value="custom">Other (Custom)</option>
           </select>
           <label
             for="shiftType"
             class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300 peer-placeholder-shown:top-3
                 peer-placeholder-shown:text-gray-600 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro
-                  peer-focus:font-medium peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium cursor-text"          >
+                  peer-focus:font-medium peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium cursor-text">
             Shift Type
             <span class="text-red-500">*</span>
-
           </label>
           <div *ngIf="validationErrors.shiftType" class="text-red-500 text-xs mt-1">
             {{ validationErrors.shiftType }}
           </div>
+        </div>
+
+        <!-- Custom Shift Type Input - Shows only when "Other" is selected -->
+        <div *ngIf="newShift.shiftType === '' || customShiftType" class="relative">
+          <input
+            type="text"
+            id="customShiftType"
+            placeholder=" "
+            [(ngModel)]="customShiftType"
+            (input)="onCustomShiftTypeInput()"
+            [disabled]="isLoading"
+            class="text-gray-700 peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          />
+          <label
+            for="customShiftType"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300 peer-placeholder-shown:top-3
+                peer-placeholder-shown:text-gray-600 peer-placeholder-shown:text-sm peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro
+                  peer-focus:font-medium peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium cursor-text">
+            Enter Custom Shift Type
+            <span class="text-red-500">*</span>
+          </label>
         </div>
 
         <!-- Department Select -->
