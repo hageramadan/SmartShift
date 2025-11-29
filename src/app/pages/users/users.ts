@@ -87,7 +87,7 @@ export class Users implements OnInit {
     
     // Get current year
     const currentYear = new Date().getFullYear();
-    
+
     // Get the next index for this department and year
     const existingIds = this.users
       .filter(user => user.employeeId?.startsWith(`${deptPrefix}${currentYear}`))
@@ -95,9 +95,9 @@ export class Users implements OnInit {
         const idParts = user.employeeId?.split('-');
         return idParts && idParts.length > 1 ? parseInt(idParts[1]) : 0;
       });
-    
+
     const nextIndex = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
-    
+
     // Format: DEP2024-001
     return `${deptPrefix}${currentYear}-${nextIndex.toString().padStart(3, '0')}`;
   }
@@ -108,21 +108,21 @@ export class Users implements OnInit {
 
     // Apply department filter
     if (this.selectedDepartmentId) {
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.department?._id === this.selectedDepartmentId
       );
     }
 
     // Apply position filter
     if (this.selectedPositionId) {
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.position?._id === this.selectedPositionId
       );
     }
 
     // Apply role filter
     if (this.selectedRole) {
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.role === this.selectedRole
       );
     }
@@ -130,7 +130,7 @@ export class Users implements OnInit {
     // Apply search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.fullName?.toLowerCase().includes(term) ||
         user.email?.toLowerCase().includes(term) ||
         user.employeeId?.toLowerCase().includes(term)
@@ -174,7 +174,7 @@ export class Users implements OnInit {
   }
 
   hasActiveFilters(): boolean {
-    return !!this.selectedDepartmentId || !!this.selectedPositionId || 
+    return !!this.selectedDepartmentId || !!this.selectedPositionId ||
            !!this.selectedRole || !!this.searchTerm;
   }
 
@@ -222,7 +222,7 @@ export class Users implements OnInit {
     this.showForm = true;
     this.selectedUser = null;
     this.submitted = false;
-    
+
     this.formData = {
       firstName: '',
       lastName: '',
@@ -256,7 +256,7 @@ export class Users implements OnInit {
 
   validateForm(): boolean {
     const requiredFields = ['firstName', 'lastName', 'email', 'positionId', 'levelId', 'departmentId'];
-    
+
     for (const field of requiredFields) {
       if (!this.formData[field]) {
         this.toastr.error(`${this.getFieldLabel(field)} is required`);
@@ -288,7 +288,7 @@ export class Users implements OnInit {
 
   saveUser() {
     this.submitted = true;
-    
+
     if (!this.validateForm()) {
       return;
     }
@@ -297,7 +297,7 @@ export class Users implements OnInit {
 
     // Prepare payload
     let payload: any;
-    
+
     if (this.selectedUser) {
       // Edit mode - only send changed fields
       payload = {};
@@ -309,7 +309,7 @@ export class Users implements OnInit {
     } else {
       // Create mode - send all data + generate employee ID
       payload = { ...this.formData };
-      
+
       // Generate custom employee ID
       const employeeId = this.generateEmployeeId(this.formData.departmentId);
       if (!employeeId) {
@@ -317,9 +317,9 @@ export class Users implements OnInit {
         this.loading = false;
         return;
       }
-      
+
       payload.employeeId = employeeId;
-      
+
       // Ensure required fields for creation
       if (!payload.password) {
         payload.password = 'Passw0rd123'; // Default password
@@ -333,7 +333,7 @@ export class Users implements OnInit {
     obs$.subscribe({
       next: (res: any) => {
         this.loading = false;
-        
+
         if (res && res.data) {
           const savedUser = res.data;
 
@@ -359,7 +359,7 @@ export class Users implements OnInit {
               level: this.levels.find(l => l._id === this.formData.levelId),
               fullName: `${this.formData.firstName} ${this.formData.lastName}`
             };
-            
+
             this.users = [newUserWithRelations, ...this.users];
             this.toastr.success(res.message || 'User created successfully');
           }
@@ -434,9 +434,9 @@ export class Users implements OnInit {
   getRoleClass(role: string): string {
     switch (role) {
       case 'admin':
-        return 'bg-red-100 text-red-700 px-3 py-1 rounded-md text-sm font-medium';
+        return 'bg-red-100 text-gray-700 px-3 py-1 rounded-md text-sm font-medium';
       case 'manager':
-        return 'bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm font-medium';
+        return 'bg-blue-100 text-gray-700 px-3 py-1 rounded-md text-sm font-medium';
       case 'user':
         return 'bg-gray-100 text-gray-700 px-3 py-1 rounded-md text-sm font-medium';
       default:
