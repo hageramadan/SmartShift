@@ -8,7 +8,6 @@ import { SharedService } from '../../services/shared.service';
 import { SubDepartmentI } from '../../models/sub-department-i';
 import { DepartmentI } from '../../models/department-i';
 import { LocationI } from '../../models/location-i';
-import { FlatpickrModule } from 'angularx-flatpickr';
 
 interface Shift {
   _id?: string;
@@ -48,7 +47,7 @@ interface ValidationErrors {
 @Component({
   selector: 'app-shifts',
   standalone: true,
-  imports: [CommonModule, FormsModule,   FlatpickrModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './shifts.html',
   styleUrls: ['./shifts.css'],
 })
@@ -143,7 +142,7 @@ export class Shifts implements OnInit {
         this.shifts.forEach(shift => {
           if (shift.startTimeFormatted && shift.endTimeFormatted) {
             shift.durationFormatted = this.calculateDuration(
-              shift.startTimeFormatted, 
+              shift.startTimeFormatted,
               shift.endTimeFormatted
             );
           }
@@ -164,21 +163,21 @@ export class Shifts implements OnInit {
   applyFilters() {
     this.currentPage = 1;
     this.filteredShifts = this.shifts.filter(shift => {
-      const nameMatch = !this.filters.shiftName || 
+      const nameMatch = !this.filters.shiftName ||
         (shift.shiftName && shift.shiftName.toLowerCase().includes(this.filters.shiftName.toLowerCase()));
-      
-      const typeMatch = !this.filters.shiftType || 
+
+      const typeMatch = !this.filters.shiftType ||
         (shift.shiftType && shift.shiftType.toLowerCase().includes(this.filters.shiftType.toLowerCase()));
-      
-      const departmentMatch = !this.filters.departmentId || 
+
+      const departmentMatch = !this.filters.departmentId ||
         shift.departmentId === this.filters.departmentId;
-      
-      const subDepartmentMatch = !this.filters.subDepartmentId || 
+
+      const subDepartmentMatch = !this.filters.subDepartmentId ||
         shift.subDepartmentId === this.filters.subDepartmentId;
 
       return nameMatch && typeMatch && departmentMatch && subDepartmentMatch;
     });
-    
+
     this.totalItems = this.filteredShifts.length;
     this.updatePagination();
   }
@@ -204,18 +203,18 @@ export class Shifts implements OnInit {
   getPageNumbers(): number[] {
     const pages: number[] = [];
     const maxVisiblePages = 5;
-    
+
     let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   }
 
@@ -270,13 +269,13 @@ export class Shifts implements OnInit {
     if (this.newShift.startTimeFormatted && this.newShift.endTimeFormatted) {
       const startTime = this.timeToMinutes(this.newShift.startTimeFormatted);
       const endTime = this.timeToMinutes(this.newShift.endTimeFormatted);
-      
+
       // إذا كان وقت النهاية أقل من وقت البداية، نفترض أنه شفت ليلي (يمتد إلى اليوم التالي)
       // في هذه الحالة، نسمح به ولكن نتحقق من أن المدة معقولة (أقل من 24 ساعة)
       if (endTime <= startTime) {
         // الشفت الليلي - نتحقق من أن المدة معقولة (أقل من 24 ساعة)
         const overnightDuration = (24 * 60 - startTime) + endTime; // المدة بالدقائق
-        
+
         if (overnightDuration > 24 * 60) { // أكثر من 24 ساعة
           this.validationErrors.endTime = 'Shift duration cannot exceed 24 hours';
         } else if (overnightDuration <= 0) {
@@ -302,20 +301,20 @@ export class Shifts implements OnInit {
   // Helper function to convert time string to minutes (for internal use only)
   private timeToMinutes(timeStr: string): number {
     if (!timeStr) return 0;
-    
+
     // إذا كان الوقت بصيغة AM/PM
     if (timeStr.includes('AM') || timeStr.includes('PM')) {
       const [time, period] = timeStr.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
-      
+
       let totalMinutes = hours * 60 + (minutes || 0);
-      
+
       if (period === 'PM' && hours !== 12) {
         totalMinutes += 12 * 60;
       } else if (period === 'AM' && hours === 12) {
         totalMinutes -= 12 * 60;
       }
-      
+
       return totalMinutes;
     } else {
       // إذا كان الوقت بصيغة 24 ساعة (HH:MM)
@@ -327,12 +326,12 @@ export class Shifts implements OnInit {
   // Helper function to convert time input (HH:MM) to AM/PM format for API
   private formatTimeForAPI(timeStr: string): string {
     if (!timeStr) return '';
-    
+
     const [hours, minutes] = timeStr.split(':').map(Number);
     const period = hours >= 12 ? 'PM' : 'AM';
     let displayHours = hours % 12;
     displayHours = displayHours === 0 ? 12 : displayHours;
-    
+
     return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   }
 
@@ -342,9 +341,9 @@ export class Shifts implements OnInit {
 
     const startMinutes = this.timeToMinutes(startTime);
     const endMinutes = this.timeToMinutes(endTime);
-    
+
     let durationMinutes: number;
-    
+
     if (endMinutes <= startMinutes) {
       // شفت ليلي - يمتد إلى اليوم التالي
       durationMinutes = (24 * 60 - startMinutes) + endMinutes;
@@ -352,10 +351,10 @@ export class Shifts implements OnInit {
       // شفت عادي
       durationMinutes = endMinutes - startMinutes;
     }
-    
+
     const hours = Math.floor(durationMinutes / 60);
     const minutes = durationMinutes % 60;
-    
+
     if (hours > 0 && minutes > 0) {
       return `${hours}h ${minutes}m`;
     } else if (hours > 0) {
@@ -434,7 +433,7 @@ export class Shifts implements OnInit {
     this.isLoading = true;
 
     let obs$;
-    
+
     if (this.isEditing && this.newShift._id) {
       obs$ = this.crud.update<Shift>('shifts', this.newShift._id, payload);
     } else {
@@ -445,7 +444,7 @@ export class Shifts implements OnInit {
       next: (res: any) => {
         this.isLoading = false;
         console.log('API Response:', res);
-        
+
         if (res && (res.data || res._id)) {
           this.handleSaveSuccess(res.data || res);
         } else {
@@ -454,7 +453,7 @@ export class Shifts implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        
+
         // إذا كان الخطأ متعلقاً بتنسيق الوقت، نجرب التنسيق الآخر
         if (err.status === 422 || err.status === 400) {
           const errorMessage = err.error?.message || err.error?.error || '';
@@ -463,7 +462,7 @@ export class Shifts implements OnInit {
             return;
           }
         }
-        
+
         this.handleApiError(err);
       }
     });
@@ -472,7 +471,7 @@ export class Shifts implements OnInit {
   // دالة جديدة لمحاولة تنسيق وقت بديل
   private tryAlternativeTimeFormat(originalPayload: any) {
     console.log('Trying alternative time format...');
-    
+
     // تحويل من 24 ساعة إلى 12 ساعة (AM/PM)
     const startTimeFormatted = this.formatTimeForAPI(originalPayload.startTime);
     const endTimeFormatted = this.formatTimeForAPI(originalPayload.endTime);
@@ -488,7 +487,7 @@ export class Shifts implements OnInit {
     this.isLoading = true;
 
     let obs$;
-    
+
     if (this.isEditing && this.newShift._id) {
       obs$ = this.crud.update<Shift>('shifts', this.newShift._id, alternativePayload);
     } else {
@@ -499,7 +498,7 @@ export class Shifts implements OnInit {
       next: (res: any) => {
         this.isLoading = false;
         console.log('API Response with alternative format:', res);
-        
+
         if (res && (res.data || res._id)) {
           this.handleSaveSuccess(res.data || res);
           this.toastr.success('Shift saved successfully with time format adjustment');
@@ -509,7 +508,7 @@ export class Shifts implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        
+
         // إذا فشلت المحاولة الثانية، نعرض رسالة واضحة
         if (err.status === 422 || err.status === 400) {
           const errorMessage = err.error?.message || err.error?.error || '';
@@ -518,7 +517,7 @@ export class Shifts implements OnInit {
             return;
           }
         }
-        
+
         this.handleApiError(err);
       }
     });
@@ -548,14 +547,14 @@ export class Shifts implements OnInit {
 
   private handleApiError(err: any) {
     console.error('API Error Details:', err);
-    
+
     let errorMessage = 'Operation failed';
     let errorDetails = '';
 
     // معالجة مختلف أشكال الأخطاء من الـ API
     if (err.status === 422) {
       errorMessage = 'Validation Error';
-      
+
       if (err.error && err.error.details) {
         // إذا كان الخطأ يحتوي على details
         if (typeof err.error.details === 'string') {
@@ -593,9 +592,9 @@ export class Shifts implements OnInit {
 
   private formatObjectErrors(errorObj: any): string {
     if (!errorObj) return '';
-    
+
     const errors: string[] = [];
-    
+
     for (const [field, messages] of Object.entries(errorObj)) {
       if (Array.isArray(messages)) {
         errors.push(`${field}: ${messages.join(', ')}`);
@@ -603,7 +602,7 @@ export class Shifts implements OnInit {
         errors.push(`${field}: ${messages}`);
       }
     }
-    
+
     return errors.join('; ');
   }
 
@@ -629,7 +628,7 @@ export class Shifts implements OnInit {
       'endTime': 'endTime',
       'departmentId': 'departmentId'
     };
-    
+
     return fieldMap[apiField] || 'general';
   }
 
@@ -669,7 +668,7 @@ export class Shifts implements OnInit {
   }
 
   confirmDelete(id?: string) {
-    if (!id) return; 
+    if (!id) return;
     this.showDeleteConfirm = true;
     this.shiftToDeleteId = id;
   }
@@ -687,16 +686,16 @@ export class Shifts implements OnInit {
     this.crud.delete<Shift>('shifts', this.shiftToDeleteId).subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        
+
         // إزالة من القائمة المحلية
         this.shifts = this.shifts.filter(s => (s._id !== this.shiftToDeleteId && s.id !== this.shiftToDeleteId));
-        
+
         // تحديث الفلترة والترقيم
         this.applyFilters();
-        
+
         this.toastr.success(res?.message || 'Shift deleted successfully');
         this.cancelDelete();
-        
+
         // إعادة تحميل البيانات للتأكد من المزامنة
         this.refreshData();
       },
