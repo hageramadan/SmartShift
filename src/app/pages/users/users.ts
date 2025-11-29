@@ -1,3 +1,4 @@
+import { AuthService } from '../../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,6 +32,11 @@ export class Users implements OnInit {
   selectedRole: string = '';
   searchTerm: string = '';
 
+  // Current user info
+  currentUser: UserI | null = null;
+  isManager = false;
+  userDepartmentId = '';
+
   // Pagination variables
   currentPage: number = 1;
   pageSize: number = 10;
@@ -60,11 +66,32 @@ export class Users implements OnInit {
     private toastr: ToastrService,
     private sharedSrv: SharedService,
     private crud: CrudService,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
+    this.loadCurrentUser();
     this.loadAllSharedData();
   }
+
+  loadCurrentUser() {
+  this.currentUser = this.authService.getCurrentUser();
+  this.isManager = this.currentUser?.role === 'manager';
+  this.userDepartmentId = this.currentUser?.departmentId || '';
+  if (this.isManager) {
+    this.selectedDepartmentId = this.userDepartmentId;
+    this.formData.departmentId = this.userDepartmentId;
+  }
+}
+
+getFilteredDepartments() {
+  if (!this.isManager) {
+    return this.departments;
+  }
+  return this.departments.filter(dept =>
+    dept._id === this.userDepartmentId
+  );
+}
 
   loadAllSharedData() {
     this.sharedSrv.loadAll();
@@ -84,7 +111,7 @@ export class Users implements OnInit {
 
     // Get first 3 letters of department name (uppercase)
     const deptPrefix = department.name.substring(0, 3).toUpperCase();
-    
+
     // Get current year
     const currentYear = new Date().getFullYear();
 
@@ -105,7 +132,11 @@ export class Users implements OnInit {
   // Filter methods
   applyFilters() {
     let filtered = [...this.users];
-
+    if (this.isManager) {
+    filtered = filtered.filter(user =>
+      user.department?._id === this.userDepartmentId
+    );
+  }
     // Apply department filter
     if (this.selectedDepartmentId) {
       filtered = filtered.filter(user =>
@@ -170,6 +201,9 @@ export class Users implements OnInit {
     this.selectedPositionId = '';
     this.selectedRole = '';
     this.searchTerm = '';
+    if (this.isManager) {
+    this.selectedDepartmentId = this.userDepartmentId;
+    }
     this.applyFilters();
   }
 
@@ -222,7 +256,6 @@ export class Users implements OnInit {
     this.showForm = true;
     this.selectedUser = null;
     this.submitted = false;
-
     this.formData = {
       firstName: '',
       lastName: '',
@@ -233,8 +266,11 @@ export class Users implements OnInit {
       positionId: '',
       levelId: '',
       departmentId: '',
-      password: 'Passw0rd123'
+      password: 'Passw0rd123@'
     };
+    if (this.isManager) {
+    this.formData.departmentId = this.userDepartmentId;
+    }
   }
 
   editUser(user: UserI) {
