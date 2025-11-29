@@ -41,7 +41,7 @@ const VALIDATION_MESSAGES = {
     required: 'Shift is required'
   },
   subDepartmentId: {
-    required: 'Sub Department is required'
+    required: ''
   }
 };
 
@@ -58,7 +58,7 @@ export class Schedules implements OnInit, OnDestroy {
   subDepartments: SubDepartmentI[] = [];
   users: UserI[] = [];
   shifts: ShiftI[] = [];
-  
+
   // Filtered Data
   filteredSubDepartments: SubDepartmentI[] = [];
   filteredUsers: UserI[] = [];
@@ -160,7 +160,7 @@ export class Schedules implements OnInit, OnDestroy {
 
   private initializeUserData(): void {
     this.currentUser = this.authService.getCurrentUser();
-    
+
     if (this.currentUser) {
       this.isAdminUser = this.currentUser.role === 'admin';
       this.isManagerUser = this.currentUser.role === 'manager';
@@ -305,11 +305,11 @@ export class Schedules implements OnInit, OnDestroy {
     if (this.isAdminUser) {
       return allUsers;
     } else if (this.isManagerUser && this.userDepartmentId) {
-      return allUsers.filter(user => 
+      return allUsers.filter(user =>
         user.departmentId === this.userDepartmentId
       );
     } else if (this.userDepartmentId) {
-      return allUsers.filter(user => 
+      return allUsers.filter(user =>
         user.departmentId === this.userDepartmentId
       );
     } else {
@@ -338,7 +338,7 @@ export class Schedules implements OnInit, OnDestroy {
 
     this.filteredUsers = [...this.users];
 
-    this.filteredShifts = this.shifts.filter(shift => 
+    this.filteredShifts = this.shifts.filter(shift =>
       shift.departmentId === this.userDepartmentId
     );
 
@@ -365,7 +365,7 @@ export class Schedules implements OnInit, OnDestroy {
 
     this.filteredUsers = [...this.users];
 
-    this.filteredShifts = this.shifts.filter(shift => 
+    this.filteredShifts = this.shifts.filter(shift =>
       shift.departmentId === this.userDepartmentId
     );
 
@@ -415,13 +415,13 @@ export class Schedules implements OnInit, OnDestroy {
 
   filterShiftsByDepartment(departmentId: string): void {
     if (departmentId) {
-      this.filteredShifts = this.shifts.filter(shift => 
+      this.filteredShifts = this.shifts.filter(shift =>
         shift.departmentId === departmentId
       );
     } else {
       this.filterDataBasedOnRole();
     }
-    
+
     console.log('🔍 Shifts filtered for department:', {
       departmentId: departmentId,
       filteredCount: this.filteredShifts.length,
@@ -437,7 +437,7 @@ export class Schedules implements OnInit, OnDestroy {
     this.editingScheduleId = null;
     this.resetNewScheduleForm();
     this.clearBulkFormErrors();
-    
+
     // ✅ نطبق الفلترة الأولية بناءً على صلاحية المستخدم
     this.applyModalInitialFilters();
   }
@@ -466,7 +466,7 @@ export class Schedules implements OnInit, OnDestroy {
       this.filteredUsers = [...this.users];
       this.filteredShifts = [...this.shifts];
     }
-    
+
     console.log('📋 Modal initial filters applied:', {
       userType: this.isAdminUser ? 'Admin' : (this.isManagerUser ? 'Manager' : 'User'),
       departmentId: this.userDepartmentId,
@@ -478,7 +478,7 @@ export class Schedules implements OnInit, OnDestroy {
 
   onModalDepartmentChange(): void {
     console.log('🔄 Modal department changed to:', this.newSchedule.departmentId);
-    
+
     if (this.newSchedule.departmentId) {
       this.applyModalDepartmentFilter(this.newSchedule.departmentId);
     } else {
@@ -493,13 +493,15 @@ export class Schedules implements OnInit, OnDestroy {
 
   applyModalDepartmentFilter(departmentId: string): void {
     console.log('🎯 Applying modal filter for department:', departmentId);
-    
+
     if (!this.canAccessDepartment(departmentId)) {
       this.toastr.warning('You do not have access to this department');
       this.newSchedule.departmentId = '';
       this.applyModalInitialFilters();
       return;
     }
+
+
 
     // ✅ فلترة الأقسام الفرعية بناءً على القسم المختار
     this.filteredSubDepartments = this.subDepartments.filter(
@@ -517,8 +519,8 @@ export class Schedules implements OnInit, OnDestroy {
     );
 
     // ✅ فلترة الشفتات بناءً على القسم المختار - هذا هو الجزء المهم
-    this.filteredShifts = this.shifts.filter(shift => 
-      shift.departmentId === departmentId
+    this.filteredShifts = this.shifts.filter(shift =>
+    shift.departmentId === departmentId
     );
 
     console.log('📋 Modal department filter applied:', {
@@ -544,7 +546,7 @@ export class Schedules implements OnInit, OnDestroy {
       };
       this.selectedDates = [];
       this.dateRange = { start: '', end: '' };
-      
+
       // ✅ تطبيق الفلترة التلقائية في وضع البلك
       this.applyBulkInitialFilters();
     }
@@ -561,7 +563,7 @@ export class Schedules implements OnInit, OnDestroy {
 
   private applyBulkInitialFilters(): void {
     console.log('🔄 Applying bulk initial filters:', this.bulkCreateData.departmentId);
-    
+
     if (this.bulkCreateData.departmentId) {
       this.onBulkDepartmentChange();
     } else {
@@ -572,7 +574,7 @@ export class Schedules implements OnInit, OnDestroy {
 
   onBulkDepartmentChange(): void {
     console.log('🔄 Bulk department changed to:', this.bulkCreateData.departmentId);
-    
+
     if (this.bulkCreateData.departmentId) {
       if (!this.canAccessDepartment(this.bulkCreateData.departmentId)) {
         this.toastr.warning('You do not have access to this department');
@@ -585,12 +587,11 @@ export class Schedules implements OnInit, OnDestroy {
       this.filteredUsers = this.users.filter(
         user => user.departmentId === this.bulkCreateData.departmentId
       );
-      
-      // ✅ فلترة الشفتات بناءً على القسم المختار
-      this.filteredShifts = this.shifts.filter(shift => 
-        shift.departmentId === this.bulkCreateData.departmentId
-      );
 
+      // ✅ فلترة الشفتات بناءً على القسم المختار
+      this.filteredShifts = this.shifts.filter(shift =>
+      shift.departmentId === this.bulkCreateData.departmentId
+    );
       console.log('📦 Bulk modal department filter applied:', {
         departmentId: this.bulkCreateData.departmentId,
         users: this.filteredUsers.length,
@@ -627,8 +628,7 @@ export class Schedules implements OnInit, OnDestroy {
       case 2:
         return this.bulkCreateData.userIds.length > 0 &&
                !!this.bulkCreateData.departmentId &&
-               !!this.bulkCreateData.shiftId &&
-               !!this.bulkCreateData.subDepartmentId;
+               !!this.bulkCreateData.shiftId ;
       default:
         return true;
     }
@@ -713,86 +713,95 @@ export class Schedules implements OnInit, OnDestroy {
   }
 
   createSingleSchedule(): void {
-    if (!this.validateSchedule(this.newSchedule)) {
-      this.error = 'Please fix the validation errors before submitting';
-      return;
-    }
-
-    if (!this.validateUserAccess(this.newSchedule)) {
-      return;
-    }
-
-    this.loading = true;
-
-    if (this.editingScheduleId) {
-      console.log('✏️ Updating schedule:', this.editingScheduleId, this.newSchedule);
-      
-      this.schedulesService.updateSchedule(this.editingScheduleId, this.newSchedule)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            const index = this.schedules.findIndex(s => s._id === this.editingScheduleId);
-            if (index !== -1) {
-              this.schedules[index] = { ...this.schedules[index], ...response.data };
-            }
-            
-            this.closeModal();
-            this.loading = false;
-            this.loadSchedules();
-            this.toastr.success('Schedule updated successfully');
-          },
-          error: (err) => {
-            this.handleError('Failed to update schedule', err);
-            this.loading = false;
-          }
-        });
-    } else {
-      console.log('➕ Creating single schedule:', this.newSchedule);
-
-      this.schedulesService.createSchedule(this.newSchedule)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            this.schedules.unshift(response.data!);
-            this.closeModal();
-            this.loading = false;
-            this.loadSchedules();
-            this.toastr.success('Schedule created successfully');
-          },
-          error: (err) => {
-            this.handleError('Failed to create schedule', err);
-            this.loading = false;
-          }
-        });
-    }
+  if (!this.validateSchedule(this.newSchedule)) {
+    this.error = 'Please fix the validation errors before submitting';
+    return;
   }
+
+  if (!this.validateUserAccess(this.newSchedule)) {
+    return;
+  }
+
+  this.loading = true;
+
+  const payload: any = {
+    date: this.newSchedule.date,
+    departmentId: this.newSchedule.departmentId,
+    userId: this.newSchedule.userId,
+    shiftId: this.newSchedule.shiftId
+  };
+
+  if (this.newSchedule.subDepartmentId && this.newSchedule.subDepartmentId.trim() !== '') {
+    payload.subDepartmentId = this.newSchedule.subDepartmentId;
+  }
+
+  console.log('➕ Creating/Updating schedule with payload:', payload);
+
+  let obs$;
+
+  if (this.editingScheduleId) {
+    obs$ = this.schedulesService.updateSchedule(this.editingScheduleId, payload);
+  } else {
+    obs$ = this.schedulesService.createSchedule(payload);
+  }
+
+  obs$.subscribe({
+    next: (response) => {
+      const index = this.schedules.findIndex(s => s._id === this.editingScheduleId);
+      if (index !== -1) {
+        this.schedules[index] = { ...this.schedules[index], ...response.data };
+      }
+
+      this.closeModal();
+      this.loading = false;
+      this.loadSchedules();
+      this.toastr.success('Schedule updated successfully');
+    },
+    error: (err) => {
+      this.handleError('Failed to update schedule', err);
+      this.loading = false;
+    }
+  });
+}
 
   createBulkSchedules(): void {
-    if (!this.validateBulkCreate()) {
-      this.error = 'Please fix the validation errors before submitting';
-      return;
-    }
-
-    this.loading = true;
-    console.log('➕ Creating bulk schedules:', this.bulkCreateData);
-
-    this.schedulesService.createMultipleSchedules(this.bulkCreateData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.closeModal();
-          this.loading = false;
-          this.loadSchedules();
-          this.error = '';
-          this.toastr.success(`Successfully created ${response.data?.length || 0} schedules`);
-          console.log('✅ Bulk schedules created successfully:', response);
-        },
-        error: (err) => {
-          this.handleError('Failed to create schedules', err);
-          this.loading = false;
-        }
-      });
+  if (!this.validateBulkCreate()) {
+    this.error = 'Please fix the validation errors before submitting';
+    return;
   }
+
+  this.loading = true;
+
+  const payload: any = {
+    dates: this.bulkCreateData.dates,
+    userIds: this.bulkCreateData.userIds,
+    departmentId: this.bulkCreateData.departmentId,
+    shiftId: this.bulkCreateData.shiftId
+  };
+
+  if (this.bulkCreateData.subDepartmentId && this.bulkCreateData.subDepartmentId.trim() !== '') {
+    payload.subDepartmentId = this.bulkCreateData.subDepartmentId;
+  }
+
+  console.log('➕ Creating bulk schedules with payload:', payload);
+
+  this.schedulesService.createMultipleSchedules(payload)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response) => {
+        this.closeModal();
+        this.loading = false;
+        this.loadSchedules();
+        this.error = '';
+        this.toastr.success(`Successfully created ${response.data?.length || 0} schedules`);
+        console.log('✅ Bulk schedules created successfully:', response);
+      },
+      error: (err) => {
+        this.handleError('Failed to create schedules', err);
+        this.loading = false;
+      }
+    });
+}
 
   // ==================== UPDATE SCHEDULE METHOD ====================
 
@@ -803,7 +812,7 @@ export class Schedules implements OnInit, OnDestroy {
     }
 
     this.editingScheduleId = schedule._id;
-    
+
     this.newSchedule = {
       date: schedule.date,
       departmentId: schedule.departmentId || '',
@@ -820,7 +829,7 @@ export class Schedules implements OnInit, OnDestroy {
     } else {
       this.applyModalInitialFilters();
     }
-    
+
     this.showCreateModal = true;
     this.createMode = 'single';
   }
@@ -887,11 +896,6 @@ export class Schedules implements OnInit, OnDestroy {
       isValid = false;
     }
 
-    if (!schedule.subDepartmentId) {
-      this.formErrors.subDepartmentId = VALIDATION_MESSAGES.subDepartmentId.required;
-      isValid = false;
-    }
-
     return isValid;
   }
 
@@ -916,11 +920,6 @@ export class Schedules implements OnInit, OnDestroy {
 
     if (!this.bulkCreateData.shiftId) {
       this.bulkFormErrors.shiftId = 'Shift is required';
-      isValid = false;
-    }
-
-    if (!this.bulkCreateData.subDepartmentId) {
-      this.bulkFormErrors.subDepartmentId = 'Sub Department is required';
       isValid = false;
     }
 
@@ -1144,8 +1143,8 @@ export class Schedules implements OnInit, OnDestroy {
   // ==================== UTILITY METHODS ====================
 
   private getSubDepartmentDepartmentId(sub: SubDepartmentI): string | undefined {
-    return typeof sub.departmentId === 'string' 
-      ? sub.departmentId 
+    return typeof sub.departmentId === 'string'
+      ? sub.departmentId
       : sub.department?._id;
   }
 
@@ -1169,16 +1168,15 @@ export class Schedules implements OnInit, OnDestroy {
     return !!schedule.date &&
            !!schedule.departmentId &&
            !!schedule.userId &&
-           !!schedule.shiftId &&
-           !!schedule.subDepartmentId;
+           !!schedule.shiftId ;
   }
 
   isBulkFormValid(): boolean {
     return this.bulkCreateData.dates.length > 0 &&
            this.bulkCreateData.userIds.length > 0 &&
            !!this.bulkCreateData.departmentId &&
-           !!this.bulkCreateData.shiftId &&
-           !!this.bulkCreateData.subDepartmentId;
+           !!this.bulkCreateData.shiftId ;
+
   }
 
   refreshData(): void {
@@ -1200,34 +1198,34 @@ export class Schedules implements OnInit, OnDestroy {
   getPageNumbers(): number[] {
     const totalPages = this.pagination.totalPages;
     const currentPage = this.pagination.page;
-    
+
     if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-    
+
     const pages: number[] = [];
-    
+
     pages.push(1);
-    
+
     let start = Math.max(2, currentPage - 1);
     let end = Math.min(totalPages - 1, currentPage + 1);
-    
+
     if (start > 2) {
       pages.push(-1);
     }
-    
+
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
-    
+
     if (end < totalPages - 1) {
       pages.push(-1);
     }
-    
+
     if (totalPages > 1) {
       pages.push(totalPages);
     }
-    
+
     return pages;
   }
 
@@ -1343,7 +1341,7 @@ export class Schedules implements OnInit, OnDestroy {
 
   getDepartmentName(departmentId: string): string {
     if (!departmentId) return 'No Department';
-    
+
     const department = this.departments.find(dept => dept._id === departmentId);
     return department?.name || `Department (${departmentId.substring(0, 6)}...)`;
   }

@@ -467,14 +467,13 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2 required">Sub Department</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Sub Department</label>
                 <select
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-transparent transition-all"
                   [class.border-red-500]="formErrors.subDepartmentId"
                   [(ngModel)]="newSchedule.subDepartmentId"
-                  name="subDepartmentId"
-                  required>
-                  <option value="">Select Sub Department</option>
+                  name="subDepartmentId">
+                  <option value="">Select Sub Department (Optional)</option>
                   <option *ngFor="let subDept of filteredSubDepartments" [value]="subDept._id">
                     {{ subDept.name }}
                   </option>
@@ -513,7 +512,7 @@
                   name="shiftId"
                   required>
                   <option value="">Select Shift</option>
-                  <option *ngFor="let shift of shifts" [value]="shift._id">
+                  <option *ngFor="let shift of filteredShifts" [value]="shift._id">
                     {{ shift.shiftName }} ({{ shift.shiftType }}) - {{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }}
                   </option>
                 </select>
@@ -632,11 +631,11 @@
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-3 required">Sub Department</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-3">Sub Department</label>
                   <select
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-transparent transition-all"
                     [(ngModel)]="bulkCreateData.subDepartmentId">
-                    <option value="">Select Sub Department</option>
+                    <option value="">Select Sub Department (Optional)</option>
                     <option *ngFor="let subDept of filteredSubDepartments" [value]="subDept._id">
                       {{ subDept.name }}
                     </option>
@@ -649,7 +648,7 @@
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-700 focus:border-transparent transition-all"
                     [(ngModel)]="bulkCreateData.shiftId">
                     <option value="">Select Shift</option>
-                    <option *ngFor="let shift of shifts" [value]="shift._id">
+                    <option *ngFor="let shift of filteredShifts" [value]="shift._id">
                       {{ shift.shiftName }} ({{ shift.shiftType }}) - {{ shift.startTimeFormatted }} - {{ shift.endTimeFormatted }}
                     </option>
                   </select>
