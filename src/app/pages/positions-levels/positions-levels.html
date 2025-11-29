@@ -10,7 +10,10 @@
       </div>
     </div>
   </div>
-
+  <div *ngIf="loading" class="text-center py-12">
+    <i class="fa-solid fa-spinner fa-spin text-4xl text-pro"></i>
+  </div>
+  <div *ngIf="!loading">
   <!-- Main Content -->
   <div class=" px-4 py-6">
     <!-- Tabs Navigation -->

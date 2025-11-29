@@ -1,5 +1,5 @@
 <!-- Topbar للشاشات الصغيرة -->
-<header class="flex z-50 fixed top-0 left-0 w-full bg-white justify-between items-center p-4 border-b border-gray-200 md-hidden">
+<header class="flex z-50 fixed top-0 left-0 w-full bg-white justify-between items-center p-4 border-b border-gray-200 md:hidden">
   <div class="flex items-center gap-1">
     <div class="bg-pro text-white p-2 rounded-lg text-center">
       <i class="fa-solid fa-hospital"></i>
@@ -16,12 +16,16 @@
 <app-sidebar
   [isSidebarOpen]="isSidebarOpen"
   [screenWidth]="screenWidth"
+  [isMiniSidebar]="isMiniSidebar"
+  (toggleMiniSidebar)="toggleMiniSidebar()"
 >
 </app-sidebar>
 
 <!-- Content -->
 <div
-   class="flex-1 transition-all duration-300 ml-4 lg:ml-64 mt-20 lg:mt-5"
+  class="flex-1 transition-all duration-300 mt-20 lg:mt-5"
+  [class.ml-16]="isMiniSidebar && screenWidth >= 1020"
+  [class.ml-64]="!isMiniSidebar && screenWidth >= 1020"
   [class.ml-0]="screenWidth < 1020"
   (click)="closeSidebarOnOutside()"
 >
