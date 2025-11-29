@@ -16,27 +16,26 @@
   <!-- Advanced Filter Section -->
   <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-      
       <!-- Department Filter -->
       <div class="flex-1 w-full">
         <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            <i class="fas fa-filter mr-2 text-green-600"></i>
+            <i class="fas fa-filter mr-2 text-teal-600"></i>
             Filter by Department
           </label>
           <div class="relative">
             <select
               [(ngModel)]="selectedDepartmentId"
               (change)="applyFilters()"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
+              class="w-full px-4 py-3 border border-gray-400 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-teal-700/60 text-gray-600"
             >
               <option value="">All Departments</option>
               <option *ngFor="let department of departments" [value]="department._id">
-                {{department.name}}
+                {{ department.name }}
               </option>
             </select>
             <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+              <i class="fas fa-chevron-down text-teal-600 text-sm"></i>
             </div>
           </div>
         </div>
@@ -46,22 +45,22 @@
       <div class="flex-1 w-full">
         <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            <i class="fas fa-filter mr-2 text-green-600"></i>
+            <i class="fas fa-filter mr-2 text-teal-600"></i>
             Filter by Position
           </label>
           <div class="relative">
             <select
               [(ngModel)]="selectedPositionId"
               (change)="applyFilters()"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
+              class="w-full px-4 py-3 border border-gray-400 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-teal-700/60 text-gray-600"
             >
               <option value="">All Positions</option>
               <option *ngFor="let position of positions" [value]="position._id">
-                {{position.name}}
+                {{ position.name }}
               </option>
             </select>
             <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+              <i class="fas fa-chevron-down text-teal-600 text-sm"></i>
             </div>
           </div>
         </div>
@@ -71,22 +70,22 @@
       <div class="flex-1 w-full">
         <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            <i class="fas fa-filter mr-2 text-green-600"></i>
+            <i class="fas fa-filter mr-2 text-teal-600"></i>
             Filter by Role
           </label>
           <div class="relative">
             <select
               [(ngModel)]="selectedRole"
               (change)="applyFilters()"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
+              class="w-full px-4 py-3 border border-gray-400 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-teal-700/60 text-gray-600"
             >
               <option value="">All Roles</option>
               <option *ngFor="let role of roles" [value]="role">
-                {{role}}
+                {{ role }}
               </option>
             </select>
             <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+              <i class="fas fa-chevron-down text-teal-600 text-sm"></i>
             </div>
           </div>
         </div>
@@ -95,7 +94,7 @@
       <!-- Search Input -->
       <div class="flex-1 w-full">
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          <i class="fas fa-search mr-2 text-green-600"></i>
+          <i class="fas fa-search mr-2 text-teal-600"></i>
           Search Users
         </label>
         <div class="relative">
@@ -104,17 +103,17 @@
             [(ngModel)]="searchTerm"
             (input)="onSearch()"
             placeholder="Search user names..."
-            class="w-full pl-11 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white hover:border-green-500/60"
-          >
+            class="w-full pl-11 pr-10 py-3 border border-gray-400 rounded-xl focus:ring-0 focus:ring-teal-600 focus:border-teal-600 outline-none text-sm bg-white hover:border-teal-800/60 text-gray-600"
+          />
           <div class="absolute left-3 top-1/2 transform -translate-y-1/2">
-            <i class="fas fa-search text-gray-400"></i>
+            <i class="fas fa-search text-gray-300"></i>
           </div>
-          <div 
-            *ngIf="searchTerm" 
+          <div
+            *ngIf="searchTerm"
             class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
             (click)="clearSearch()"
           >
-            <i class="fas fa-times text-gray-400 hover:text-red-500"></i>
+            <i class="fas fa-times text-gray-400 hover:text-teal-500"></i>
           </div>
         </div>
       </div>
@@ -123,17 +122,17 @@
       <div class="flex gap-2 self-end">
         <button
           (click)="refreshData()"
-          class="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:border-green-500 hover:bg-green-500/5 text-sm font-medium text-gray-700 hover:text-green-600"
+          class="flex items-center gap-2 px-4 py-3 border border-none rounded-xl hover:border-teal-700 hover:bg-green-500/5 text-sm font-medium text-gray-600"
           title="Refresh Data"
         >
           <i class="fas fa-sync-alt text-xs"></i>
           Refresh
         </button>
-        
+
         <button
           *ngIf="hasActiveFilters()"
           (click)="clearAllFilters()"
-          class="flex items-center gap-2 px-4 py-3 border border-red-200 rounded-xl hover:border-red-300 hover:bg-red-50 text-sm font-medium text-red-600 hover:text-red-700"
+          class="flex items-center gap-2 px-4 py-3 border border-teal-800 rounded-xl border-none hover:bg-red-50 text-sm font-medium text-red-400 hover:text-red-800"
           title="Clear All Filters"
         >
           <i class="fas fa-times text-xs"></i>
@@ -144,34 +143,46 @@
 
     <!-- Active Filters Display -->
     <div *ngIf="hasActiveFilters()" class="mt-4 flex flex-wrap gap-2">
-      <div *ngIf="searchTerm" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-sm border border-blue-200">
+      <div
+        *ngIf="searchTerm"
+        class="flex items-center gap-2 bg-blue-50 text-teal-900 px-3 py-2 rounded-lg text-sm border border-gray-300"
+      >
         <i class="fas fa-search text-xs"></i>
-        <span>Search: "{{searchTerm}}"</span>
-        <button (click)="clearSearch()" class="hover:text-blue-900 ml-1">
+        <span>Search: "{{ searchTerm }}"</span>
+        <button (click)="clearSearch()" class="hover:text-gray-900 ml-1">
           <i class="fas fa-times text-xs"></i>
         </button>
       </div>
-      
-      <div *ngIf="selectedDepartmentId" class="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm border border-green-200">
+
+      <div
+        *ngIf="selectedDepartmentId"
+        class="flex items-center gap-2 bg-green-50 text-teal-700 px-3 py-2 rounded-lg text-sm border border-green-200"
+      >
         <i class="fas fa-building text-xs"></i>
-        <span>Department: {{getDepartmentName(selectedDepartmentId)}}</span>
-        <button (click)="clearDepartmentFilter()" class="hover:text-green-900 ml-1">
+        <span>Department: {{ getDepartmentName(selectedDepartmentId) }}</span>
+        <button (click)="clearDepartmentFilter()" class="hover:text-gray-700 ml-1">
           <i class="fas fa-times text-xs"></i>
         </button>
       </div>
 
-      <div *ngIf="selectedPositionId" class="flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-2 rounded-lg text-sm border border-purple-200">
+      <div
+        *ngIf="selectedPositionId"
+        class="flex items-center gap-2 bg-purple-50 text-gray-700 px-3 py-2 rounded-lg text-sm border border-gray-300"
+      >
         <i class="fas fa-briefcase text-xs"></i>
-        <span>Position: {{getPositionName(selectedPositionId)}}</span>
-        <button (click)="clearPositionFilter()" class="hover:text-purple-900 ml-1">
+        <span>Position: {{ getPositionName(selectedPositionId) }}</span>
+        <button (click)="clearPositionFilter()" class="hover:text-gray-700 ml-1">
           <i class="fas fa-times text-xs"></i>
         </button>
       </div>
 
-      <div *ngIf="selectedRole" class="flex items-center gap-2 bg-orange-50 text-orange-700 px-3 py-2 rounded-lg text-sm border border-orange-200">
+      <div
+        *ngIf="selectedRole"
+        class="flex items-center gap-2 bg-green-50 text-teal-700 px-3 py-2 rounded-lg text-sm border border-green-200"
+      >
         <i class="fas fa-user-tag text-xs"></i>
-        <span>Role: {{selectedRole}}</span>
-        <button (click)="clearRoleFilter()" class="hover:text-orange-900 ml-1">
+        <span>Role: {{ selectedRole }}</span>
+        <button (click)="clearRoleFilter()" class="hover:text-gray-700 ml-1">
           <i class="fas fa-times text-xs"></i>
         </button>
       </div>
@@ -181,18 +192,15 @@
   <!-- Results Summary -->
   <div class="mb-4 flex items-center justify-between">
     <p class="text-sm text-gray-600">
-      Showing <span class="font-semibold text-green-600">{{filteredUsers.length}}</span> 
-      of <span class="font-semibold">{{users.length}}</span> users
-      <span *ngIf="hasActiveFilters()" class="text-green-600 font-medium ml-2">
+      Showing <span class="font-semibold text-teal-600">{{ filteredUsers.length }}</span> of
+      <span class="font-semibold text-teal-600">{{ users.length }}</span> users
+      <span *ngIf="hasActiveFilters()" class="text-teal-600 font-medium ml-2">
         • Filtered Results
       </span>
     </p>
-    
+
     <div *ngIf="filteredUsers.length === 0 && hasActiveFilters()" class="text-sm">
-      <button 
-        (click)="clearAllFilters()"
-        class="text-green-600 hover:text-green-700 font-medium"
-      >
+      <button (click)="clearAllFilters()" class="text-teal-600 hover:text-teal-700 font-medium">
         <i class="fas fa-redo mr-1"></i>
         Clear filters to see all users
       </button>
@@ -259,19 +267,23 @@
                 {{ hasActiveFilters() ? 'No users match your filters' : 'No users found' }}
               </p>
               <p class="text-xs">
-                {{ hasActiveFilters() ? 'Try adjusting your search or filters' : 'Create your first user to get started' }}
+                {{
+                  hasActiveFilters()
+                    ? 'Try adjusting your search or filters'
+                    : 'Create your first user to get started'
+                }}
               </p>
-              <button 
+              <button
                 *ngIf="hasActiveFilters()"
                 (click)="clearAllFilters()"
-                class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+                class="mt-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium"
               >
-                Clear All Filters
+                Clear Filters
               </button>
-              <button 
+              <button
                 *ngIf="!hasActiveFilters()"
                 (click)="addUser()"
-                class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+                class="mt-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium"
               >
                 <i class="fas fa-plus mr-1.5"></i>
                 Add First User
@@ -285,9 +297,7 @@
 
   <!-- Pagination -->
   <div *ngIf="filteredUsers.length > 0" class="flex justify-between items-center mt-4">
-    <div class="text-sm text-gray-600">
-      Page {{currentPage}} of {{totalPages}}
-    </div>
+    <div class="text-sm text-gray-600">Page {{ currentPage }} of {{ totalPages }}</div>
     <div class="flex gap-2">
       <button
         (click)="previousPage()"
@@ -329,9 +339,9 @@
           />
           <label
             for="firstName"
-            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium"
           >
-            First Name *
+            First Name<span class="text-red-500">*</span>
           </label>
         </div>
 
@@ -343,13 +353,13 @@
             type="text"
             [ngClass]="{ 'border-red-500': submitted && !formData.lastName }"
             class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
-            placeholder="First Name"
+            placeholder=" "
           />
           <label
             for="LastName"
-            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium"
           >
-            last Name *
+            last Name <span class="text-red-500">*</span>
           </label>
         </div>
 
@@ -360,11 +370,11 @@
             id="nickname"
             type="text"
             class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
-            placeholder="Nickname"
+            placeholder=" "
           />
           <label
             for="nickname"
-            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium"
           >
             Nickname
           </label>
@@ -381,7 +391,7 @@
           />
           <label
             for="contactNumber"
-            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium"
           >
             Contact Number
           </label>
@@ -395,13 +405,13 @@
             type="email"
             [ngClass]="{ 'border-red-500': submitted && !formData.email }"
             class="peer border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition placeholder-transparent"
-            placeholder="Email"
+            placeholder=""
           />
           <label
             for="email"
-            class="absolute left-3 top-3 text-gray-500 text-sm transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-sm peer-focus:text-pro bg-white px-1"
+            class="absolute left-3 top-3 text-gray-500 text-sm bg-white px-1 transition-all duration-300 peer-placeholder-shown:top-3 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base peer-focus:-top-2 peer-focus:text-xs peer-focus:text-pro peer-focus:font-medium peer-not-placeholder-shown:-top-2 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-pro peer-not-placeholder-shown:font-medium"
           >
-            Email *
+            Email<span class="text-red-500">*</span>
           </label>
         </div>
 
@@ -410,9 +420,9 @@
           <select
             [(ngModel)]="formData.positionId"
             [ngClass]="{ 'border-red-500': submitted && !formData.positionId }"
-            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition"
+            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition text-gray-700"
           >
-            <option value="" disabled>Select Position *</option>
+            <option value="" disabled>Select Position <span class="text-red-500">*</span></option>
             <option *ngFor="let p of positions" [value]="p._id">{{ p.name }}</option>
           </select>
         </div>
@@ -422,9 +432,9 @@
           <select
             [(ngModel)]="formData.levelId"
             [ngClass]="{ 'border-red-500': submitted && !formData.levelId }"
-            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition"
+            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition text-gray-700"
           >
-            <option value="" disabled>Select Level *</option>
+            <option value="" disabled>Select Level <span class="text-red-500">*</span></option>
             <option *ngFor="let l of levels" [value]="l._id">{{ l.name }}</option>
           </select>
         </div>
@@ -434,9 +444,9 @@
           <select
             [(ngModel)]="formData.role"
             [ngClass]="{ 'border-red-500': submitted && !formData.role }"
-            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition"
+            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition text-gray-700"
           >
-            <option value="" disabled selected>Select Role</option>
+            <option value="" disabled selected>Select Role<span class="text-red-500">*</span></option>
             <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
           </select>
         </div>
@@ -446,9 +456,9 @@
           <select
             [(ngModel)]="formData.departmentId"
             [ngClass]="{ 'border-red-500': submitted && !formData.departmentId }"
-            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition"
+            class="border border-gray-300 focus:border-pro focus:ring-1 focus:ring-pro p-3 w-full rounded-md outline-none transition text-gray-700"
           >
-            <option value="" disabled selected>Select Department *</option>
+            <option value="" disabled selected>Select Department <span class="text-red-500">*</span></option>
             <option *ngFor="let dept of departments" [value]="dept._id">
               {{ dept.name }}
             </option>
@@ -485,7 +495,7 @@
       <div class="flex justify-center gap-4">
         <button
           (click)="deleteUserConfirmed()"
-          class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-md font-medium transition"
+          class="bg-red-400 hover:bg-red-700 text-white px-5 py-2 rounded-md font-medium transition"
         >
           Yes, Delete
         </button>
