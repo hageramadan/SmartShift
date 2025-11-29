@@ -1,4 +1,4 @@
-Overlay
+<!-- Overlay -->
 <div
   class="fixed inset-0 bg-black/15 bg-opacity-30 z-40 transition-opacity duration-300 md:hidden"
   *ngIf="isSidebarOpen && screenWidth < 1020"
@@ -6,21 +6,36 @@ Overlay
 ></div>
 
 <nav
-  class="fixed top-0 left-0 w-64 h-full bg-white flex flex-col shadow z-50 transform transition-transform duration-300"
+  class="fixed top-0 left-0 h-full bg-white flex flex-col shadow z-50 transform transition-all duration-300"
   [class.-translate-x-full]="!isSidebarOpen && screenWidth < 1020"
+  [class.w-64]="!isMiniSidebar"
+  [class.w-16]="isMiniSidebar"
 >
   <!-- Header -->
-  <div class="flex items-center gap-3 mb-6 p-4 border-b border-gray-200">
+  <div class="flex items-center gap-3 mb-6 p-4 border-b border-gray-200 relative" [class.justify-center]="isMiniSidebar">
     <div class="bg-pro text-white p-2 rounded-xl text-center">
       <i class="fa-solid fa-hospital"></i>
     </div>
-    <div>
+    <div *ngIf="!isMiniSidebar">
       <h2 class="text-pro font-semibold text-lg">HealthCare</h2>
       <p class="text-gray-500 text-sm">Admin Portal</p>
     </div>
+
+    <button
+      (click)="onToggleMiniSidebar()"
+      class="absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-pro border-2 border-white rounded-full flex items-center justify-center shadow-lg hover:bg-pro-dark transition-all duration-300 hover:scale-110 z-10 hidden lg:flex"
+      [class.-right-2]="isMiniSidebar"
+      *ngIf="screenWidth >= 1020"
+    >
+      <i
+        class="fa-solid text-white text-xs transition-transform duration-300 cursor-pointer"
+        [class.fa-chevron-left]="!isMiniSidebar"
+        [class.fa-chevron-right]="isMiniSidebar"
+      ></i>
+    </button>
   </div>
 
-  <!-- User Info -->
+    <!-- User Info -->
   <!-- <div class="flex items-center gap-3 pb-4 mb-2 px-4 border-b border-gray-200">
     <div class="w-10 h-10 bg-pro text-white rounded-full flex items-center justify-center">D</div>
     <div>
@@ -29,31 +44,56 @@ Overlay
     </div>
   </div> -->
 
-  <!-- Links -->
-<ul class="flex-1 px-2 overflow-y-auto">
-  <li *ngFor="let link of links">
-    <a
-      [routerLink]="link.path"
-      (click)="closeOnMobile()"
-      class="flex items-center gap-3 p-2 my-2 mx-2 rounded-lg transition-colors duration-300"
-      [ngClass]="{
-        'bg-pro text-white': isLinkActive(link.path),'text-gray-500 hover:bg-gray-100': !isLinkActive(link.path)
-      }"
-    >
-      <i [class]="link.icon" [ngClass]="{'text-white': isLinkActive(link.path), 'text-gray-500': !isLinkActive(link.path)}"></i>
-      {{ link.label }}
-    </a>
-  </li>
-</ul>
 
+  <!-- Links -->
+  <ul class="flex-1 px-2 overflow-y-auto">
+    <li *ngFor="let link of links">
+      <a
+        [routerLink]="link.path"
+        (click)="onLinkClick()"
+        class="flex items-center gap-3 p-2 my-2 mx-2 rounded-lg transition-colors duration-300"
+        [ngClass]="{
+          'bg-pro text-white': isLinkActive(link.path),
+          'text-gray-500 hover:bg-gray-100': !isLinkActive(link.path) && !isMiniSidebar,
+          'hover:bg-gray-50': isMiniSidebar && !isLinkActive(link.path)
+        }"
+        [class.justify-center]="isMiniSidebar"
+      >
+        <i
+          [class]="link.icon"
+          [ngClass]="{
+            'text-white': isLinkActive(link.path),
+            'text-gray-500': !isLinkActive(link.path) && !isMiniSidebar,
+            'text-gray-400 hover:text-gray-500': isMiniSidebar && !isLinkActive(link.path)
+          }"
+        ></i>
+        <span
+          *ngIf="!isMiniSidebar"
+          class="transition-opacity duration-300"
+        >
+          {{ link.label }}
+        </span>
+      </a>
+    </li>
+  </ul>
 
   <!-- Logout -->
-  <div class="mt-4 border-t border-gray-200 pt-2 px-2 w-full py-5 self-end cursor-pointer">
+  <div class="mt-4 border-t border-gray-200 pt-2 px-2 w-full py-5 self-end">
     <a
       (click)="logout()"
-      class="flex items-center text-[0.9rem] gap-4 text-red-500 hover:text-red-600 transition-colors border border-red-400 rounded-xl text-red1 p-2 mt-4 mx-2 bg-red-hover"
+      class="flex items-center text-[0.9rem] gap-4 text-red-500 hover:text-red-600 transition-colors border border-red-400 rounded-xl p-2 mt-4 mx-2 cursor-pointer"
+      [ngClass]="{
+        'justify-center': isMiniSidebar,
+        'hover:bg-red-50': isMiniSidebar
+      }"
     >
-      <i class="fa-solid fa-right-from-bracket ms-3"></i> Logout
+      <i
+        class="fa-solid fa-right-from-bracket"
+        [class.ms-3]="!isMiniSidebar"
+        [class.text-red-400]="isMiniSidebar"
+        [class.hover:text-red-500]="isMiniSidebar"
+      ></i>
+      <span *ngIf="!isMiniSidebar">Logout</span>
     </a>
   </div>
 </nav>
