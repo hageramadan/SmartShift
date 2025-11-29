@@ -1,8 +1,7 @@
-
 /* === الأساسيات === */
 .sidebar {
   width: 250px;
-  height: 100vh; 
+  height: 100vh;
   color: #364153;
   padding: 20px;
   position: fixed;
@@ -12,8 +11,52 @@
   z-index: 1000;
 }
 
+.sidebar.mini {
+  width: 64px;
+}
 
+.sidebar.mini .nav-text {
+  display: none;
+}
 
+.toggle-btn {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: #0ea5e9;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.toggle-btn:hover {
+  background: #0284c7;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.toggle-btn i {
+  color: white;
+  font-size: 10px;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-transition {
+  transition: all 0.3s ease-in-out;
+}
 
 .close-btn {
   display: none;
@@ -33,7 +76,7 @@
 }
 
 .avatar {
- background: var(--primary-color);
+  background: var(--primary-color);
   color: white;
   width: 40px;
   height: 40px;
@@ -72,7 +115,6 @@
   padding-left: 10px;
 }
 
-
 /* === للموبايل === */
 .menu-btn {
   display: none;
@@ -87,6 +129,13 @@
   width: 45px;
   height: 45px;
   z-index: 1100;
+}
+
+@media (max-width: 1020px) {
+  /* إخفاء زر التبديل في الموبايل والتابلت */
+  .toggle-btn {
+    display: none !important;
+  }
 }
 
 @media (max-width: 768px) {

@@ -16,6 +16,7 @@ import { take } from 'rxjs';
 export class App {
   protected readonly title = signal('SmartShift');
   isSidebarOpen = true;
+  isMiniSidebar = false;
   screenWidth = window.innerWidth;
 
   constructor(private authService: AuthService, private sharedService: SharedService) { }
@@ -32,13 +33,17 @@ export class App {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
+  toggleMiniSidebar() {
+    this.isMiniSidebar = !this.isMiniSidebar;
+  }
+
   closeSidebarOnOutside() {
     if (this.screenWidth < 1020) {
       this.isSidebarOpen = false;
     }
   }
 
-    ngOnInit() {
+  ngOnInit() {
     // Restore user session from backend
     this.authService.fetchCurrentUser().pipe(take(1)).subscribe({
       next: (user) => {
