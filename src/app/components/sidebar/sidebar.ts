@@ -81,7 +81,8 @@ export class Sidebar implements OnInit {
       return this.allLinks.filter(link =>
         link.path !== '/departments' &&
         link.path !== '/positions&levels' &&
-        link.path !== '/locations'
+        link.path !== '/locations' &&
+        link.path !== '/calendar-view'
       );
     }
     return this.allLinks;
