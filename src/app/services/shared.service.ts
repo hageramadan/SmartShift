@@ -10,7 +10,7 @@ import { PositionI } from '../models/position-i';
 import { LevelI } from '../models/level-i';
 import { LocationI } from '../models/location-i';
 import { ApiResponse } from '../models/api-response';
-import { ShiftI } from '../models/shift-i'; 
+import { ShiftI } from '../models/shift-i';
 
 type Meta = {
   total?: number;
@@ -29,7 +29,7 @@ export class SharedService {
   private positions$ = new BehaviorSubject<PositionI[]>([]);
   private levels$ = new BehaviorSubject<LevelI[]>([]);
   private locats$ = new BehaviorSubject<LocationI[]>([]);
-  private shifts$ = new BehaviorSubject<ShiftI[]>([]); 
+  private shifts$ = new BehaviorSubject<ShiftI[]>([]);
 
   private meta = {
     users: new BehaviorSubject<Meta>({}),
@@ -55,7 +55,7 @@ export class SharedService {
       poss: this.api.getAll<ApiResponse<PositionI[]>>('positions'),
       lvls: this.api.getAll<ApiResponse<LevelI[]>>('levels'),
       locats: this.api.getAll<ApiResponse<LocationI[]>>('locations'),
-      shifts: this.api.getAll<ApiResponse<ShiftI[]>>('shifts'), 
+      shifts: this.api.getAll<ApiResponse<ShiftI[]>>('shifts'),
     }).subscribe({
       next: ({ users, depts, sub_depts, poss, lvls, locats, shifts }) => {
         this.users$.next(users?.data ?? []);
@@ -64,14 +64,14 @@ export class SharedService {
         this.positions$.next(poss?.data ?? []);
         this.levels$.next(lvls?.data ?? []);
         this.locats$.next(locats?.data ?? []);
-        this.shifts$.next(shifts?.data ?? []); 
+        this.shifts$.next(shifts?.data ?? []);
 
         this.meta.users.next(this.extractMeta(users));
         this.meta.departments.next(this.extractMeta(depts));
         this.meta.positions.next(this.extractMeta(poss));
         this.meta.levels.next(this.extractMeta(lvls));
         this.meta.locats.next(this.extractMeta(locats));
-        this.meta.shifts.next(this.extractMeta(shifts)); 
+        this.meta.shifts.next(this.extractMeta(shifts));
 
         this.isLoaded = true;
       },
@@ -99,9 +99,9 @@ export class SharedService {
   getPositions(): Observable<PositionI[]> { return this.positions$.asObservable(); }
   getLevels(): Observable<LevelI[]> { return this.levels$.asObservable(); }
   getLocations(): Observable<LocationI[]> { return this.locats$.asObservable(); }
-  getShifts(): Observable<ShiftI[]> { return this.shifts$.asObservable(); } 
-getAll<T>(endpoint: string): Observable<ApiResponse<T>> {
-  return this.api.getAll<ApiResponse<T>>(endpoint);
+  getShifts(): Observable<ShiftI[]> { return this.shifts$.asObservable(); }
+getAll<T>(endpoint: string, filters?: any): Observable<ApiResponse<T>> {
+  return this.api.getAll<ApiResponse<T>>(endpoint, filters);
 }
   // Meta
   getUsersMeta(): Observable<Meta> { return this.meta.users.asObservable(); }
@@ -109,7 +109,7 @@ getAll<T>(endpoint: string): Observable<ApiResponse<T>> {
   getPositionsMeta(): Observable<Meta> { return this.meta.positions.asObservable(); }
   getLevelsMeta(): Observable<Meta> { return this.meta.levels.asObservable(); }
   getLocationsMeta(): Observable<Meta> { return this.meta.locats.asObservable(); }
-  getShiftsMeta(): Observable<Meta> { return this.meta.shifts.asObservable(); } 
+  getShiftsMeta(): Observable<Meta> { return this.meta.shifts.asObservable(); }
 
   refetchAll(): void {
     this.isLoaded = false;
