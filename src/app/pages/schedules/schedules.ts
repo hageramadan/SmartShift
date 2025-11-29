@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { SchedulesService, ScheduleFilters } from '../../services/schedules.service';
 import { SharedService } from '../../services/shared.service';
-import { 
-  ScheduleI, 
-  CreateScheduleRequest 
+import {
+  ScheduleI,
+  CreateScheduleRequest
 } from '../../models/schedule-i';
 import { DepartmentI } from '../../models/department-i';
 import { SubDepartmentI } from '../../models/sub-department-i';
@@ -28,7 +28,7 @@ export class Schedules implements OnInit {
   shifts: ShiftI[] = [];
   filteredSubDepartments: SubDepartmentI[] = [];
   filteredUsers: UserI[] = [];
-  
+
   filters: ScheduleFilters = {
     startDate: '',
     endDate: '',
@@ -70,7 +70,7 @@ export class Schedules implements OnInit {
   loading = false;
   dataLoading = false;
   error = '';
-  
+
   // إضافة متغيرات للتحقق من الصحة
   formErrors = {
     date: '',
@@ -88,7 +88,7 @@ export class Schedules implements OnInit {
     shiftId: '',
     subDepartmentId: ''
   };
-  
+
   validationMessages = {
     date: {
       required: 'Date is required',
@@ -134,7 +134,7 @@ export class Schedules implements OnInit {
 
     // تحميل البيانات المشتركة أولاً
     this.sharedService.loadAll();
-    
+
     // الاشتراك في جميع البيانات
     this.sharedService.getDepartments().subscribe({
       next: (depts) => {
@@ -281,9 +281,9 @@ export class Schedules implements OnInit {
       case 1:
         return this.bulkCreateData.dates.length > 0;
       case 2:
-        return this.bulkCreateData.userIds.length > 0 && 
-               !!this.bulkCreateData.departmentId && 
-               !!this.bulkCreateData.shiftId && 
+        return this.bulkCreateData.userIds.length > 0 &&
+               !!this.bulkCreateData.departmentId &&
+               !!this.bulkCreateData.shiftId &&
                !!this.bulkCreateData.subDepartmentId;
       default:
         return true;
@@ -302,13 +302,13 @@ export class Schedules implements OnInit {
     if (this.filters.departmentId) {
       this.filteredSubDepartments = this.subDepartments.filter(
         sub => {
-          const subDeptId = typeof sub.departmentId === 'string' 
-            ? sub.departmentId 
+          const subDeptId = typeof sub.departmentId === 'string'
+            ? sub.departmentId
             : sub.department?._id;
           return subDeptId === this.filters.departmentId;
         }
       );
-      
+
       this.filteredUsers = this.users.filter(
         user => user.departmentId === this.filters.departmentId
       );
@@ -316,11 +316,11 @@ export class Schedules implements OnInit {
       this.filteredSubDepartments = [...this.subDepartments];
       this.filteredUsers = [...this.users];
     }
-    
+
     // إعادة تعيين القيم المختارة
     this.filters.subDepartmentId = '';
     this.filters.userId = '';
-    
+
     // تطبيق الفلاتر
     this.applyFilters();
   }
@@ -331,13 +331,13 @@ export class Schedules implements OnInit {
       // تصفية الـ sub-departments للـ modal
       this.filteredSubDepartments = this.subDepartments.filter(
         sub => {
-          const subDeptId = typeof sub.departmentId === 'string' 
-            ? sub.departmentId 
+          const subDeptId = typeof sub.departmentId === 'string'
+            ? sub.departmentId
             : sub.department?._id;
           return subDeptId === this.newSchedule.departmentId;
         }
       );
-      
+
       // تصفية الـ users للـ modal
       this.filteredUsers = this.users.filter(
         user => user.departmentId === this.newSchedule.departmentId
@@ -346,11 +346,11 @@ export class Schedules implements OnInit {
       this.filteredSubDepartments = [...this.subDepartments];
       this.filteredUsers = [...this.users];
     }
-    
+
     // إعادة تعيين القيم المختارة في الـ modal
     this.newSchedule.subDepartmentId = '';
     this.newSchedule.userId = '';
-    
+
     // تنظيف أخطاء التحقق
     this.clearFormErrors();
   }
@@ -364,7 +364,7 @@ export class Schedules implements OnInit {
 
     const start = new Date(this.dateRange.start);
     const end = new Date(this.dateRange.end);
-    
+
     if (start > end) {
       this.bulkFormErrors.dates = 'Start date cannot be after end date';
       return;
@@ -372,7 +372,7 @@ export class Schedules implements OnInit {
 
     this.selectedDates = [];
     const currentDate = new Date(start);
-    
+
     while (currentDate <= end) {
       this.selectedDates.push(currentDate.toISOString().split('T')[0]);
       currentDate.setDate(currentDate.getDate() + 1);
@@ -436,7 +436,7 @@ export class Schedules implements OnInit {
     } else {
       this.filteredUsers = [...this.users];
     }
-    
+
     // إعادة تعيين المستخدمين المختارين
     this.bulkCreateData.userIds = [];
     this.bulkCreateData.subDepartmentId = '';
@@ -477,7 +477,7 @@ export class Schedules implements OnInit {
       const selectedDate = new Date(schedule.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (selectedDate < today) {
         this.formErrors.date = this.validationMessages.date.future;
         isValid = false;
@@ -607,7 +607,7 @@ export class Schedules implements OnInit {
       this.error = 'Invalid schedule data';
       return;
     }
-    
+
     // نسخ البيانات إلى نموذج التعديل
     this.newSchedule = {
       date: schedule.date,
@@ -616,7 +616,7 @@ export class Schedules implements OnInit {
       shiftId: schedule.shiftId || '',
       subDepartmentId: schedule.subDepartmentId || ''
     };
-    
+
     // تصفية البيانات بناءً على القسم المختار
     this.onModalDepartmentChange();
     this.showCreateModal = true;
@@ -654,10 +654,10 @@ export class Schedules implements OnInit {
   }
 
   isValidSchedule(schedule: CreateScheduleRequest): boolean {
-    return !!schedule.date && 
-           !!schedule.departmentId && 
-           !!schedule.userId && 
-           !!schedule.shiftId && 
+    return !!schedule.date &&
+           !!schedule.departmentId &&
+           !!schedule.userId &&
+           !!schedule.shiftId &&
            !!schedule.subDepartmentId;
   }
 
@@ -673,52 +673,52 @@ export class Schedules implements OnInit {
   // دوال العرض للبيانات القديمة والجديدة
   getDepartmentDisplay(schedule: ScheduleI): string {
     if (!schedule) return 'No Data';
-    
+
     const departmentId = schedule.departmentId;
-    
+
     // إذا فيه department object مباشر (بيانات قديمة)
     if ((schedule as any).department) {
       const dept = (schedule as any).department;
       if (typeof dept === 'string' && dept !== 'null') return dept;
       if (dept?.name && dept.name !== 'null') return dept.name;
     }
-    
+
     // البحث في الـ departments الحالية
     if (departmentId && departmentId !== 'null') {
       const dept = this.departments.find(d => d._id === departmentId);
       if (dept) return dept.name;
       return `Department (${departmentId.substring(0, 6)}...)`;
     }
-    
+
     return 'No Department';
   }
 
  getSubDepartmentDisplay(schedule: ScheduleI): string {
   if (!schedule) return 'No Data';
-  
+
   const subDepartmentId = schedule.subDepartmentId;
-  
+
   // إذا فيه subDepartment object مباشر
   if ((schedule as any).subDepartment) {
     const subDept = (schedule as any).subDepartment;
     if (typeof subDept === 'string' && subDept !== 'null') return subDept;
     if (subDept?.name && subDept.name !== 'null') return subDept.name;
   }
-  
+
   // البحث في الـ subDepartments الحالية
   if (subDepartmentId && subDepartmentId !== 'null') {
     const subDept = this.subDepartments.find(s => s._id === subDepartmentId);
     return subDept?.name || `Sub-Dept (${subDepartmentId.substring(0, 6)}...)`;
   }
-  
+
   return 'No Sub-Department';
 }
 
   getUserDisplay(schedule: ScheduleI): string {
     if (!schedule) return 'No Data';
-    
+
     const userId = schedule.userId;
-    
+
     // إذا فيه user object مباشر
     if ((schedule as any).user) {
       const user = (schedule as any).user;
@@ -726,22 +726,22 @@ export class Schedules implements OnInit {
       if (user?.fullName && user.fullName !== 'null') return user.fullName;
       if (user?.name && user.name !== 'null') return user.name;
     }
-    
+
     // البحث في الـ users الحالية
     if (userId && userId !== 'null') {
       const user = this.users.find(u => u._id === userId);
       if (user) return user.fullName;
       return `User (${userId.substring(0, 6)}...)`;
     }
-    
+
     return 'No User';
   }
 
   getShiftDisplay(schedule: ScheduleI): string {
     if (!schedule) return 'No Data';
-    
+
     const shiftId = schedule.shiftId;
-    
+
     // إذا فيه shift object مباشر
     if ((schedule as any).shift) {
       const shift = (schedule as any).shift;
@@ -749,53 +749,50 @@ export class Schedules implements OnInit {
       if (shift?.shiftName && shift.shiftName !== 'null') return shift.shiftName;
       if (shift?.name && shift.name !== 'null') return shift.name;
     }
-    
+
     // البحث في الـ shifts الحالية
     if (shiftId && shiftId !== 'null') {
       const shift = this.shifts.find(s => s._id === shiftId);
       if (shift) return shift.shiftName;
       return `Shift (${shiftId.substring(0, 6)}...)`;
     }
-    
+
     return 'No Shift';
   }
 
   getShiftTypeDisplay(schedule: ScheduleI): string {
     if (!schedule) return '';
-    
+
     const shiftId = schedule.shiftId;
-    
+
     // إذا فيه shift object مباشر
     if ((schedule as any).shift) {
       const shift = (schedule as any).shift;
       if (shift?.shiftType && shift.shiftType !== 'null') return shift.shiftType;
     }
-    
+
     // البحث في الـ shifts الحالية
     if (shiftId && shiftId !== 'null') {
       const shift = this.shifts.find(s => s._id === shiftId);
       if (shift && shift.shiftType !== 'null') return shift.shiftType || '';
     }
-    
+
     return '';
   }
 
   getShiftTimeDisplay(schedule: ScheduleI): string {
     if (!schedule) return '';
-    
+
     const shiftId = schedule.shiftId;
-    
+
     // إذا فيه shift object مباشر
     if ((schedule as any).shift) {
       const shift = (schedule as any).shift;
-      if (shift?.startTime && shift?.endTime) {
-        return `${shift.startTime} - ${shift.endTime}`;
-      }
       if (shift?.startTimeFormatted && shift?.endTimeFormatted) {
         return `${shift.startTimeFormatted} - ${shift.endTimeFormatted}`;
       }
     }
-    
+
     // البحث في الـ shifts الحالية
     if (shiftId && shiftId !== 'null') {
       const shift = this.shifts.find(s => s._id === shiftId);
@@ -803,26 +800,26 @@ export class Schedules implements OnInit {
         return `${shift.startTimeFormatted || shift.startTime} - ${shift.endTimeFormatted || shift.endTime}`;
       }
     }
-    
+
     return '';
   }
 
   // دوال للمساعدة في الـ bulk modal
   getSelectedShiftName(): string {
     if (!this.bulkCreateData.shiftId) return 'Not selected';
-    
+
     const shift = this.shifts.find(s => s._id === this.bulkCreateData.shiftId);
     if (shift) {
       return `${shift.shiftName} (${shift.shiftType})`;
     }
-    
+
     return 'Unknown Shift';
   }
 
   // معالجة الأخطاء من الباك إند
   private handleError(defaultMessage: string, error: any): void {
     console.error('❌ Error:', error);
-    
+
     if (error.error && error.error.message) {
       // إذا كان الباك إند يرسل رسالة خطأ محددة
       this.error = error.error.message;

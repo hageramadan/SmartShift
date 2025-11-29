@@ -41,7 +41,7 @@ export class SchedulesService {
       endpoint += `?${params.toString()}`;
     }
 
-    return this.sharedService.getAll<ScheduleI[]>(endpoint);
+    return this.sharedService.getAll<ScheduleI[]>(endpoint, {isActive: true});
   }
 
   // دالة جديدة خاصة بالـ Schedules فقط
