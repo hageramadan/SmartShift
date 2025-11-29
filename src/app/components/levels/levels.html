@@ -3,14 +3,14 @@
   <div class="mb-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Levels</h1>
+        <h1 class="text-2xl font-bold text-gray-700">Levels</h1>
         <p class="text-gray-600 text-sm mt-1">Manage position levels hierarchy</p>
       </div>
       <button
         (click)="openAddForm()"
-        class="bg-pro cursor-pointer text-white px-4 py-2.5 rounded-lg hover:bg-green-700 text-sm font-medium"
+        class="bg-[#0F7B8A] cursor-pointer text-white px-4 py-2 rounded-lg transition hover:bg-[#0c656c] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-color duration-300"
       >
-        <i class="fas fa-plus mr-1.5"></i>
+        <i class="fas fa-plus"></i>
         Add Level
       </button>
     </div>
@@ -19,19 +19,19 @@
   <!-- Advanced Filter Section -->
   <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
     <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-      
+
       <!-- Position Filter -->
       <div class="flex-1 w-full">
         <div class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            <i class="fas fa-filter mr-2 text-green-600"></i>
+            <i class="fas fa-filter mr-2 text-pro "></i>
             Filter by Position
           </label>
           <div class="relative">
             <select
               [(ngModel)]="selectedPositionId"
               (change)="applyFilters()"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-green-500/60"
+              class="w-full px-4 py-3 border focus:ring-gray-100 focus:border-blue-300 rounded-xl focus:ring-2 outline-none text-sm bg-white appearance-none cursor-pointer hover:border-gray-500/60"
             >
               <option value="">All Positions</option>
               <option *ngFor="let position of positions" [value]="position._id">
@@ -48,7 +48,7 @@
       <!-- Search Input -->
       <div class="flex-1 w-full">
         <label class="block text-sm font-medium text-gray-700 mb-2">
-          <i class="fas fa-search mr-2 text-green-600"></i>
+          <i class="fas fa-search mr-2 text-pro"></i>
           Search Levels
         </label>
         <div class="relative">
@@ -57,13 +57,13 @@
             [(ngModel)]="searchTerm"
             (input)="onSearch()"
             placeholder="Search level names..."
-            class="w-full pl-11 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm bg-white hover:border-green-500/60"
+            class="w-full pl-11 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-blue-400 outline-none text-sm bg-white hover:border-gray-500/60"
           >
           <div class="absolute left-3 top-1/2 transform -translate-y-1/2">
             <i class="fas fa-search text-gray-400"></i>
           </div>
-          <div 
-            *ngIf="searchTerm" 
+          <div
+            *ngIf="searchTerm"
             class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
             (click)="clearSearch()"
           >
@@ -76,17 +76,17 @@
       <div class="flex gap-2 self-end">
         <button
           (click)="refreshData()"
-          class="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl  bg-pro2 text-sm font-medium text-pro"
+          class="cursor-pointer flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-xl  bg-pro2 text-sm font-medium text-pro"
           title="Refresh Data"
         >
           <i class="fas fa-sync-alt text-xs "[class.animate-spin]="loading"></i>
           Refresh
         </button>
-        
+
         <button
           *ngIf="hasActiveFilters()"
           (click)="clearPositionFilter(); clearSearch()"
-          class="flex items-center gap-2 px-4 py-3 border border-red-200 rounded-xl hover:border-red-300 hover:bg-red-50 text-sm font-medium text-red-600 hover:text-red-700"
+          class="cursor-pointer flex items-center gap-2 px-4 py-3 border border-red-200 rounded-xl hover:border-red-300 hover:bg-red-50 text-sm font-medium text-red-600 hover:text-red-700"
           title="Clear All Filters"
         >
           <i class="fas fa-times text-xs"></i>
@@ -97,14 +97,14 @@
 
     <!-- Active Filters Display -->
     <div *ngIf="hasActiveFilters()" class="mt-4 flex flex-wrap gap-2">
-      <div *ngIf="searchTerm" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg text-sm border border-blue-200">
+      <div *ngIf="searchTerm" class="flex items-center gap-2 bg-gray-50 text-gray-600 px-3 py-2 rounded-lg text-sm border border-gray-200">
         <i class="fas fa-search text-xs"></i>
         <span>Search: "{{searchTerm}}"</span>
         <button (click)="clearSearch()" class="hover:text-blue-900 ml-1">
           <i class="fas fa-times text-xs"></i>
         </button>
       </div>
-      
+
       <div *ngIf="selectedPositionId" class="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm border border-green-200">
         <i class="fas fa-briefcase text-xs"></i>
         <span>Position: {{getPositionName(selectedPositionId)}}</span>
@@ -118,15 +118,15 @@
   <!-- Results Summary -->
   <div class="mb-4 flex items-center justify-between">
     <p class="text-sm text-gray-600">
-      Showing <span class="font-semibold text-green-600">{{filteredLevels.length}}</span> 
+      Showing <span class="font-semibold text-green-600">{{filteredLevels.length}}</span>
       of <span class="font-semibold">{{levels.length}}</span> levels
       <span *ngIf="hasActiveFilters()" class="text-green-600 font-medium ml-2">
         • Filtered Results
       </span>
     </p>
-    
+
     <div *ngIf="filteredLevels.length === 0 && hasActiveFilters()" class="text-sm">
-      <button 
+      <button
         (click)="clearPositionFilter(); clearSearch()"
         class="text-green-600 hover:text-green-700 font-medium"
       >
@@ -155,38 +155,38 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr 
+          <tr
             *ngFor="let level of filteredLevels"
             class="hover:bg-green-50/30"
           >
             <td class="py-3 px-4">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-chart-line text-green-600 text-sm"></i>
+                <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="fa-solid fa-ranking-star text-pro text-sm"></i>
                 </div>
-                <span class="font-medium text-gray-900 text-sm">{{level.name}}</span>
+                <span class="font-medium text-gray-600 text-sm">{{level.name}}</span>
               </div>
             </td>
             <td class="py-3 px-4">
               <div class="flex items-center gap-2">
-                <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-briefcase text-green-600 text-xs"></i>
+                <div class="w-6 h-6 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-briefcase text-pro text-xs"></i>
                 </div>
-                <span class="text-gray-700 text-sm">{{getPositionName(level.positionId)}}</span>
+                <span class="text-gray-600 text-sm">{{getPositionName(level.positionId)}}</span>
               </div>
             </td>
             <td class="py-3 px-4">
               <div class="flex items-center justify-end gap-1">
                 <button
                   (click)="openEditForm(level)"
-                  class="p-2 bg-blue-50 text-green-600 rounded-lg hover:bg-blue-100 hover:text-blue-700"
+                  class="text-gray-600 hover:text-white hover:bg-[#0F7B8A] transition duration-200 px-1 py-1 rounded-lg text-sm cursor-pointer disabled:opacity-50"
                   title="Edit Level"
                 >
                   <i class="fas fa-edit text-xs"></i>
                 </button>
                 <button
                   (click)="deleteLevel(level)"
-                  class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700"
+                  class="text-[#E74C3C] hover:text-white hover:bg-[#E74C3C] duration-200 px-1 py-1 rounded-lg text-sm cursor-pointer  "
                   title="Delete Level"
                 >
                   <i class="fas fa-trash text-xs"></i>
@@ -194,7 +194,7 @@
               </div>
             </td>
           </tr>
-          
+
           <!-- Empty State -->
           <tr *ngIf="filteredLevels.length === 0">
             <td colspan="3" class="py-12 px-4 text-center">
@@ -206,14 +206,14 @@
                 <p class="text-xs">
                   {{ hasActiveFilters() ? 'Try adjusting your search or filters' : 'Create your first level to get started' }}
                 </p>
-                <button 
+                <button
                   *ngIf="hasActiveFilters()"
                   (click)="clearPositionFilter(); clearSearch()"
                   class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
                 >
                   Clear All Filters
                 </button>
-                <button 
+                <button
                   *ngIf="!hasActiveFilters()"
                   (click)="openAddForm()"
                   class="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
@@ -361,10 +361,10 @@
         <div class="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
           <i class="fas fa-exclamation-triangle text-red-600"></i>
         </div>
-        
+
         <h3 class="text-base font-semibold text-gray-900 mb-2">Delete Level</h3>
         <p class="text-gray-600 text-sm mb-4">
-          Delete <span class="font-medium text-gray-900">{{deleteLevelName}}</span>? 
+          Delete <span class="font-medium text-gray-900">{{deleteLevelName}}</span>?
           This cannot be undone.
         </p>
 

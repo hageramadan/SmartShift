@@ -129,10 +129,10 @@
           >
             <td class="py-3 px-4">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <i class="fas fa-briefcase text-pro text-sm"></i>
                 </div>
-                <span class="font-medium text-gray-900 text-sm">{{position.name}}</span>
+                <span class="font-medium text-gray-700 text-sm">{{position.name}}</span>
 
                 <!-- Search Highlight -->
                 <span *ngIf="hasActiveSearch()" class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium ml-2">
@@ -144,14 +144,14 @@
               <div class="flex items-center justify-end gap-1">
                 <button
                   (click)="openEditForm(position)"
-                  class="p-2 bg-blue-50 text-pro rounded-lg hover:bg-blue-100 hover:text-blue-700"
+                  class="text-gray-600 hover:text-white hover:bg-[#0F7B8A] transition duration-200 px-1 py-1 rounded-lg text-sm cursor-pointer disabled:opacity-50"
                   title="Edit Position"
                 >
                   <i class="fas fa-edit text-xs"></i>
                 </button>
                 <button
                   (click)="deletePosition(position)"
-                  class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700"
+                  class="text-[#E74C3C] hover:text-white hover:bg-[#E74C3C] duration-200 px-1 py-1 rounded-lg text-sm cursor-pointer  "
                   title="Delete Position"
                 >
                   <i class="fas fa-trash text-xs"></i>
