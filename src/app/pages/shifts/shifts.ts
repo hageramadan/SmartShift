@@ -1,4 +1,5 @@
-// shifts.ts
+import { AuthService } from '../../services/auth.service';
+import { UserI } from '../../models/user-i';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -86,6 +87,11 @@ export class Shifts implements OnInit {
   isLoading = false;
   isDataLoading = true;
 
+  // Current user info
+  currentUser: UserI | null = null;
+  isManager = false;
+  userDepartmentId = '';
+
   newShift: Partial<Shift> = {
     shiftType: '',
     shiftName: '',
@@ -98,11 +104,32 @@ export class Shifts implements OnInit {
   constructor(
     private toastr: ToastrService,
     private crud: CrudService,
-    private sharedSrv: SharedService
+    private sharedSrv: SharedService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    this.loadCurrentUser();
     this.loadData();
+  }
+
+  loadCurrentUser() {
+  this.currentUser = this.authService.getCurrentUser();
+  this.isManager = this.currentUser?.role === 'manager';
+  this.userDepartmentId = this.currentUser?.departmentId || '';
+  if (this.isManager) {
+    this.filters.departmentId = this.userDepartmentId;
+    this.newShift.departmentId = this.userDepartmentId;
+    }
+  }
+
+  getFilteredSubDepartments() {
+  if (!this.isManager) {
+    return this.subDepartments;
+  }
+  return this.subDepartments.filter(sub =>
+    sub.departmentId === this.userDepartmentId
+    );
   }
 
   loadData() {
@@ -189,6 +216,9 @@ export class Shifts implements OnInit {
       departmentId: '',
       subDepartmentId: ''
     };
+    if (this.isManager) {
+    this.filters.departmentId = this.userDepartmentId;
+  }
     this.applyFilters();
   }
 
@@ -378,6 +408,9 @@ export class Shifts implements OnInit {
       departmentId: '',
       subDepartmentId: ''
     };
+    if (this.isManager) {
+    this.newShift.departmentId = this.userDepartmentId;
+  }
   }
 
   editShift(shift: Shift) {
