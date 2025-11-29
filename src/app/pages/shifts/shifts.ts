@@ -8,6 +8,7 @@ import { SharedService } from '../../services/shared.service';
 import { SubDepartmentI } from '../../models/sub-department-i';
 import { DepartmentI } from '../../models/department-i';
 import { LocationI } from '../../models/location-i';
+import { FlatpickrModule } from 'angularx-flatpickr';
 
 interface Shift {
   _id?: string;
@@ -47,7 +48,7 @@ interface ValidationErrors {
 @Component({
   selector: 'app-shifts',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,   FlatpickrModule],
   templateUrl: './shifts.html',
   styleUrls: ['./shifts.css'],
 })
@@ -94,10 +95,6 @@ export class Shifts implements OnInit {
     departmentId: '',
     subDepartmentId: ''
   };
-
-  // Shift types for dropdown with common values
-  shiftTypes: string[] = ['Morning', 'Evening', 'Night', 'Rotating', 'On-Call', 'Flexible', 'Holiday', 'Emergency'];
-  customShiftType: string = '';
 
   constructor(
     private toastr: ToastrService,
@@ -244,36 +241,17 @@ export class Shifts implements OnInit {
   // Math utility for template
   Math = Math;
 
-  // Shift Type Methods
-  onShiftTypeSelect(event: any) {
-    const selectedValue = event.target.value;
-    if (selectedValue === 'custom') {
-      // إذا اختار "Other" نفتح حقل الإدخال
-      this.newShift.shiftType = '';
-      this.customShiftType = '';
-    } else if (selectedValue) {
-      this.newShift.shiftType = selectedValue;
-      this.customShiftType = '';
-    }
-  }
-
-  onCustomShiftTypeInput() {
-    if (this.customShiftType.trim()) {
-      this.newShift.shiftType = this.customShiftType;
-    }
-  }
-
   // Validation Methods
   private validateForm(): boolean {
     this.validationErrors = {};
 
     // Required field validation
-    if (!this.newShift.shiftName?.trim()) {
-      this.validationErrors.shiftName = 'Shift name is required';
-    }
-
     if (!this.newShift.shiftType?.trim()) {
       this.validationErrors.shiftType = 'Shift type is required';
+    }
+
+    if (!this.newShift.shiftName?.trim()) {
+      this.validationErrors.shiftName = 'Shift name is required';
     }
 
     if (!this.newShift.startTimeFormatted) {
@@ -401,7 +379,6 @@ export class Shifts implements OnInit {
       departmentId: '',
       subDepartmentId: ''
     };
-    this.customShiftType = '';
   }
 
   editShift(shift: Shift) {
@@ -420,13 +397,6 @@ export class Shifts implements OnInit {
       departmentId: shift.departmentId || '',
       subDepartmentId: shift.subDepartmentId || ''
     };
-
-    // التحقق إذا كان نوع الشفت موجود في القائمة المحددة
-    if (shift.shiftType && !this.shiftTypes.includes(shift.shiftType)) {
-      this.customShiftType = shift.shiftType;
-    } else {
-      this.customShiftType = '';
-    }
   }
 
   saveShift() {
@@ -556,11 +526,11 @@ export class Shifts implements OnInit {
 
   private showValidationErrors() {
     // عرض رسائل الخطأ للمستخدم
-    if (this.validationErrors.shiftName) {
-      this.toastr.error(this.validationErrors.shiftName);
-    }
     if (this.validationErrors.shiftType) {
       this.toastr.error(this.validationErrors.shiftType);
+    }
+    if (this.validationErrors.shiftName) {
+      this.toastr.error(this.validationErrors.shiftName);
     }
     if (this.validationErrors.startTime) {
       this.toastr.error(this.validationErrors.startTime);
@@ -695,7 +665,6 @@ export class Shifts implements OnInit {
     this.isEditing = false;
     this.submitted = false;
     this.isLoading = false;
-    this.customShiftType = '';
     this.clearValidationErrors();
   }
 
