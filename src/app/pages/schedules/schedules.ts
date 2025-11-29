@@ -1,10 +1,16 @@
 // schedules.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { Subject, takeUntil } from 'rxjs';
+
+// Services
 import { SchedulesService, ScheduleFilters } from '../../services/schedules.service';
 import { SharedService } from '../../services/shared.service';
+import { AuthService } from '../../services/auth.service';
+
+// Models
 import {
   ScheduleI,
   CreateScheduleRequest
@@ -14,21 +20,51 @@ import { SubDepartmentI } from '../../models/sub-department-i';
 import { UserI } from '../../models/user-i';
 import { ShiftI } from '../../models/shift-i';
 
+// Constants
+const PAGINATION_CONFIG = {
+  DEFAULT_LIMIT: 10,
+  MAX_PAGES_DISPLAY: 7
+};
+
+const VALIDATION_MESSAGES = {
+  date: {
+    required: 'Date is required',
+    future: 'Date cannot be in the past'
+  },
+  departmentId: {
+    required: 'Department is required'
+  },
+  userId: {
+    required: 'User is required'
+  },
+  shiftId: {
+    required: 'Shift is required'
+  },
+  subDepartmentId: {
+    required: 'Sub Department is required'
+  }
+};
+
 @Component({
   selector: 'app-schedules',
   imports: [CommonModule, FormsModule],
   templateUrl: './schedules.html',
   styleUrl: './schedules.css',
 })
-export class Schedules implements OnInit {
+export class Schedules implements OnInit, OnDestroy {
+  // Data Arrays
   schedules: ScheduleI[] = [];
   departments: DepartmentI[] = [];
   subDepartments: SubDepartmentI[] = [];
   users: UserI[] = [];
   shifts: ShiftI[] = [];
+  
+  // Filtered Data
   filteredSubDepartments: SubDepartmentI[] = [];
   filteredUsers: UserI[] = [];
+  filteredShifts: ShiftI[] = [];
 
+  // Filters & Pagination
   filters: ScheduleFilters = {
     startDate: '',
     endDate: '',
@@ -37,9 +73,18 @@ export class Schedules implements OnInit {
     userId: '',
     shiftId: '',
     page: 1,
-    limit: 10
+    limit: PAGINATION_CONFIG.DEFAULT_LIMIT
   };
 
+  pagination = {
+    total: 0,
+    totalFiltered: 0,
+    page: 1,
+    limit: PAGINATION_CONFIG.DEFAULT_LIMIT,
+    totalPages: 0
+  };
+
+  // Create Schedule
   newSchedule: CreateScheduleRequest = {
     date: '',
     departmentId: '',
@@ -48,7 +93,7 @@ export class Schedules implements OnInit {
     subDepartmentId: ''
   };
 
-  // إعدادات الـ Modal الموحد
+  // Bulk Create
   showCreateModal = false;
   createMode: 'single' | 'bulk' = 'single';
   bulkCreateStep = 1;
@@ -60,18 +105,15 @@ export class Schedules implements OnInit {
     subDepartmentId: ''
   };
 
-  // إضافة خصائص للمساعدة في الواجهة
+  // UI State
   selectedDates: string[] = [];
-  dateRange = {
-    start: '',
-    end: ''
-  };
-
+  dateRange = { start: '', end: '' };
+  editingScheduleId: string | null = null;
   loading = false;
   dataLoading = false;
   error = '';
 
-  // إضافة متغيرات للتحقق من الصحة
+  // Form Validation
   formErrors = {
     date: '',
     departmentId: '',
@@ -80,7 +122,6 @@ export class Schedules implements OnInit {
     subDepartmentId: ''
   };
 
-  // إضافة form errors للإنشاء المتعدد
   bulkFormErrors = {
     dates: '',
     userIds: '',
@@ -89,164 +130,407 @@ export class Schedules implements OnInit {
     subDepartmentId: ''
   };
 
-  validationMessages = {
-    date: {
-      required: 'Date is required',
-      future: 'Date cannot be in the past'
-    },
-    departmentId: {
-      required: 'Department is required'
-    },
-    userId: {
-      required: 'User is required'
-    },
-    shiftId: {
-      required: 'Shift is required'
-    },
-    subDepartmentId: {
-      required: 'Sub Department is required'
-    }
-  };
+  // User Context
+  currentUser: UserI | null = null;
+  userDepartmentId: string | null = null;
+  isAdminUser = false;
+  isManagerUser = false;
 
-  pagination = {
-    total: 0,
-    totalFiltered: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0
-  };
+  private destroy$ = new Subject<void>();
 
   constructor(
     private schedulesService: SchedulesService,
     private sharedService: SharedService,
+    private authService: AuthService,
     private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
     console.log('🔵 Schedules Component Initialized');
+    this.initializeUserData();
     this.loadAllData();
   }
 
-  // تحميل جميع البيانات
-  loadAllData(): void {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ==================== INITIALIZATION METHODS ====================
+
+  private initializeUserData(): void {
+    this.currentUser = this.authService.getCurrentUser();
+    
+    if (this.currentUser) {
+      this.isAdminUser = this.currentUser.role === 'admin';
+      this.isManagerUser = this.currentUser.role === 'manager';
+      this.userDepartmentId = this.currentUser.departmentId || null;
+
+      console.log('👤 Current User:', {
+        role: this.currentUser.role,
+        departmentId: this.userDepartmentId,
+        isAdmin: this.isAdminUser,
+        isManager: this.isManagerUser
+      });
+
+      this.initializeRoleBasedDefaults();
+    }
+  }
+
+  private initializeRoleBasedDefaults(): void {
+    if (this.isManagerUser && this.userDepartmentId) {
+      this.filters.departmentId = this.userDepartmentId;
+      this.newSchedule.departmentId = this.userDepartmentId;
+      this.bulkCreateData.departmentId = this.userDepartmentId;
+    } else if (!this.isAdminUser && this.userDepartmentId) {
+      this.filters.departmentId = this.userDepartmentId;
+      this.newSchedule.departmentId = this.userDepartmentId;
+      this.bulkCreateData.departmentId = this.userDepartmentId;
+    }
+  }
+
+  // ==================== DATA LOADING METHODS ====================
+
+  private loadAllData(): void {
     this.dataLoading = true;
     console.log('🔄 Loading all data...');
 
-    // تحميل البيانات المشتركة أولاً
     this.sharedService.loadAll();
-
-    // الاشتراك في جميع البيانات
-    this.sharedService.getDepartments().subscribe({
-      next: (depts) => {
-        console.log('📊 Departments loaded:', depts);
-        this.departments = depts;
-        this.checkDataStatus();
-      },
-      error: (err) => {
-        console.error('❌ Error loading departments:', err);
-        this.handleError('Failed to load departments', err);
-        this.dataLoading = false;
-      }
-    });
-
-    this.sharedService.getSubDepartments().subscribe({
-      next: (subDepts) => {
-        console.log('📁 SubDepartments loaded:', subDepts);
-        this.subDepartments = subDepts;
-        this.filteredSubDepartments = [...subDepts];
-        this.checkDataStatus();
-      },
-      error: (err) => {
-        console.error('❌ Error loading subdepartments:', err);
-        this.handleError('Failed to load subdepartments', err);
-        this.dataLoading = false;
-      }
-    });
-
-    this.sharedService.getUsers().subscribe({
-      next: (users) => {
-        console.log('👥 Users loaded:', users);
-        this.users = users;
-        this.filteredUsers = [...users];
-        this.checkDataStatus();
-      },
-      error: (err) => {
-        console.error('❌ Error loading users:', err);
-        this.handleError('Failed to load users', err);
-        this.dataLoading = false;
-      }
-    });
-
+    this.loadDepartmentsBasedOnRole();
+    this.loadSubDepartments();
+    this.loadUsers();
     this.loadShifts();
     this.loadSchedules();
   }
 
-  // دالة للتحقق من اكتمال تحميل البيانات
-  checkDataStatus(): void {
-    if (
-      this.departments.length > 0 &&
-      this.subDepartments.length > 0 &&
-      this.users.length > 0
-    ) {
+  private loadDepartmentsBasedOnRole(): void {
+    if (this.isAdminUser) {
+      this.sharedService.getDepartments()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (depts) => {
+            this.departments = depts;
+            console.log('📊 All departments loaded for admin:', depts.length);
+            this.checkDataStatus();
+          },
+          error: (err) => this.handleDataLoadError('departments', err)
+        });
+    } else if (this.userDepartmentId) {
+      this.sharedService.getDepartments()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (depts) => {
+            const userDept = depts.find(dept => dept._id === this.userDepartmentId);
+            this.departments = userDept ? [userDept] : [];
+            console.log('📊 User department loaded:', this.departments);
+            this.checkDataStatus();
+          },
+          error: (err) => this.handleDataLoadError('departments', err)
+        });
+    } else {
+      this.departments = [];
       this.dataLoading = false;
     }
   }
 
-  loadShifts(): void {
-    this.schedulesService.getShiftsForSchedules().subscribe({
-      next: (response) => {
-        this.shifts = response.data || [];
-        console.log('✅ Shifts loaded for schedules:', this.shifts.length);
-      },
-      error: (err) => {
-        this.handleError('Failed to load shifts', err);
-      }
-    });
+  private loadSubDepartments(): void {
+    this.sharedService.getSubDepartments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (subDepts) => {
+          this.subDepartments = subDepts;
+          console.log('📁 SubDepartments loaded:', subDepts.length);
+          this.filterDataBasedOnRole();
+          this.checkDataStatus();
+        },
+        error: (err) => this.handleDataLoadError('subdepartments', err)
+      });
+  }
+
+  private loadUsers(): void {
+    this.sharedService.getUsers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (users) => {
+          this.users = this.filterUsersByRole(users);
+          console.log('👥 Users loaded after filtering:', this.users.length);
+          this.filterDataBasedOnRole();
+          this.checkDataStatus();
+        },
+        error: (err) => this.handleDataLoadError('users', err)
+      });
+  }
+
+  private loadShifts(): void {
+    this.schedulesService.getShiftsForSchedules()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.shifts = response.data || [];
+          this.filterDataBasedOnRole();
+          console.log('✅ Shifts loaded:', this.shifts.length);
+        },
+        error: (err) => this.handleError('Failed to load shifts', err)
+      });
   }
 
   loadSchedules(): void {
     this.loading = true;
     this.error = '';
 
-    this.schedulesService.getSchedules(this.filters).subscribe({
-      next: (response) => {
-        this.schedules = response.data || [];
-        this.pagination = {
-          total: response.total || 0,
-          totalFiltered: response.totalFiltered || 0,
-          page: response.page || 1,
-          limit: response.limit || 10,
-          totalPages: Math.ceil((response.total || 0) / (response.limit || 10))
-        };
-        this.loading = false;
-        console.log('✅ Schedules loaded successfully:', this.schedules.length);
-      },
-      error: (err) => {
-        console.error('❌ Error loading schedules:', err);
-        this.handleError('Failed to load schedules', err);
-        this.loading = false;
-      }
+    this.schedulesService.getSchedules(this.filters)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => this.handleSchedulesResponse(response),
+        error: (err) => this.handleSchedulesError(err)
+      });
+  }
+
+  private handleSchedulesResponse(response: any): void {
+    this.schedules = response.data || [];
+    this.updatePagination(response);
+    this.loading = false;
+    console.log('✅ Schedules loaded successfully:', this.schedules.length);
+  }
+
+  private handleSchedulesError(err: any): void {
+    console.error('❌ Error loading schedules:', err);
+    this.handleError('Failed to load schedules', err);
+    this.loading = false;
+  }
+
+  // ==================== FILTERING METHODS ====================
+
+  private filterUsersByRole(allUsers: UserI[]): UserI[] {
+    if (this.isAdminUser) {
+      return allUsers;
+    } else if (this.isManagerUser && this.userDepartmentId) {
+      return allUsers.filter(user => 
+        user.departmentId === this.userDepartmentId
+      );
+    } else if (this.userDepartmentId) {
+      return allUsers.filter(user => 
+        user.departmentId === this.userDepartmentId
+      );
+    } else {
+      return [];
+    }
+  }
+
+  private filterDataBasedOnRole(): void {
+    if (this.isManagerUser && this.userDepartmentId) {
+      this.applyManagerFilters();
+    } else if (this.isAdminUser) {
+      this.applyAdminFilters();
+    } else if (this.userDepartmentId) {
+      this.applyUserFilters();
+    } else {
+      this.applyNoAccessFilters();
+    }
+  }
+
+  private applyManagerFilters(): void {
+    if (!this.userDepartmentId) return;
+
+    this.filteredSubDepartments = this.subDepartments.filter(
+      sub => this.getSubDepartmentDepartmentId(sub) === this.userDepartmentId
+    );
+
+    this.filteredUsers = [...this.users];
+
+    this.filteredShifts = this.shifts.filter(shift => 
+      shift.departmentId === this.userDepartmentId
+    );
+
+    console.log('👨‍💼 Manager filters applied:', {
+      departmentId: this.userDepartmentId,
+      subDepartments: this.filteredSubDepartments.length,
+      users: this.filteredUsers.length,
+      shifts: this.filteredShifts.length
     });
   }
 
-  // فتح الـ Modal الموحد
+  private applyAdminFilters(): void {
+    this.filteredSubDepartments = [...this.subDepartments];
+    this.filteredUsers = [...this.users];
+    this.filteredShifts = [...this.shifts];
+  }
+
+  private applyUserFilters(): void {
+    if (!this.userDepartmentId) return;
+
+    this.filteredSubDepartments = this.subDepartments.filter(
+      sub => this.getSubDepartmentDepartmentId(sub) === this.userDepartmentId
+    );
+
+    this.filteredUsers = [...this.users];
+
+    this.filteredShifts = this.shifts.filter(shift => 
+      shift.departmentId === this.userDepartmentId
+    );
+
+    console.log('👤 User filters applied:', {
+      departmentId: this.userDepartmentId,
+      subDepartments: this.filteredSubDepartments.length,
+      users: this.filteredUsers.length,
+      shifts: this.filteredShifts.length
+    });
+  }
+
+  private applyNoAccessFilters(): void {
+    this.filteredSubDepartments = [];
+    this.filteredUsers = [];
+    this.filteredShifts = [];
+  }
+
+  onDepartmentFilterChange(): void {
+    if (this.filters.departmentId) {
+      this.applyDepartmentFilter(this.filters.departmentId);
+    } else {
+      this.filterDataBasedOnRole();
+    }
+    this.applyFilters();
+  }
+
+  applyDepartmentFilter(departmentId: string): void {
+    this.filteredSubDepartments = this.subDepartments.filter(
+      sub => {
+        const subDeptId = typeof sub.departmentId === 'string'
+          ? sub.departmentId
+          : sub.department?._id;
+        return subDeptId === departmentId;
+      }
+    );
+
+    this.filteredUsers = this.users.filter(
+      user => user.departmentId === departmentId
+    );
+
+    this.filterShiftsByDepartment(departmentId);
+
+    this.filters.subDepartmentId = '';
+    this.filters.userId = '';
+    this.filters.shiftId = '';
+  }
+
+  filterShiftsByDepartment(departmentId: string): void {
+    if (departmentId) {
+      this.filteredShifts = this.shifts.filter(shift => 
+        shift.departmentId === departmentId
+      );
+    } else {
+      this.filterDataBasedOnRole();
+    }
+    
+    console.log('🔍 Shifts filtered for department:', {
+      departmentId: departmentId,
+      filteredCount: this.filteredShifts.length,
+      userType: this.isAdminUser ? 'Admin' : (this.isManagerUser ? 'Manager' : 'User')
+    });
+  }
+
+  // ==================== MODAL METHODS ====================
+
   openCreateModal(): void {
     this.showCreateModal = true;
     this.createMode = 'single';
+    this.editingScheduleId = null;
     this.resetNewScheduleForm();
     this.clearBulkFormErrors();
+    
+    // ✅ نطبق الفلترة الأولية بناءً على صلاحية المستخدم
+    this.applyModalInitialFilters();
   }
 
-  // إغلاق الـ Modal
   closeModal(): void {
     this.showCreateModal = false;
     this.createMode = 'single';
     this.bulkCreateStep = 1;
+    this.editingScheduleId = null;
     this.resetNewScheduleForm();
     this.clearBulkFormErrors();
   }
 
-  // تغيير وضع الإنشاء
+  private applyModalInitialFilters(): void {
+    if (this.isManagerUser && this.userDepartmentId) {
+      // Manager - نعرض بيانات قسمه فقط
+      this.newSchedule.departmentId = this.userDepartmentId;
+      this.applyModalDepartmentFilter(this.userDepartmentId);
+    } else if (!this.isAdminUser && this.userDepartmentId) {
+      // User عادي - نعرض بيانات قسمه فقط
+      this.newSchedule.departmentId = this.userDepartmentId;
+      this.applyModalDepartmentFilter(this.userDepartmentId);
+    } else if (this.isAdminUser) {
+      // Admin - نعرض كل البيانات بدون فلترة مبدئية
+      this.filteredSubDepartments = [...this.subDepartments];
+      this.filteredUsers = [...this.users];
+      this.filteredShifts = [...this.shifts];
+    }
+    
+    console.log('📋 Modal initial filters applied:', {
+      userType: this.isAdminUser ? 'Admin' : (this.isManagerUser ? 'Manager' : 'User'),
+      departmentId: this.userDepartmentId,
+      users: this.filteredUsers.length,
+      shifts: this.filteredShifts.length,
+      subDepartments: this.filteredSubDepartments.length
+    });
+  }
+
+  onModalDepartmentChange(): void {
+    console.log('🔄 Modal department changed to:', this.newSchedule.departmentId);
+    
+    if (this.newSchedule.departmentId) {
+      this.applyModalDepartmentFilter(this.newSchedule.departmentId);
+    } else {
+      this.applyModalInitialFilters();
+    }
+
+    this.newSchedule.subDepartmentId = '';
+    this.newSchedule.userId = '';
+    this.newSchedule.shiftId = '';
+    this.clearFormErrors();
+  }
+
+  applyModalDepartmentFilter(departmentId: string): void {
+    console.log('🎯 Applying modal filter for department:', departmentId);
+    
+    if (!this.canAccessDepartment(departmentId)) {
+      this.toastr.warning('You do not have access to this department');
+      this.newSchedule.departmentId = '';
+      this.applyModalInitialFilters();
+      return;
+    }
+
+    // ✅ فلترة الأقسام الفرعية بناءً على القسم المختار
+    this.filteredSubDepartments = this.subDepartments.filter(
+      sub => {
+        const subDeptId = typeof sub.departmentId === 'string'
+          ? sub.departmentId
+          : sub.department?._id;
+        return subDeptId === departmentId;
+      }
+    );
+
+    // ✅ فلترة المستخدمين بناءً على القسم المختار
+    this.filteredUsers = this.users.filter(
+      user => user.departmentId === departmentId && this.canAccessUser(user)
+    );
+
+    // ✅ فلترة الشفتات بناءً على القسم المختار - هذا هو الجزء المهم
+    this.filteredShifts = this.shifts.filter(shift => 
+      shift.departmentId === departmentId
+    );
+
+    console.log('📋 Modal department filter applied:', {
+      departmentId: departmentId,
+      users: this.filteredUsers.length,
+      shifts: this.filteredShifts.length,
+      subDepartments: this.filteredSubDepartments.length
+    });
+  }
+
+  // ==================== BULK CREATE METHODS ====================
+
   setCreateMode(mode: 'single' | 'bulk'): void {
     this.createMode = mode;
     if (mode === 'bulk') {
@@ -254,16 +538,76 @@ export class Schedules implements OnInit {
       this.bulkCreateData = {
         dates: [],
         userIds: [],
-        departmentId: '',
+        departmentId: this.getDefaultDepartmentForBulk(),
         shiftId: '',
         subDepartmentId: ''
       };
       this.selectedDates = [];
       this.dateRange = { start: '', end: '' };
+      
+      // ✅ تطبيق الفلترة التلقائية في وضع البلك
+      this.applyBulkInitialFilters();
     }
   }
 
-  // دوال التنقل بين الخطوات للـ Bulk
+  private getDefaultDepartmentForBulk(): string {
+    if (this.isManagerUser && this.userDepartmentId) {
+      return this.userDepartmentId;
+    } else if (!this.isAdminUser && this.userDepartmentId) {
+      return this.userDepartmentId;
+    }
+    return '';
+  }
+
+  private applyBulkInitialFilters(): void {
+    console.log('🔄 Applying bulk initial filters:', this.bulkCreateData.departmentId);
+    
+    if (this.bulkCreateData.departmentId) {
+      this.onBulkDepartmentChange();
+    } else {
+      this.filteredUsers = this.getAccessibleUsers();
+      this.filteredShifts = this.getAccessibleShifts();
+    }
+  }
+
+  onBulkDepartmentChange(): void {
+    console.log('🔄 Bulk department changed to:', this.bulkCreateData.departmentId);
+    
+    if (this.bulkCreateData.departmentId) {
+      if (!this.canAccessDepartment(this.bulkCreateData.departmentId)) {
+        this.toastr.warning('You do not have access to this department');
+        this.bulkCreateData.departmentId = '';
+        this.applyBulkInitialFilters();
+        return;
+      }
+
+      // ✅ فلترة المستخدمين بناءً على القسم المختار
+      this.filteredUsers = this.users.filter(
+        user => user.departmentId === this.bulkCreateData.departmentId
+      );
+      
+      // ✅ فلترة الشفتات بناءً على القسم المختار
+      this.filteredShifts = this.shifts.filter(shift => 
+        shift.departmentId === this.bulkCreateData.departmentId
+      );
+
+      console.log('📦 Bulk modal department filter applied:', {
+        departmentId: this.bulkCreateData.departmentId,
+        users: this.filteredUsers.length,
+        shifts: this.filteredShifts.length
+      });
+    } else {
+      this.filterDataBasedOnRole();
+    }
+
+    this.bulkCreateData.userIds = [];
+    this.bulkCreateData.subDepartmentId = '';
+    this.bulkCreateData.shiftId = '';
+    this.clearBulkFormErrors();
+  }
+
+  // ==================== BULK CREATE STEP METHODS ====================
+
   nextStep(): void {
     if (this.bulkCreateStep < 3) {
       this.bulkCreateStep++;
@@ -290,72 +634,8 @@ export class Schedules implements OnInit {
     }
   }
 
-  // إضافة زر Refresh
-  refreshData(): void {
-    console.log('🔄 Manually refreshing data...');
-    this.sharedService.refetchAll();
-    this.loadAllData();
-  }
+  // ==================== DATE RANGE METHODS ====================
 
-  // دالة خاصة بفلترة الـ departments في الفلاتر
-  onDepartmentFilterChange(): void {
-    if (this.filters.departmentId) {
-      this.filteredSubDepartments = this.subDepartments.filter(
-        sub => {
-          const subDeptId = typeof sub.departmentId === 'string'
-            ? sub.departmentId
-            : sub.department?._id;
-          return subDeptId === this.filters.departmentId;
-        }
-      );
-
-      this.filteredUsers = this.users.filter(
-        user => user.departmentId === this.filters.departmentId
-      );
-    } else {
-      this.filteredSubDepartments = [...this.subDepartments];
-      this.filteredUsers = [...this.users];
-    }
-
-    // إعادة تعيين القيم المختارة
-    this.filters.subDepartmentId = '';
-    this.filters.userId = '';
-
-    // تطبيق الفلاتر
-    this.applyFilters();
-  }
-
-  // دالة خاصة للـ modal
-  onModalDepartmentChange(): void {
-    if (this.newSchedule.departmentId) {
-      // تصفية الـ sub-departments للـ modal
-      this.filteredSubDepartments = this.subDepartments.filter(
-        sub => {
-          const subDeptId = typeof sub.departmentId === 'string'
-            ? sub.departmentId
-            : sub.department?._id;
-          return subDeptId === this.newSchedule.departmentId;
-        }
-      );
-
-      // تصفية الـ users للـ modal
-      this.filteredUsers = this.users.filter(
-        user => user.departmentId === this.newSchedule.departmentId
-      );
-    } else {
-      this.filteredSubDepartments = [...this.subDepartments];
-      this.filteredUsers = [...this.users];
-    }
-
-    // إعادة تعيين القيم المختارة في الـ modal
-    this.newSchedule.subDepartmentId = '';
-    this.newSchedule.userId = '';
-
-    // تنظيف أخطاء التحقق
-    this.clearFormErrors();
-  }
-
-  // إنشاء نطاق من التواريخ
   generateDateRange(): void {
     if (!this.dateRange.start || !this.dateRange.end) {
       this.bulkFormErrors.dates = 'Both start and end dates are required';
@@ -382,14 +662,12 @@ export class Schedules implements OnInit {
     this.bulkFormErrors.dates = '';
   }
 
-  // عند تغيير نطاق التاريخ
   onDateRangeChange(): void {
     if (this.dateRange.start && this.dateRange.end) {
       this.generateDateRange();
     }
   }
 
-  // إضافة/إزالة التواريخ
   toggleDate(date: string): void {
     const index = this.bulkCreateData.dates.indexOf(date);
     if (index > -1) {
@@ -399,7 +677,6 @@ export class Schedules implements OnInit {
     }
   }
 
-  // إضافة/إزالة المستخدمين
   toggleUser(userId: string): void {
     const index = this.bulkCreateData.userIds.indexOf(userId);
     if (index > -1) {
@@ -409,7 +686,6 @@ export class Schedules implements OnInit {
     }
   }
 
-  // تحديد/إلغاء تحديد جميع المستخدمين
   toggleAllUsers(): void {
     if (this.bulkCreateData.userIds.length === this.filteredUsers.length) {
       this.bulkCreateData.userIds = [];
@@ -418,7 +694,6 @@ export class Schedules implements OnInit {
     }
   }
 
-  // تحديد/إلغاء تحديد جميع التواريخ
   toggleAllDates(): void {
     if (this.bulkCreateData.dates.length === this.selectedDates.length) {
       this.bulkCreateData.dates = [];
@@ -427,51 +702,164 @@ export class Schedules implements OnInit {
     }
   }
 
-  // عند تغيير القسم في نافذة الإنشاء المتعدد
-  onBulkDepartmentChange(): void {
-    if (this.bulkCreateData.departmentId) {
-      this.filteredUsers = this.users.filter(
-        user => user.departmentId === this.bulkCreateData.departmentId
-      );
+  // ==================== CREATE SCHEDULE METHODS ====================
+
+  createSchedule(): void {
+    if (this.createMode === 'single') {
+      this.createSingleSchedule();
     } else {
-      this.filteredUsers = [...this.users];
+      this.createBulkSchedules();
+    }
+  }
+
+  createSingleSchedule(): void {
+    if (!this.validateSchedule(this.newSchedule)) {
+      this.error = 'Please fix the validation errors before submitting';
+      return;
     }
 
-    // إعادة تعيين المستخدمين المختارين
-    this.bulkCreateData.userIds = [];
-    this.bulkCreateData.subDepartmentId = '';
-    this.clearBulkFormErrors();
+    if (!this.validateUserAccess(this.newSchedule)) {
+      return;
+    }
+
+    this.loading = true;
+
+    if (this.editingScheduleId) {
+      console.log('✏️ Updating schedule:', this.editingScheduleId, this.newSchedule);
+      
+      this.schedulesService.updateSchedule(this.editingScheduleId, this.newSchedule)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            const index = this.schedules.findIndex(s => s._id === this.editingScheduleId);
+            if (index !== -1) {
+              this.schedules[index] = { ...this.schedules[index], ...response.data };
+            }
+            
+            this.closeModal();
+            this.loading = false;
+            this.loadSchedules();
+            this.toastr.success('Schedule updated successfully');
+          },
+          error: (err) => {
+            this.handleError('Failed to update schedule', err);
+            this.loading = false;
+          }
+        });
+    } else {
+      console.log('➕ Creating single schedule:', this.newSchedule);
+
+      this.schedulesService.createSchedule(this.newSchedule)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            this.schedules.unshift(response.data!);
+            this.closeModal();
+            this.loading = false;
+            this.loadSchedules();
+            this.toastr.success('Schedule created successfully');
+          },
+          error: (err) => {
+            this.handleError('Failed to create schedule', err);
+            this.loading = false;
+          }
+        });
+    }
   }
 
-  applyFilters(): void {
-    this.filters.page = 1;
-    this.loadSchedules();
+  createBulkSchedules(): void {
+    if (!this.validateBulkCreate()) {
+      this.error = 'Please fix the validation errors before submitting';
+      return;
+    }
+
+    this.loading = true;
+    console.log('➕ Creating bulk schedules:', this.bulkCreateData);
+
+    this.schedulesService.createMultipleSchedules(this.bulkCreateData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.closeModal();
+          this.loading = false;
+          this.loadSchedules();
+          this.error = '';
+          this.toastr.success(`Successfully created ${response.data?.length || 0} schedules`);
+          console.log('✅ Bulk schedules created successfully:', response);
+        },
+        error: (err) => {
+          this.handleError('Failed to create schedules', err);
+          this.loading = false;
+        }
+      });
   }
 
-  resetFilters(): void {
-    this.filters = {
-      startDate: '',
-      endDate: '',
-      departmentId: '',
-      subDepartmentId: '',
-      userId: '',
-      shiftId: '',
-      page: 1,
-      limit: 10
+  // ==================== UPDATE SCHEDULE METHOD ====================
+
+  updateSchedule(schedule: ScheduleI): void {
+    if (!schedule._id) {
+      this.error = 'Invalid schedule data';
+      return;
+    }
+
+    this.editingScheduleId = schedule._id;
+    
+    this.newSchedule = {
+      date: schedule.date,
+      departmentId: schedule.departmentId || '',
+      userId: schedule.userId || '',
+      shiftId: schedule.shiftId || '',
+      subDepartmentId: schedule.subDepartmentId || ''
     };
-    this.filteredSubDepartments = [...this.subDepartments];
-    this.filteredUsers = [...this.users];
-    this.loadSchedules();
+
+    console.log('✏️ Updating schedule with department:', this.newSchedule.departmentId);
+
+    // ✅ نطبق الفلترة بناءً على الـ department اللي جاي من الجدول
+    if (this.newSchedule.departmentId) {
+      this.applyModalDepartmentFilter(this.newSchedule.departmentId);
+    } else {
+      this.applyModalInitialFilters();
+    }
+    
+    this.showCreateModal = true;
+    this.createMode = 'single';
   }
 
-  // التحقق من صحة البيانات قبل الإرسال
+  // ==================== DELETE SCHEDULE METHOD ====================
+
+  deleteSchedule(id: string): void {
+    if (!id) {
+      this.error = 'Invalid schedule ID';
+      return;
+    }
+
+    if (confirm('Are you sure you want to delete this schedule?')) {
+      this.loading = true;
+      this.schedulesService.deleteSchedule(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.schedules = this.schedules.filter(s => s._id !== id);
+            this.loading = false;
+            this.loadSchedules();
+            this.toastr.success('Schedule deleted successfully');
+          },
+          error: (err) => {
+            this.handleError('Failed to delete schedule', err);
+            this.loading = false;
+          }
+        });
+    }
+  }
+
+  // ==================== VALIDATION METHODS ====================
+
   validateSchedule(schedule: CreateScheduleRequest): boolean {
     this.clearFormErrors();
     let isValid = true;
 
-    // التحقق من التاريخ
     if (!schedule.date) {
-      this.formErrors.date = this.validationMessages.date.required;
+      this.formErrors.date = VALIDATION_MESSAGES.date.required;
       isValid = false;
     } else {
       const selectedDate = new Date(schedule.date);
@@ -479,39 +867,34 @@ export class Schedules implements OnInit {
       today.setHours(0, 0, 0, 0);
 
       if (selectedDate < today) {
-        this.formErrors.date = this.validationMessages.date.future;
+        this.formErrors.date = VALIDATION_MESSAGES.date.future;
         isValid = false;
       }
     }
 
-    // التحقق من القسم
     if (!schedule.departmentId) {
-      this.formErrors.departmentId = this.validationMessages.departmentId.required;
+      this.formErrors.departmentId = VALIDATION_MESSAGES.departmentId.required;
       isValid = false;
     }
 
-    // التحقق من المستخدم
     if (!schedule.userId) {
-      this.formErrors.userId = this.validationMessages.userId.required;
+      this.formErrors.userId = VALIDATION_MESSAGES.userId.required;
       isValid = false;
     }
 
-    // التحقق من الوردية
     if (!schedule.shiftId) {
-      this.formErrors.shiftId = this.validationMessages.shiftId.required;
+      this.formErrors.shiftId = VALIDATION_MESSAGES.shiftId.required;
       isValid = false;
     }
 
-    // التحقق من القسم الفرعي
     if (!schedule.subDepartmentId) {
-      this.formErrors.subDepartmentId = this.validationMessages.subDepartmentId.required;
+      this.formErrors.subDepartmentId = VALIDATION_MESSAGES.subDepartmentId.required;
       isValid = false;
     }
 
     return isValid;
   }
 
-  // التحقق من صحة بيانات الإنشاء المتعدد
   validateBulkCreate(): boolean {
     this.clearBulkFormErrors();
     let isValid = true;
@@ -544,146 +927,93 @@ export class Schedules implements OnInit {
     return isValid;
   }
 
-  createSchedule(): void {
-    if (this.createMode === 'single') {
-      this.createSingleSchedule();
-    } else {
-      this.createBulkSchedules();
-    }
-  }
+  // ==================== SECURITY METHODS ====================
 
-  createSingleSchedule(): void {
-    if (!this.validateSchedule(this.newSchedule)) {
-      this.error = 'Please fix the validation errors before submitting';
-      return;
+  private validateUserAccess(schedule: CreateScheduleRequest): boolean {
+    if (this.isAdminUser) return true;
+
+    if (schedule.departmentId && !this.canAccessDepartment(schedule.departmentId)) {
+      this.error = 'You do not have access to this department';
+      return false;
     }
 
-    this.loading = true;
-    console.log('➕ Creating single schedule:', this.newSchedule);
-
-    this.schedulesService.createSchedule(this.newSchedule).subscribe({
-      next: (response) => {
-        this.schedules.unshift(response.data!);
-        this.closeModal();
-        this.loading = false;
-        this.loadSchedules();
-        this.toastr.success('Schedule created successfully');
-      },
-      error: (err) => {
-        this.handleError('Failed to create schedule', err);
-        this.loading = false;
+    if (schedule.userId) {
+      const selectedUser = this.users.find(u => u._id === schedule.userId);
+      if (selectedUser && !this.canAccessUser(selectedUser)) {
+        this.error = 'You do not have access to this user';
+        return false;
       }
-    });
-  }
-
-  // إنشاء جداول متعددة
-  createBulkSchedules(): void {
-    if (!this.validateBulkCreate()) {
-      this.error = 'Please fix the validation errors before submitting';
-      return;
     }
 
-    this.loading = true;
-    console.log('➕ Creating bulk schedules:', this.bulkCreateData);
-
-    this.schedulesService.createMultipleSchedules(this.bulkCreateData).subscribe({
-      next: (response) => {
-        this.closeModal();
-        this.loading = false;
-        this.loadSchedules(); // إعادة تحميل البيانات
-        this.error = '';
-        this.toastr.success(`Successfully created ${response.data?.length || 0} schedules`);
-        console.log('✅ Bulk schedules created successfully:', response);
-      },
-      error: (err) => {
-        this.handleError('Failed to create schedules', err);
-        this.loading = false;
-      }
-    });
+    return true;
   }
 
-  updateSchedule(schedule: ScheduleI): void {
-    if (!schedule._id) {
-      this.error = 'Invalid schedule data';
-      return;
+  canAccessDepartment(departmentId: string): boolean {
+    if (this.isAdminUser) return true;
+    if (this.isManagerUser && this.userDepartmentId) {
+      return departmentId === this.userDepartmentId;
     }
+    if (this.userDepartmentId) {
+      return departmentId === this.userDepartmentId;
+    }
+    return false;
+  }
 
-    // نسخ البيانات إلى نموذج التعديل
-    this.newSchedule = {
-      date: schedule.date,
-      departmentId: schedule.departmentId || '',
-      userId: schedule.userId || '',
-      shiftId: schedule.shiftId || '',
-      subDepartmentId: schedule.subDepartmentId || ''
+  canAccessUser(user: UserI): boolean {
+    if (this.isAdminUser) return true;
+    if (this.isManagerUser && this.userDepartmentId) {
+      return user.departmentId === this.userDepartmentId;
+    }
+    if (this.userDepartmentId) {
+      return user.departmentId === this.userDepartmentId;
+    }
+    return false;
+  }
+
+  // ==================== FILTER METHODS ====================
+
+  applyFilters(): void {
+    this.filters.page = 1;
+    this.loadSchedules();
+  }
+
+  resetFilters(): void {
+    this.filters = {
+      startDate: '',
+      endDate: '',
+      departmentId: this.getDefaultDepartmentFilter(),
+      subDepartmentId: '',
+      userId: '',
+      shiftId: '',
+      page: 1,
+      limit: PAGINATION_CONFIG.DEFAULT_LIMIT
     };
-
-    // تصفية البيانات بناءً على القسم المختار
-    this.onModalDepartmentChange();
-    this.showCreateModal = true;
-    this.createMode = 'single';
+    this.filterDataBasedOnRole();
+    this.loadSchedules();
   }
 
-  deleteSchedule(id: string): void {
-    if (!id) {
-      this.error = 'Invalid schedule ID';
-      return;
+  private getDefaultDepartmentFilter(): string {
+    if (this.isManagerUser && this.userDepartmentId) {
+      return this.userDepartmentId;
+    } else if (!this.isAdminUser && this.userDepartmentId) {
+      return this.userDepartmentId;
     }
-
-    if (confirm('Are you sure you want to delete this schedule?')) {
-      this.loading = true;
-      this.schedulesService.deleteSchedule(id).subscribe({
-        next: () => {
-          this.schedules = this.schedules.filter(s => s._id !== id);
-          this.loading = false;
-          this.loadSchedules(); // إعادة تحميل البيانات للتأكد من التزامن
-          this.toastr.success('Schedule deleted successfully');
-        },
-        error: (err) => {
-          this.handleError('Failed to delete schedule', err);
-          this.loading = false;
-        }
-      });
-    }
+    return '';
   }
 
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.pagination.totalPages) {
-      this.filters.page = page;
-      this.loadSchedules();
-    }
-  }
+  // ==================== DISPLAY METHODS ====================
 
-  isValidSchedule(schedule: CreateScheduleRequest): boolean {
-    return !!schedule.date &&
-           !!schedule.departmentId &&
-           !!schedule.userId &&
-           !!schedule.shiftId &&
-           !!schedule.subDepartmentId;
-  }
-
-  // التحقق مما إذا كان النموذج المتعدد صالح
-  isBulkFormValid(): boolean {
-    return this.bulkCreateData.dates.length > 0 &&
-           this.bulkCreateData.userIds.length > 0 &&
-           !!this.bulkCreateData.departmentId &&
-           !!this.bulkCreateData.shiftId &&
-           !!this.bulkCreateData.subDepartmentId;
-  }
-
-  // دوال العرض للبيانات القديمة والجديدة
   getDepartmentDisplay(schedule: ScheduleI): string {
     if (!schedule) return 'No Data';
 
     const departmentId = schedule.departmentId;
 
-    // إذا فيه department object مباشر (بيانات قديمة)
     if ((schedule as any).department) {
       const dept = (schedule as any).department;
       if (typeof dept === 'string' && dept !== 'null') return dept;
       if (dept?.name && dept.name !== 'null') return dept.name;
     }
 
-    // البحث في الـ departments الحالية
     if (departmentId && departmentId !== 'null') {
       const dept = this.departments.find(d => d._id === departmentId);
       if (dept) return dept.name;
@@ -693,33 +1023,30 @@ export class Schedules implements OnInit {
     return 'No Department';
   }
 
- getSubDepartmentDisplay(schedule: ScheduleI): string {
-  if (!schedule) return 'No Data';
+  getSubDepartmentDisplay(schedule: ScheduleI): string {
+    if (!schedule) return 'No Data';
 
-  const subDepartmentId = schedule.subDepartmentId;
+    const subDepartmentId = schedule.subDepartmentId;
 
-  // إذا فيه subDepartment object مباشر
-  if ((schedule as any).subDepartment) {
-    const subDept = (schedule as any).subDepartment;
-    if (typeof subDept === 'string' && subDept !== 'null') return subDept;
-    if (subDept?.name && subDept.name !== 'null') return subDept.name;
+    if ((schedule as any).subDepartment) {
+      const subDept = (schedule as any).subDepartment;
+      if (typeof subDept === 'string' && subDept !== 'null') return subDept;
+      if (subDept?.name && subDept.name !== 'null') return subDept.name;
+    }
+
+    if (subDepartmentId && subDepartmentId !== 'null') {
+      const subDept = this.subDepartments.find(s => s._id === subDepartmentId);
+      return subDept?.name || `Sub-Dept (${subDepartmentId.substring(0, 6)}...)`;
+    }
+
+    return 'No Sub-Department';
   }
-
-  // البحث في الـ subDepartments الحالية
-  if (subDepartmentId && subDepartmentId !== 'null') {
-    const subDept = this.subDepartments.find(s => s._id === subDepartmentId);
-    return subDept?.name || `Sub-Dept (${subDepartmentId.substring(0, 6)}...)`;
-  }
-
-  return 'No Sub-Department';
-}
 
   getUserDisplay(schedule: ScheduleI): string {
     if (!schedule) return 'No Data';
 
     const userId = schedule.userId;
 
-    // إذا فيه user object مباشر
     if ((schedule as any).user) {
       const user = (schedule as any).user;
       if (typeof user === 'string' && user !== 'null') return user;
@@ -727,10 +1054,15 @@ export class Schedules implements OnInit {
       if (user?.name && user.name !== 'null') return user.name;
     }
 
-    // البحث في الـ users الحالية
     if (userId && userId !== 'null') {
       const user = this.users.find(u => u._id === userId);
-      if (user) return user.fullName;
+      if (user) {
+        if (this.canAccessUser(user)) {
+          return user.fullName || `User (${userId.substring(0, 6)}...)`;
+        } else {
+          return 'Access Denied';
+        }
+      }
       return `User (${userId.substring(0, 6)}...)`;
     }
 
@@ -742,7 +1074,6 @@ export class Schedules implements OnInit {
 
     const shiftId = schedule.shiftId;
 
-    // إذا فيه shift object مباشر
     if ((schedule as any).shift) {
       const shift = (schedule as any).shift;
       if (typeof shift === 'string' && shift !== 'null') return shift;
@@ -750,7 +1081,6 @@ export class Schedules implements OnInit {
       if (shift?.name && shift.name !== 'null') return shift.name;
     }
 
-    // البحث في الـ shifts الحالية
     if (shiftId && shiftId !== 'null') {
       const shift = this.shifts.find(s => s._id === shiftId);
       if (shift) return shift.shiftName;
@@ -765,13 +1095,11 @@ export class Schedules implements OnInit {
 
     const shiftId = schedule.shiftId;
 
-    // إذا فيه shift object مباشر
     if ((schedule as any).shift) {
       const shift = (schedule as any).shift;
       if (shift?.shiftType && shift.shiftType !== 'null') return shift.shiftType;
     }
 
-    // البحث في الـ shifts الحالية
     if (shiftId && shiftId !== 'null') {
       const shift = this.shifts.find(s => s._id === shiftId);
       if (shift && shift.shiftType !== 'null') return shift.shiftType || '';
@@ -785,7 +1113,6 @@ export class Schedules implements OnInit {
 
     const shiftId = schedule.shiftId;
 
-    // إذا فيه shift object مباشر
     if ((schedule as any).shift) {
       const shift = (schedule as any).shift;
       if (shift?.startTimeFormatted && shift?.endTimeFormatted) {
@@ -793,7 +1120,6 @@ export class Schedules implements OnInit {
       }
     }
 
-    // البحث في الـ shifts الحالية
     if (shiftId && shiftId !== 'null') {
       const shift = this.shifts.find(s => s._id === shiftId);
       if (shift) {
@@ -804,7 +1130,6 @@ export class Schedules implements OnInit {
     return '';
   }
 
-  // دوال للمساعدة في الـ bulk modal
   getSelectedShiftName(): string {
     if (!this.bulkCreateData.shiftId) return 'Not selected';
 
@@ -816,12 +1141,172 @@ export class Schedules implements OnInit {
     return 'Unknown Shift';
   }
 
-  // معالجة الأخطاء من الباك إند
+  // ==================== UTILITY METHODS ====================
+
+  private getSubDepartmentDepartmentId(sub: SubDepartmentI): string | undefined {
+    return typeof sub.departmentId === 'string' 
+      ? sub.departmentId 
+      : sub.department?._id;
+  }
+
+  private getAccessibleUsers(): UserI[] {
+    if (this.isAdminUser) return [...this.users];
+    if (this.userDepartmentId) {
+      return this.users.filter(user => user.departmentId === this.userDepartmentId);
+    }
+    return [];
+  }
+
+  private getAccessibleShifts(): ShiftI[] {
+    if (this.isAdminUser) return [...this.shifts];
+    if (this.userDepartmentId) {
+      return this.shifts.filter(shift => shift.departmentId === this.userDepartmentId);
+    }
+    return [];
+  }
+
+  isValidSchedule(schedule: CreateScheduleRequest): boolean {
+    return !!schedule.date &&
+           !!schedule.departmentId &&
+           !!schedule.userId &&
+           !!schedule.shiftId &&
+           !!schedule.subDepartmentId;
+  }
+
+  isBulkFormValid(): boolean {
+    return this.bulkCreateData.dates.length > 0 &&
+           this.bulkCreateData.userIds.length > 0 &&
+           !!this.bulkCreateData.departmentId &&
+           !!this.bulkCreateData.shiftId &&
+           !!this.bulkCreateData.subDepartmentId;
+  }
+
+  refreshData(): void {
+    console.log('🔄 Manually refreshing data...');
+    this.initializeUserData();
+    this.sharedService.refetchAll();
+    this.loadAllData();
+  }
+
+  // ==================== PAGINATION METHODS ====================
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.pagination.totalPages) {
+      this.filters.page = page;
+      this.loadSchedules();
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const totalPages = this.pagination.totalPages;
+    const currentPage = this.pagination.page;
+    
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    
+    const pages: number[] = [];
+    
+    pages.push(1);
+    
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+    
+    if (start > 2) {
+      pages.push(-1);
+    }
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    if (end < totalPages - 1) {
+      pages.push(-1);
+    }
+    
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+    
+    return pages;
+  }
+
+  validatePagination(): void {
+    if (this.pagination.page > this.pagination.totalPages && this.pagination.totalPages > 0) {
+      this.filters.page = this.pagination.totalPages;
+      this.loadSchedules();
+    }
+  }
+
+  private updatePagination(response: any): void {
+    this.pagination = {
+      total: response.total || 0,
+      totalFiltered: response.totalFiltered || 0,
+      page: response.page || 1,
+      limit: response.limit || PAGINATION_CONFIG.DEFAULT_LIMIT,
+      totalPages: Math.ceil((response.total || 0) / (response.limit || PAGINATION_CONFIG.DEFAULT_LIMIT))
+    };
+  }
+
+  // ==================== FORM METHODS ====================
+
+  private clearFormErrors(): void {
+    this.formErrors = {
+      date: '',
+      departmentId: '',
+      userId: '',
+      shiftId: '',
+      subDepartmentId: ''
+    };
+  }
+
+  private clearBulkFormErrors(): void {
+    this.bulkFormErrors = {
+      dates: '',
+      userIds: '',
+      departmentId: '',
+      shiftId: '',
+      subDepartmentId: ''
+    };
+  }
+
+  resetNewScheduleForm(): void {
+    this.newSchedule = {
+      date: '',
+      departmentId: this.getDefaultDepartmentFilter(),
+      userId: '',
+      shiftId: '',
+      subDepartmentId: ''
+    };
+    this.error = '';
+    this.clearFormErrors();
+    this.filterDataBasedOnRole();
+  }
+
+  // ==================== DATA STATUS METHODS ====================
+
+  checkDataStatus(): void {
+    if (
+      this.departments.length > 0 &&
+      this.subDepartments.length > 0 &&
+      this.users.length > 0
+    ) {
+      this.dataLoading = false;
+    }
+  }
+
+  private handleDataLoadError(dataType: string, err: any): void {
+    console.error(`❌ Error loading ${dataType}:`, err);
+    this.handleError(`Failed to load ${dataType}`, err);
+    this.dataLoading = false;
+  }
+
+  // ==================== ERROR HANDLING ====================
+
   private handleError(defaultMessage: string, error: any): void {
     console.error('❌ Error:', error);
 
     if (error.error && error.error.message) {
-      // إذا كان الباك إند يرسل رسالة خطأ محددة
       this.error = error.error.message;
     } else if (error.status === 0) {
       this.error = 'Network error: Please check your internet connection';
@@ -842,40 +1327,7 @@ export class Schedules implements OnInit {
     }
   }
 
-  // تنظيف أخطاء التحقق
-  private clearFormErrors(): void {
-    this.formErrors = {
-      date: '',
-      departmentId: '',
-      userId: '',
-      shiftId: '',
-      subDepartmentId: ''
-    };
-  }
-
-  // تنظيف أخطاء النموذج المتعدد
-  private clearBulkFormErrors(): void {
-    this.bulkFormErrors = {
-      dates: '',
-      userIds: '',
-      departmentId: '',
-      shiftId: '',
-      subDepartmentId: ''
-    };
-  }
-
-  // تغيير من private إلى public لأنها تُستدعى من القالب
-  resetNewScheduleForm(): void {
-    this.newSchedule = {
-      date: '',
-      departmentId: '',
-      userId: '',
-      shiftId: '',
-      subDepartmentId: ''
-    };
-    this.error = '';
-    this.clearFormErrors();
-  }
+  // ==================== UTILITY METHODS ====================
 
   formatDate(dateString: string): string {
     try {
@@ -889,37 +1341,26 @@ export class Schedules implements OnInit {
     }
   }
 
-  getPageNumbers(): number[] {
-    const totalPages = this.pagination.totalPages;
-    const currentPage = this.pagination.page;
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
+  getDepartmentName(departmentId: string): string {
+    if (!departmentId) return 'No Department';
+    
+    const department = this.departments.find(dept => dept._id === departmentId);
+    return department?.name || `Department (${departmentId.substring(0, 6)}...)`;
+  }
 
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i);
-    }
+  isUserSelected(userId: string): boolean {
+    return this.bulkCreateData.userIds.includes(userId);
+  }
 
-    if (currentPage - delta > 2) {
-      rangeWithDots.push(1);
-      if (currentPage - delta > 3) {
-        rangeWithDots.push(-1);
-      }
-    } else {
-      rangeWithDots.push(1);
-    }
+  isDateSelected(date: string): boolean {
+    return this.bulkCreateData.dates.includes(date);
+  }
 
-    rangeWithDots.push(...range);
+  getSelectedUsersCount(): number {
+    return this.bulkCreateData.userIds.length;
+  }
 
-    if (currentPage + delta < totalPages - 1) {
-      if (currentPage + delta < totalPages - 2) {
-        rangeWithDots.push(-1);
-      }
-      rangeWithDots.push(totalPages);
-    } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
-    }
-
-    return rangeWithDots.filter(page => page === -1 || (page >= 1 && page <= totalPages));
+  getSelectedDatesCount(): number {
+    return this.bulkCreateData.dates.length;
   }
 }
