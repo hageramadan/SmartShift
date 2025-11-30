@@ -5,6 +5,7 @@ export interface SwapRequestI {
   _id: string;
   fromScheduleId: string;
   toScheduleId?: string;
+  deaprtmentId: string;
   fromUserId?: string;
   toUserId?: string;
   targetUser?: string;
@@ -30,7 +31,8 @@ export interface SwapRequestI {
   fromSchedule?: {
     _id: string;
     date: string;
-    shiftId: {
+    shiftId: string;
+    shift: {
       _id: string;
       shiftType: string;
       shiftName: string;
@@ -38,7 +40,8 @@ export interface SwapRequestI {
       endTimeFormatted?: string;
       durationFormatted?: string;
     },
-    subDepartmentId?: {
+    subDepartmentId: string;
+    subDepartment?: {
       _id: string;
       name: string;
     }
@@ -46,7 +49,8 @@ export interface SwapRequestI {
   toSchedule?: {
     _id: string;
     date: string;
-    shiftId: {
+    shiftId: string;
+    shift: {
       _id: string;
       shiftType: string;
       shiftName: string;
@@ -54,7 +58,8 @@ export interface SwapRequestI {
       endTimeFormatted?: string;
       durationFormatted?: string;
     },
-    subDepartmentId?: {
+    subDepartmentId: string;
+    subDepartment?: {
       _id: string;
       name: string;
     }
