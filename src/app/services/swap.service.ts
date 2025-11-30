@@ -101,7 +101,7 @@ export class SwapService implements OnDestroy {
 
   /** Approve request */
   approveRequest(id: string) {
-    return this.crud.update<SwapRequestI>('swapRequests/isApproved', id, {
+    return this.crud.update<SwapRequestI>('swapRequests/isAproved', id, {
       status: 'approved',
       message: 'Request approved',
     });
@@ -109,7 +109,7 @@ export class SwapService implements OnDestroy {
 
   /** Reject request */
   rejectRequest(id: string) {
-    return this.crud.update<SwapRequestI>('swapRequests/isApproved', id, {
+    return this.crud.update<SwapRequestI>('swapRequests/isAproved', id, {
       status: 'rejected',
       message: 'Request rejected',
     });

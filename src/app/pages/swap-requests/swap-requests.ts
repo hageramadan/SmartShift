@@ -191,9 +191,9 @@ export class SwapRequests implements OnInit, OnDestroy {
   getFullName(u?: { firstName?: string; lastName?: string; fullName?: string }): string {
     return u?.fullName || `${u?.firstName || ''} ${u?.lastName || ''}`.trim() || '—';
   }
-  getDepartmentName(s?: { subDepartmentId?: { name?: string } }): string { return s?.subDepartmentId?.name || '—'; }
-  getShiftName(s?: { shiftId?: { shiftName?: string } }): string { return s?.shiftId?.shiftName || '—'; }
-  getShiftType(s?: { shiftId?: { shiftType?: string } }): string { return s?.shiftId?.shiftType || ''; }
+  getDepartmentName(s?: { subDepartment?: { name?: string } }): string { return s?.subDepartment?.name || '—'; }
+  getShiftName(s?: { shift?: { shiftName?: string } }): string { return s?.shift?.shiftName || '—'; }
+  getShiftType(s?: { shift?: { shiftType?: string } }): string { return s?.shift?.shiftType || ''; }
   formatDate(dateStr?: string, withTime: boolean = false): string {
     if (!dateStr) return '—';
     const options: Intl.DateTimeFormatOptions = withTime
