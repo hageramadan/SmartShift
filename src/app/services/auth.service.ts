@@ -63,6 +63,6 @@ export class AuthService {
   private clearUserState() {
     this.userSubject.next(null);
     sessionStorage.removeItem('user');
-    window.location.href = 'http://localhost:3001/login';
+    window.location.href = 'https://portal-pvwr.onrender.com/login';
   }
 }

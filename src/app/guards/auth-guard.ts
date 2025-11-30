@@ -9,7 +9,7 @@ export const authGuard: CanActivateFn = (route, state): Observable<boolean> => {
   const allowedRoles = ['admin', 'manager'];
 
   const redirectToLogin = (): boolean => {
-    window.location.href = 'http://localhost:3001/login';
+    window.location.href = 'https://portal-pvwr.onrender.com/login';
     return false;
   };
 
